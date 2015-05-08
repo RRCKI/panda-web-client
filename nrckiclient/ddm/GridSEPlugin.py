@@ -3,16 +3,16 @@ import subprocess
 import errno
 from ..common.NrckiLogger import NrckiLogger
 from ..common.utils import adler32
+from nrckiclient import basedir
 
 _logger = NrckiLogger().getLogger("GridSEPlugin")
-BIN_HOME = '/srv/nrckiclient'
 
 class GridSEPlugin():
     def __init__(self, params={}):
         pass
         
         proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        env = proc.communicate(". %s/setup.sh; python -c 'import os; print os.environ'" % BIN_HOME)[0][:-1]
+        env = proc.communicate(". %s/setup.sh; python -c 'import os; print os.environ'" % basedir)[0][:-1]
         env = env.split('\n')[-1]
         import ast
         self.myenv = ast.literal_eval(env)
