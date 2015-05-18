@@ -1,23 +1,28 @@
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask_restful import Api
 
 app = Flask(__name__)
 app.config.from_object('config')
+api = Api(app)
 db = SQLAlchemy(app)
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
 
-from models import User,AnonymousUser
+from models import User, AnonymousUser
 
 lm.anonymous_user = AnonymousUser
 @lm.user_loader
 def load_user(id):
+    if id == 0:
+        return AnonymousUser()
     return User.query.filter_by(id=id).first()
 
 
 from app import views
+from app import apis
 
 if not app.debug:
     import logging

@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+import glob
+import json
+from uuid import uuid4
 
-from flask import render_template, flash, redirect, session, url_for, request, g, abort
+from flask import render_template, flash, redirect, session, url_for, request, g, abort, jsonify
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db, lm
-from forms import LoginForm, RegisterForm
-from models import User, ROLE_USER, ROLE_ADMIN
+from forms import LoginForm, RegisterForm, NewJobForm
+from models import User, ROLE_USER, ROLE_ADMIN, Distributive, Job
 from datetime import datetime
+import os
+
+HOURS_LIMIT = 96
+DISPLAY_LIMIT = 6000
 
 
 @app.before_request
@@ -16,7 +22,6 @@ def before_request():
     g.user.save()
 
 @app.route('/')
-@app.route('/index')
 @login_required
 def index():
     user = g.user
@@ -79,3 +84,118 @@ def not_found_error(error):
 def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
+
+
+#############################################
+#############################################
+
+@app.route("/job", methods=['GET', 'POST'])
+@login_required
+def job():
+    """Handle the definition of a job."""
+    form = NewJobForm()
+    if request.method == 'POST':
+        job = Job()
+        job.pandaid = None
+        job.status = 'pending'
+        job.owner = g.user
+        job.distr_id = form.distr.data
+        job.params = form.params.data
+        job.ifiles = form.ftoken.data
+        job.ofiles = form.output_files.data
+        job.creation_time = datetime.utcnow()
+        job.modification_time = datetime.utcnow()
+        db.session.add(job)
+        db.session.commit()
+        return redirect(url_for('jobs'))
+
+    form.distr.choices = [(distr.id, "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
+    return render_template("pandaweb/jobs_new.html", form=form)
+
+@app.route("/upload", methods=['POST'])
+@login_required
+def upload():
+    form = request.form
+
+    # Create a unique "session ID" for this particular batch of uploads.
+    upload_key = str(uuid4())
+
+    # Is the upload using Ajax, or a direct POST by the form?
+    is_ajax = False
+    if form.get("__ajax", None) == "true":
+        is_ajax = True
+
+    # Target folder for these uploads.
+    target = os.path.join(app.config['UPLOAD_FOLDER'], "uploads/%s" % upload_key)
+    try:
+        os.mkdir(target)
+    except:
+        if is_ajax:
+            return ajax_response(False, "Couldn't create upload directory: %s" % target)
+        else:
+            return "Couldn't create upload directory: %s" % target
+
+    input_files = []
+
+    for upload in request.files.getlist("file"):
+        filename = upload.filename.rsplit("/")[0]
+        destination = "/".join([target, filename])
+        print "Accept incoming file:", filename
+        print "Save it to:", destination
+        upload.save(destination)
+        if os.path.isfile(destination):
+            input_files.append(destination)
+        else:
+            return ajax_response(False, "Couldn't save file: %s" % target)
+
+
+    if is_ajax:
+        return ajax_response(True, upload_key)
+    else:
+        return redirect(url_for("upload_success"))
+
+def ajax_response(status, msg):
+    status_code = "ok" if status else "error"
+    return json.dumps(dict(
+        status=status_code,
+        msg=msg,
+    ))
+
+@app.route("/jobs", methods=['GET'])
+@login_required
+def jobs():
+    hours_limit = request.args.get('hours', HOURS_LIMIT, type=int)
+    display_limit = request.args.get('display_limit', DISPLAY_LIMIT, type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("pandaweb/jobs_list.html")
+
+@app.route("/jobs/list", methods=['GET'])
+@login_required
+def jobs_list():
+    user = g.user
+
+    hours_limit = session.get('hours_limit', HOURS_LIMIT)
+    display_limit = session.get('display_limit', DISPLAY_LIMIT)
+
+    jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id)
+    jobs_o = []
+    for job in jobs:
+        job_o = {}
+        job_o['id'] = job.id
+        job_o['owner'] = {'id': job.owner.id,
+                            'username': job.owner.username}
+        job_o['pandaid'] = job.pandaid
+        job_o['distr'] = {'id': job.distr.id,
+                          'name': job.distr.name,
+                          'version': job.distr.version}
+        job_o['creation_time'] = str(job.creation_time)
+        job_o['modification_time'] = str(job.modification_time)
+        job_o['status'] = job.status
+        jobs_o.append(job_o)
+    data = {}
+    data['data'] = jobs_o
+
+    print hours_limit
+    print display_limit
+    return json.dumps(data)

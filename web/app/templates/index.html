@@ -1,7 +1,15 @@
 {% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Home</title>
+{% endblock %}
+
+{% block css_import %}
+{% endblock %}
+
 {% block content %}
-<h1>Hi, {{user.username}}!</h1>
-{% for post in posts %}
-<div><p>{{post.author.nickname}} says: <b>{{post.body}}</b></p></div>
-{% endfor %}
+<h1>Hi, Ivan!</h1>
+{% endblock %}
+
+{% block js_import %}
 {% endblock %}

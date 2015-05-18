@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - New job</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="static/app/css/upload_files.css" rel="stylesheet">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+<form method="post" id="upload-form" action="{{ url_for('job') }}" enctype="multipart/form-data">
+    {{form.hidden_tag()}}
+    <div class='form-group' title="Main distributive to use">
+            <label for='distr'>Select distributive: </label><br>
+            {{ form.distr() }}
+    </div>
+    <div class='form-group' title="Input files to upload">
+            <label for='input_files'> Input files: </label>
+            <input id="file-picker" type="file" name="file" accept="image/*" multiple><br>
+
+            <div id="dropbox">
+                Drag and Drop Files Here
+            </div><br>
+            <fieldset id="progress" style="display: none">
+                <legend>Files Progress</legend>
+
+                <div class="progress-trough">
+                    <div id="progress-bar" class="progress-bar">0%</div>
+                </div>
+            </fieldset>
+    </div>
+    <div class='form-group' title="Commands sequence to run (separate by semicolon)">
+            <label for='params'>Script:</label><br>
+            {{ form.params() }}
+    </div>
+    <div class='form-group' title="Output files to save (separated by semicolon)">
+            <label for='output_files'>Output files:</label><br>
+            {{ form.output_files() }}
+    </div>
+    <div class='form-group'>
+            <input type="reset" name="reset" value="Reset">
+            {{ form.submitbtn() }}
+    </div>
+</form>
+{% endblock %}
+
+{% block js_import %}
+<script type="text/javascript" src="static/app/js/uploadr.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+{% endblock %}
+
+
+
+
+
+
+
+
