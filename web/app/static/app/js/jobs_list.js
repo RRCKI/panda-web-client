@@ -24,7 +24,10 @@ $(document).ready(function() {
                 "aTargets":[1],
                 "mData": null,
                 "mRender": function( data, type, full) {
-                    return '<td><a href="http://144.206.233.185/job/'+data+'" class="monlink">'+data+'</a></td>';
+                    if ( data != undefined ) {
+                        return '<td><a href="http://144.206.233.187/lsst/job/'+data+'" class="monlink">'+data+'</a></td>';
+                    }
+                    return '<td>tobeset</td>'
                 }
             },
             { //CreationDate, ModificationDate

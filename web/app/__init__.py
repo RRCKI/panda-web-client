@@ -1,11 +1,9 @@
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask_restful import Api
 
 app = Flask(__name__)
 app.config.from_object('config')
-api = Api(app)
 db = SQLAlchemy(app)
 lm = LoginManager()
 lm.init_app(app)
@@ -33,3 +31,7 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
     app.logger.info('microblog startup')
+
+if __name__ == '__main__':
+    #app.run()
+    pass

@@ -11,6 +11,8 @@ from models import User, ROLE_USER, ROLE_ADMIN, Distributive, Job
 from datetime import datetime
 import os
 
+from userinterface import Client
+
 HOURS_LIMIT = 96
 DISPLAY_LIMIT = 6000
 
@@ -107,6 +109,7 @@ def job():
         job.modification_time = datetime.utcnow()
         db.session.add(job)
         db.session.commit()
+
         return redirect(url_for('jobs'))
 
     form.distr.choices = [(distr.id, "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
@@ -126,7 +129,7 @@ def upload():
         is_ajax = True
 
     # Target folder for these uploads.
-    target = os.path.join(app.config['UPLOAD_FOLDER'], "uploads/%s" % upload_key)
+    target = os.path.join(app.config['UPLOAD_FOLDER'], upload_key)
     try:
         os.mkdir(target)
     except:
@@ -139,7 +142,7 @@ def upload():
 
     for upload in request.files.getlist("file"):
         filename = upload.filename.rsplit("/")[0]
-        destination = "/".join([target, filename])
+        destination = os.path.join(target, filename)
         print "Accept incoming file:", filename
         print "Save it to:", destination
         upload.save(destination)
@@ -178,7 +181,26 @@ def jobs_list():
     hours_limit = session.get('hours_limit', HOURS_LIMIT)
     display_limit = session.get('display_limit', DISPLAY_LIMIT)
 
-    jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id)
+    # show users jobs
+    jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id).limit(display_limit)
+
+    ids = []
+    for job in jobs:
+        if job.pandaid and job.status not in ['finished', 'failed', 'canceled']:
+            ids.append(job.pandaid)
+
+    # get status update
+    if len(ids) > 0:
+        s, o = Client.getJobStatus(ids)
+        for job in jobs:
+            if job.pandaid in ids:
+                for obj in o:
+                    if obj.PandaID == job.pandaid:
+                        job.status = obj.jobStatus
+                        db.session.add(job)
+        db.session.commit()
+
+    # prepare json
     jobs_o = []
     for job in jobs:
         job_o = {}
@@ -196,6 +218,4 @@ def jobs_list():
     data = {}
     data['data'] = jobs_o
 
-    print hours_limit
-    print display_limit
     return json.dumps(data)
