@@ -1,17 +1,19 @@
 import os
 import logging
-from nrckiclient import basedir, config
+
+from common import client_config
 
 # setup logger
 _formatter = logging.Formatter('%(asctime)s %(name)-12s: %(levelname)-8s %(message)s')
 
 class NrckiLogger:
     def __init__(self):
-        self.logdir = os.path.join(basedir, config['LOG_DIR'])
+        print client_config.basedir
+        self.logdir = os.path.join(client_config.basedir, client_config.LOG_DIR)
 
     def getLogger(self, name):
         _logger = logging.getLogger(name)
-        hdlr = logging.FileHandler(os.path.join(self.logdir, 'webclient-%s.log' % name))
+        hdlr = logging.FileHandler(os.path.join(self.logdir, 'nrckiclient-%s.log' % name))
         formatter = logging.Formatter('%(asctime)s %(name)s [%(levelname)s]: %(message)s')
         hdlr.setFormatter(formatter)
         _logger.addHandler(hdlr)

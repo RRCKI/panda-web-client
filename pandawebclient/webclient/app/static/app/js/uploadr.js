@@ -97,7 +97,7 @@ function doUpload() {
             else {
                 var uuid = data.msg;
                 var oForm = document.getElementById('upload-form');
-                oForm.elements["ftoken"].value = "local:" + uuid;
+                oForm.elements["container"].value = uuid;
                 oForm.submit()
             }
         },

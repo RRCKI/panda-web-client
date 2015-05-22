@@ -1,6 +1,6 @@
 import pika
 import json
-from ..common.NrckiLogger import NrckiLogger
+from common.NrckiLogger import NrckiLogger
 _logger = NrckiLogger().getLogger("MQ")
 
 

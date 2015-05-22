@@ -1,4 +1,4 @@
-from ..common.NrckiLogger import NrckiLogger
+from common.NrckiLogger import NrckiLogger
 
 _logger = NrckiLogger().getLogger("UserIF")
 
@@ -6,12 +6,12 @@ class UserIF:
     def __init__(self):
         pass
 
-    def sendJob(req, message):
+    def sendJob(req, data):
         from mq.MQ import MQ
         routing_key = 'method.sendjob'
 
         mq = MQ(host='localhost', exchange='lsm')
-        mq.sendMessage(message, routing_key)
+        mq.sendMessage(data, routing_key)
 
     def getJobStatus(self, ids):
         import userinterface.Client as Client
@@ -55,8 +55,8 @@ class UserIF:
 userIF = UserIF()
 del UserIF
 
-def senbJob(req, params):
-    userIF.sendjob(params)
+def senbJob(req, data):
+    userIF.sendjob(data)
 
 def getJobStatus(req, ids):
     userIF.getJobStatus(ids)

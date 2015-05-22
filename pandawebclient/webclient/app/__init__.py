@@ -1,13 +1,16 @@
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.admin import Admin
+import os
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object('app.config')
 db = SQLAlchemy(app)
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
+adm= Admin(app, name='WEBPANDA - Admin')
 
 from models import User, AnonymousUser
 
@@ -21,11 +24,12 @@ def load_user(id):
 
 from app import views
 from app import apis
+from app import admin
 
 if not app.debug:
     import logging
     from logging.handlers import RotatingFileHandler
-    file_handler = RotatingFileHandler('../log/panda-web-client.log', 'a', 1 * 1024 * 1024, 10)
+    file_handler = RotatingFileHandler(os.path.join(app.config['BASE_DIR'], app.config['LOG_DIR'], 'webclient.log'), 'a', 1 * 1024 * 1024, 10)
     file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)

@@ -38,7 +38,7 @@ class User(UserMixin, db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return '<User %r>' % (self.username)
+        return '<User name=%s>' % (self.username)
 
 class AnonymousUser():
     id = 0
@@ -70,6 +70,9 @@ class Distributive(db.Model):
     jobs = db.relationship('Job',
         backref=db.backref('distr', lazy='joined'), lazy='dynamic')
 
+    def __repr__(self):
+        return '<Distributive id=%s>' % self.id
+
 class Job(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
@@ -78,10 +81,41 @@ class Job(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     distr_id = db.Column(db.Integer, db.ForeignKey('distr.id'))
     params = db.Column(db.String(1000))
-    ifiles = db.Column(db.String(1000))
-    ofiles = db.Column(db.String(1000))
+    container_id = db.Column(db.Integer, db.ForeignKey('containers.id'))
     creation_time = db.Column(db.DateTime)
     modification_time = db.Column(db.DateTime)
 
     def __repr__(self):
-        return '<Job %s>' % self.id
+        return '<Job id=%s>' % self.id
+
+catalog = db.Table('catalog',
+    db.Column('container_id', db.Integer, db.ForeignKey('containers.id')),
+    db.Column('file_id', db.Integer, db.ForeignKey('files.id'))
+)
+
+class Container(db.Model):
+    __tablename__ = 'containers'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String(36))
+    jobs = db.relationship('Job',
+        backref=db.backref('container', lazy='joined'), lazy='dynamic')
+    files = db.relationship('File', secondary=catalog,
+        backref=db.backref('containers', lazy='joined'), lazy='dynamic')
+
+    def __repr__(self):
+        return '<Container id=%s>' % self.id
+
+class File(db.Model):
+    __tablename__ = 'files'
+    id = db.Column(db.Integer, primary_key=True)
+    guid = db.Column(db.String(36))
+    type = db.Column(db.String(20)) #input/output
+    se = db.Column(db.String(20)) #grid/dropbox/local
+    lfn = db.Column(db.String(200)) #local file name
+    token = db.Column(db.String(200)) #string of params to get file
+    status = db.Column(db.String(20)) #ready/transfer
+
+    def __repr__(self):
+        return '<File id=%s>' % self.id
+
+

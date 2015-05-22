@@ -3,11 +3,11 @@ import glob
 import json
 from uuid import uuid4
 
-from flask import render_template, flash, redirect, session, url_for, request, g, abort, jsonify
+from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db, lm
+from app import app, db
 from forms import LoginForm, RegisterForm, NewJobForm
-from models import User, ROLE_USER, ROLE_ADMIN, Distributive, Job
+from models import User, Distributive, Job, Container, File
 from datetime import datetime
 import os
 
@@ -97,22 +97,38 @@ def job():
     """Handle the definition of a job."""
     form = NewJobForm()
     if request.method == 'POST':
+        distr_name, distr_release = form.distr.data.split(':')
+        distr = Distributive.query.filter_by(name=distr_name, release=int(distr_release)).first()
+
+        container_guid = form.container.data
+        container = Container.query.filter_by(guid=container_guid).first()
+
         job = Job()
         job.pandaid = None
         job.status = 'pending'
         job.owner = g.user
-        job.distr_id = form.distr.data
         job.params = form.params.data
-        job.ifiles = form.ftoken.data
-        job.ofiles = form.output_files.data
+        job.distr = distr
+        job.container = container
         job.creation_time = datetime.utcnow()
         job.modification_time = datetime.utcnow()
         db.session.add(job)
         db.session.commit()
 
+        data = {}
+        data['id'] = job.id
+        message = json.dumps(data)
+
+        from mq.MQ import MQ
+        routing_key = app.config['MQ_JOBKEY']
+
+        mq = MQ(host=app.config['MQ_HOST'], exchange=app.config['MQ_EXCHANGE'])
+        print 'mq.sendMessage(message, routing_key)'
+        #mq.sendMessage(message, routing_key)
+
         return redirect(url_for('jobs'))
 
-    form.distr.choices = [(distr.id, "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
+    form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
     return render_template("pandaweb/jobs_new.html", form=form)
 
 @app.route("/upload", methods=['POST'])
@@ -120,8 +136,8 @@ def job():
 def upload():
     form = request.form
 
-    # Create a unique "session ID" for this particular batch of uploads.
-    upload_key = str(uuid4())
+    # Create a unique container quid for this particular batch of uploads.
+    guid = str(uuid4())
 
     # Is the upload using Ajax, or a direct POST by the form?
     is_ajax = False
@@ -129,7 +145,7 @@ def upload():
         is_ajax = True
 
     # Target folder for these uploads.
-    target = os.path.join(app.config['UPLOAD_FOLDER'], upload_key)
+    target = os.path.join(app.config['UPLOAD_FOLDER'], guid)
     try:
         os.mkdir(target)
     except:
@@ -140,6 +156,11 @@ def upload():
 
     input_files = []
 
+    container = Container()
+    container.guid = guid
+    db.session.add(container)
+    db.session.commit()
+
     for upload in request.files.getlist("file"):
         filename = upload.filename.rsplit("/")[0]
         destination = os.path.join(target, filename)
@@ -148,12 +169,23 @@ def upload():
         upload.save(destination)
         if os.path.isfile(destination):
             input_files.append(destination)
+            file = File()
+            file.guid = str(uuid4())
+            file.type = 'input'
+            file.se = 'local'
+            file.lfn = destination
+            file.token = ''
+            file.status = 'ready'
+            db.session.add(file)
+            db.session.commit()
+            container.files.append(file)
+            db.session.add(container)
+            db.session.commit()
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
 
-
     if is_ajax:
-        return ajax_response(True, upload_key)
+        return ajax_response(True, guid)
     else:
         return redirect(url_for("upload_success"))
 

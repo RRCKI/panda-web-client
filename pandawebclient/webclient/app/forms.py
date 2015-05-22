@@ -2,7 +2,7 @@ from urlparse import urlparse, urljoin
 
 from flask.ext.wtf import Form
 from flask import url_for, redirect, request
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField, IntegerField
 from wtforms.validators import Required, EqualTo, Length
 from models import User
 
@@ -57,10 +57,15 @@ class RegisterForm(RedirectForm):
         return True
 
 class NewJobForm(RedirectForm):
-    distr = SelectField(u'Distributive', coerce=int)
+    distr = SelectField(u'Distributive', coerce=str)
     params = TextAreaField(u'Parameters', validators=[Required(), Length(1, 1000)])
-    output_files = TextAreaField(u'Output files', validators=[Required(), Length(1, 200)])
-    ftoken = HiddenField(default="")
+    container = HiddenField(default="")
     submitbtn = SubmitField(u'Send job')
+
+
+class NewDistrForm(RedirectForm):
+    name = StringField('Name', validators=[Required(), Length(1, 64)])
+    version = StringField('Version', validators=[Required(), Length(1, 64)])
+    release = IntegerField('Release')
 
 
