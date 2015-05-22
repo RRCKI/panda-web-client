@@ -64,3 +64,5 @@ db/
 uploads/
 bootstrap/
 .idea/
+setup.sh.OLD
+setup.sh
