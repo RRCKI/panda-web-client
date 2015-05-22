@@ -30,7 +30,7 @@ class MQ:
         connection.close()
 
     def startSendJobConsumer(self):
-        from ..ui.JobMaster import JobMaster
+        from ui.JobMaster import JobMaster
 
         binding_keys = ['method.sendjob']
 
@@ -51,11 +51,8 @@ class MQ:
                                routing_key=key)
 
         def callback(ch, method, properties, body):
-            _logger.debug('startSendJobConsumer callback start')
             data = json.loads(body)
-            _logger.debug('data = ' + str(data))
             JobMaster().run(data)
-            _logger.debug('startSendJobConsumer callback finish')
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         channel.basic_qos(prefetch_count=1)
