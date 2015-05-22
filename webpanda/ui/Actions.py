@@ -2,8 +2,8 @@ import commands
 import os
 import subprocess
 import shutil
-from ..common.NrckiLogger import NrckiLogger
-from ..ddm.DDM import SEFactory
+from common.NrckiLogger import NrckiLogger
+from ddm.DDM import SEFactory
 from nrckiclient import config, basedir
 
 DATA_DIR = os.path.join(basedir, config['DATA_DIR'])

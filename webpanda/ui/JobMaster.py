@@ -3,8 +3,8 @@ import time
 import re
 from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
-from ..common.NrckiLogger import NrckiLogger
-from ..ui.Actions import movedata
+from common.NrckiLogger import NrckiLogger
+from ui.Actions import movedata
 import userinterface.Client as Client
 import MySQLdb
 from nrckiclient import config
@@ -41,18 +41,18 @@ class JobMaster:
         site = 'ANALY_RRC-KI-HPC'
         scope = config['DEFAULT_SCOPE']
 
-        distributive = data['distributive']
-        release = data['release']
-        parameters = data['parameters']
-        input_type = data['input_type']
-        input_params = data['input_params']
-        input_files = data['input_files']
-        output_type = data['output_type']
-        output_params = data['output_params']
-        output_files = data['output_files']
-
-        jobid = data['jobid']
+        jobid = data['id']
         _logger.debug('Jobid: ' + str(jobid))
+
+        distributive = ''
+        release = 0
+        parameters = ''
+        input_type = ''
+        input_params = ''
+        input_files = ''
+        output_type = ''
+        output_params = ''
+        output_files = ''
 
         job = JobSpec()
         job.jobDefinitionID = int(time.time()) % 10000

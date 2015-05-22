@@ -1,8 +1,8 @@
 import os
 import subprocess
 import errno
-from ..common.NrckiLogger import NrckiLogger
-from ..common.utils import adler32
+from common.NrckiLogger import NrckiLogger
+from common.utils import adler32
 from nrckiclient import basedir
 
 _logger = NrckiLogger().getLogger("GridSEPlugin")

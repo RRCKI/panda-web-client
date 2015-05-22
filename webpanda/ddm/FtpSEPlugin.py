@@ -1,6 +1,6 @@
 import os
 import ftplib
-from ..common.NrckiLogger import NrckiLogger
+from common.NrckiLogger import NrckiLogger
 
 _logger = NrckiLogger().getLogger("DDM")
 

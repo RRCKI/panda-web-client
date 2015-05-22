@@ -1,5 +1,5 @@
 import subprocess
-from ..common.NrckiLogger import NrckiLogger
+from common.NrckiLogger import NrckiLogger
 from nrckiclient import config
 
 _logger = NrckiLogger().getLogger("DDM")
