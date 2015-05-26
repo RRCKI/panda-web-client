@@ -51,12 +51,19 @@ class JobMaster:
         for f in input_files:
             hasReplica = False
             replicas = f.replicas
-            for r in replicas:
-                if r.se == client_config.DEFAULT_SE:
-                    if r.status == 'ready':
-                        hasReplica = True
-                    elif r.status == 'transferring':
-                        pass
+            if len(replicas) != 0:
+                for r in replicas:
+                    if r.se == client_config.DEFAULT_SE:
+                        if r.status == 'ready':
+                            hasReplica = True
+                        elif r.status == 'transferring':
+                            pass
+                if not hasReplica:
+                    #TODO Send message to clone replica
+                    pass
+            else:
+                #TODO Send message to make replica
+                pass
             if not hasReplica:
                 isOK = False
                 # Send message to make replica
@@ -86,8 +93,6 @@ class JobMaster:
         pandajob.prodDBlock = "%s:%s.%s" % (scope, scope, job.jobName)
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
-
-        params = {}
 
         for file in input_files:
             fileIT = FileSpec()
