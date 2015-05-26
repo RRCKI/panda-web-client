@@ -108,14 +108,30 @@ class Container(db.Model):
 class File(db.Model):
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True)
+    scope = db.Column(db.String(64))
+    attemptn = db.Column(db.Integer, default=0)
     guid = db.Column(db.String(36))
     type = db.Column(db.String(20)) #input/output
     se = db.Column(db.String(20)) #grid/dropbox/local
     lfn = db.Column(db.String(200)) #local file name
     token = db.Column(db.String(200)) #string of params to get file
     status = db.Column(db.String(20)) #ready/transfer
+    replicas = db.relationship('Replica',
+        backref=db.backref('original', lazy='joined'), lazy='dynamic')
 
     def __repr__(self):
         return '<File id=%s>' % self.id
+
+class Replica(db.Model):
+    __tablename__ = 'replicas'
+    id = db.Column(db.Integer, primary_key=True)
+    original_id = db.Column(db.Integer, db.ForeignKey('files.id'))
+    se = db.Column(db.String(20))
+    status = db.Column(db.String(20)) #ready/transfer
+    lfn = db.Column(db.String(200)) #local file name
+
+    def __repr__(self):
+        return '<Replica id=%s>' % self.id
+
 
 

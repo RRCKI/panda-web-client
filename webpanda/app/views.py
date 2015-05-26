@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+import commands
 import glob
 import json
-from uuid import uuid4
 
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
 from flask.ext.login import login_user, logout_user, current_user, login_required
@@ -137,7 +137,7 @@ def upload():
     form = request.form
 
     # Create a unique container quid for this particular batch of uploads.
-    guid = str(uuid4())
+    guid = commands.getoutput('uuidgen')
 
     # Is the upload using Ajax, or a direct POST by the form?
     is_ajax = False
@@ -162,25 +162,36 @@ def upload():
     db.session.commit()
 
     for upload in request.files.getlist("file"):
+        # Define lfn
         filename = upload.filename.rsplit("/")[0]
         destination = os.path.join(target, filename)
-        print "Accept incoming file:", filename
-        print "Save it to:", destination
         upload.save(destination)
         if os.path.isfile(destination):
+            # Save metadata
             input_files.append(destination)
             file = File()
-            file.guid = str(uuid4())
+            file.scope = g.user.username
+            file.guid = commands.getoutput('uuidgen')
             file.type = 'input'
             file.se = 'local'
             file.lfn = destination
             file.token = ''
-            file.status = 'ready'
+            file.status = 'registered'
             db.session.add(file)
             db.session.commit()
             container.files.append(file)
             db.session.add(container)
             db.session.commit()
+
+            # Create MQ request
+            data = {}
+            data['fileid'] = file.id
+            data['params'] = {'dir': container.guid}
+            data['se'] = app.config['DEFAULT_SE']
+            message = json.dumps(data)
+            print 'mq.sendMessage(message, routing_key)'
+            print message
+            #mq.sendMessage(message, routing_key)
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
 

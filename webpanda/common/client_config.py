@@ -4,7 +4,7 @@ import os
 import sys
 import re
 
-basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 tmpConf = ConfigObj(os.path.join(basedir, 'config', 'webpanda.cfg'))
 
 # expand all values

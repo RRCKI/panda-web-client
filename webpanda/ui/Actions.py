@@ -4,9 +4,9 @@ import subprocess
 import shutil
 from common.NrckiLogger import NrckiLogger
 from ddm.DDM import SEFactory
-from nrckiclient import config, basedir
+from common import client_config
 
-DATA_DIR = os.path.join(basedir, config['DATA_DIR'])
+DATA_DIR = os.path.join(client_config.basedir, client_config.DATA_DIR)
 
 _logger = NrckiLogger().getLogger("Actions")
 

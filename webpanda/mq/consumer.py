@@ -1,6 +1,7 @@
 import sys
 from common.NrckiLogger import NrckiLogger
 from mq.MQ import MQ
+from common import client_config
 _logger = NrckiLogger().getLogger("comsumer")
 
 if __name__ == '__main__':
@@ -9,6 +10,10 @@ if __name__ == '__main__':
 
     keys = sys.argv[1:]
 
-    if len(keys) == 1 and keys[0] == 'method.sendjob':
-        mq = MQ(host='localhost', exchange='lsm')
-        mq.startSendJobConsumer()
+    if len(keys) == 1 and keys[0] == client_config.MQ_JOBKEY:
+        mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
+        mq.startJobConsumer()
+
+    if len(keys) == 1 and keys[0] == client_config.MQ_FILEKEY:
+        mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
+        mq.startFileConsumer()
