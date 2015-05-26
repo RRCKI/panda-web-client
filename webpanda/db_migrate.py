@@ -1,10 +1,11 @@
 import imp
 
 from migrate.versioning import api
+import os
 from app import app, db
 
 SQLALCHEMY_DATABASE_URI = app.config['SQLALCHEMY_DATABASE_URI']
-SQLALCHEMY_MIGRATE_REPO = app.config['SQLALCHEMY_MIGRATE_REPO']
+SQLALCHEMY_MIGRATE_REPO = os.path.join(app.config['BASE_DIR'], app.config['SQLALCHEMY_MIGRATE_REPO'])
 
 migration = SQLALCHEMY_MIGRATE_REPO + '/versions/%03d_migration.py' % (api.db_version(SQLALCHEMY_DATABASE_URI, SQLALCHEMY_MIGRATE_REPO) + 1)
 tmp_module = imp.new_module('old_model')

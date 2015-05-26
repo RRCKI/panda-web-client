@@ -31,7 +31,6 @@ def upload1API():
     return make_response(jsonify({'guid': guid}), 200)
 
 @app.route('/api/v0.1/upload/<guid>', methods=['POST'])
-@login_required
 def upload2API(guid):
     cont = Container.query.filter_by(guid = guid).first()
 
@@ -63,9 +62,7 @@ def upload2API(guid):
             data['params'] = {'dir': cont.guid}
             data['se'] = app.config['DEFAULT_SE']
             message = json.dumps(data)
-            print 'mq.sendMessage(message, routing_key)'
-            print message
-            #mq.sendMessage(message, routing_key)
+            mq.sendMessage(message, routing_key)
         return make_response(jsonify({'status': 'Success'}), 200)
 
     return make_response(jsonify({'error': 'Not found'}), 404)

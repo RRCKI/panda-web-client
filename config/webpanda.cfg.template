@@ -15,6 +15,7 @@ HPC_DATADIR = ''            # FIXME
 
 DEFAULT_TRF = 'tobeset'
 DEFAULT_SCOPE = 'tobeset'
+DEFAULT_SE = ''
 
 CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'
@@ -27,3 +28,5 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
 MQ_HOST = ''
 MQ_EXCHANGE = ''
+MQ_FILEKEY = ''
+MQ_FILEKEY = ''
