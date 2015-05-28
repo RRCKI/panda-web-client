@@ -72,6 +72,7 @@ def get_user(username, password, *args, **kwargs):
     return None
 
 @app.route('/oauth/authorize', methods=['GET', 'POST'])
+@login_required
 @oauth.authorize_handler
 def authorize(*args, **kwargs):
     if request.method == 'GET':

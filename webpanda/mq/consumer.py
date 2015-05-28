@@ -10,10 +10,10 @@ if __name__ == '__main__':
 
     keys = sys.argv[1:]
 
-    if len(keys) == 1 and keys[0] == client_config.MQ_JOBKEY:
+    if len(keys) == 1 and keys[0] == 'jobs':
         mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
         mq.startJobConsumer()
 
-    if len(keys) == 1 and keys[0] == client_config.MQ_FILEKEY:
+    if len(keys) == 1 and keys[0] == 'files':
         mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
         mq.startFileConsumer()

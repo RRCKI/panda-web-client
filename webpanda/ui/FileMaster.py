@@ -18,8 +18,7 @@ class FileMaster:
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
             toParams = {'dest': dest}
-            # ec, uploaded_input_files = movedata([], [file.lfn], file.se, fromParams, 'hpc', toParams)
-            ec = 0
+            ec, uploaded_input_files = movedata([], [file.lfn], file.se, fromParams, 'hpc', toParams)
             if ec == 0:
                 replica = Replica()
                 replica.se = se
@@ -33,7 +32,7 @@ class FileMaster:
         s.close()
         return ec
 
-    def cloneReplica(self, replicaid, se, params):
+    def cloneReplica(self, replicaid, se):
         pass
 
 def mqCloneReplica(replicaid, se):

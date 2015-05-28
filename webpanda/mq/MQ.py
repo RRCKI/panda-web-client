@@ -34,7 +34,7 @@ class MQ:
     def startJobConsumer(self):
         from ui.JobMaster import JobMaster
 
-        binding_keys = [client_config.MQ_JOBKEY]
+        binding_keys = [client_config.MQ_JOBKEY + '.#']
 
         channel, connection = self.getClient(self.host)
 
@@ -66,7 +66,7 @@ class MQ:
     def startFileConsumer(self):
         from ui.FileMaster import FileMaster
 
-        binding_keys = [client_config.MQ_FILEKEY]
+        binding_keys = [client_config.MQ_FILEKEY + '.#']
 
         channel, connection = self.getClient(self.host)
 

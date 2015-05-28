@@ -8,7 +8,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import mqCloneReplica, mqMakeReplica
+from ui.FileMaster import mqCloneReplica, mqMakeReplica, FileMaster
 
 _logger = NrckiLogger().getLogger("JobMaster")
 
@@ -38,6 +38,8 @@ class JobMaster:
         return o
 
     def run(self, data):
+        fm = FileMaster()
+
         # Initialize db
         s = DB().getSession()
 
@@ -47,30 +49,23 @@ class JobMaster:
         job = s.query(Job).filter(Job.id == jobid).one()
         cont = s.query(Container).filter(Container.id == job.container).one()
         input_files = cont.files
-        owner = job.owner
 
         ready_replicas = {}
-        for f in input_files:
-            replicas = f.replicas
+        for file in input_files:
+            replicas = file.replicas
             if len(replicas) != 0:
                 for r in replicas:
                     if r.se == client_config.DEFAULT_SE:
                         if r.status == 'ready':
-                            ready_replicas[f.guid] = r
+                            ready_replicas[file.guid] = r
                         elif r.status == 'transferring':
                             pass
-                if not ready_replicas[f.guid]:
-                    # Send message to clone replica
-                    mqCloneReplica(replicas[0].id, client_config.DEFAULT_SE)
+                if not ready_replicas[file.guid]:
+                    # Clone replica from existing
+                    fm.cloneReplica(replicas[0].id, client_config.DEFAULT_SE)
             else:
-                # Send message to make replica
-                mqMakeReplica(f.id, client_config.DEFAULT_SE)
-
-        if len(ready_replicas) != len(input_files):
-            # Send message to delayed job start
-            return
-
-
+                # Make replica of registered file
+                fm.makeReplica(file.id, client_config.DEFAULT_SE)
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
         destName    = client_config.DEFAULT_SE
@@ -97,11 +92,11 @@ class JobMaster:
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
         for file in input_files:
-            dataset = "%s:%s.%s" % (scope, scope, job.jobName)
+            dataset = "%s:%s" % (scope, file.guid)
             fileIT = FileSpec()
             fileIT.lfn = file
-            fileIT.dataset = pandajob.prodDBlock
-            fileIT.prodDBlock = pandajob.prodDBlock
+            fileIT.dataset = dataset
+            fileIT.prodDBlock = dataset
             fileIT.type = 'input'
             fileIT.scope = scope
             fileIT.status = 'ready'
