@@ -2,6 +2,7 @@ from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin
+from flask_oauthlib.provider import OAuth2Provider
 import os
 
 app = Flask(__name__)
@@ -10,9 +11,11 @@ db = SQLAlchemy(app)
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
-adm= Admin(app, name='WEBPANDA - Admin')
+adm = Admin(app, name='WEBPANDA - Admin')
+oauth = OAuth2Provider(app)
 
 from models import User, AnonymousUser
+#from models_oauth import *
 
 lm.anonymous_user = AnonymousUser
 @lm.user_loader
@@ -23,6 +26,7 @@ def load_user(id):
 
 
 from app import views
+from app import views_oauth
 from app import apis
 from app import admin
 

@@ -5,6 +5,7 @@ import json
 from flask import jsonify, request, make_response, g
 from flask_login import login_required
 from models import Distributive, Container, File
+from ui.FileMaster import mqMakeReplica
 
 
 @app.route('/api/v0.1/sw', methods=['GET'])
@@ -35,10 +36,6 @@ def upload2API(guid):
     cont = Container.query.filter_by(guid = guid).first()
 
     if cont != None:
-        from mq.MQ import MQ
-        routing_key = app.config['MQ_FILEKEY']
-        mq = MQ(host=app.config['MQ_HOST'], exchange=app.config['MQ_EXCHANGE'])
-
         content = request.data
         data = json.loads(content)
         for f in data['files']:
@@ -57,12 +54,7 @@ def upload2API(guid):
             db.session.commit()
 
             # Create MQ request
-            data = {}
-            data['fileid'] = file.id
-            data['params'] = {'dir': cont.guid}
-            data['se'] = app.config['DEFAULT_SE']
-            message = json.dumps(data)
-            mq.sendMessage(message, routing_key)
+            mqMakeReplica(file.id, app.config['DEFAULT_SE'])
         return make_response(jsonify({'status': 'Success'}), 200)
 
     return make_response(jsonify({'error': 'Not found'}), 404)

@@ -10,6 +10,8 @@ from forms import LoginForm, RegisterForm, NewJobForm
 from models import User, Distributive, Job, Container, File
 from datetime import datetime
 import os
+from ui.FileMaster import mqMakeReplica
+from ui.JobMaster import mqSendJob
 
 from userinterface import Client
 
@@ -115,16 +117,8 @@ def job():
         db.session.add(job)
         db.session.commit()
 
-        data = {}
-        data['id'] = job.id
-        message = json.dumps(data)
-
-        from mq.MQ import MQ
-        routing_key = app.config['MQ_JOBKEY']
-
-        mq = MQ(host=app.config['MQ_HOST'], exchange=app.config['MQ_EXCHANGE'])
-        print 'mq.sendMessage(message, routing_key)'
-        #mq.sendMessage(message, routing_key)
+        # Send message to start job
+        mqSendJob(job.id)
 
         return redirect(url_for('jobs'))
 
@@ -184,14 +178,7 @@ def upload():
             db.session.commit()
 
             # Create MQ request
-            data = {}
-            data['fileid'] = file.id
-            data['params'] = {'dir': container.guid}
-            data['se'] = app.config['DEFAULT_SE']
-            message = json.dumps(data)
-            print 'mq.sendMessage(message, routing_key)'
-            print message
-            #mq.sendMessage(message, routing_key)
+            mqMakeReplica(file.id, app.config['DEFAULT_SE'])
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
 

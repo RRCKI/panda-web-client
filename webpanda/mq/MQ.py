@@ -88,9 +88,8 @@ class MQ:
             data = json.loads(body)
             fileid = data['fileid']
             se = data['se']
-            params = data['params']
             #TODO message checking
-            FileMaster().makeReplica(fileid, se, params)
+            FileMaster().makeReplica(fileid, se)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         channel.basic_qos(prefetch_count=1)

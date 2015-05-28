@@ -1,13 +1,15 @@
 import commands
+import json
 import time
-import re
+from mq.MQ import MQ
 from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
 from common.NrckiLogger import NrckiLogger
-from ui.Actions import movedata
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
+from ui.FileMaster import mqCloneReplica, mqMakeReplica
+
 _logger = NrckiLogger().getLogger("JobMaster")
 
 class JobMaster:
@@ -47,26 +49,26 @@ class JobMaster:
         input_files = cont.files
         owner = job.owner
 
-        isOK = True
+        ready_replicas = {}
         for f in input_files:
-            hasReplica = False
             replicas = f.replicas
             if len(replicas) != 0:
                 for r in replicas:
                     if r.se == client_config.DEFAULT_SE:
                         if r.status == 'ready':
-                            hasReplica = True
+                            ready_replicas[f.guid] = r
                         elif r.status == 'transferring':
                             pass
-                if not hasReplica:
-                    #TODO Send message to clone replica
-                    pass
+                if not ready_replicas[f.guid]:
+                    # Send message to clone replica
+                    mqCloneReplica(replicas[0].id, client_config.DEFAULT_SE)
             else:
-                #TODO Send message to make replica
-                pass
-            if not hasReplica:
-                isOK = False
                 # Send message to make replica
+                mqMakeReplica(f.id, client_config.DEFAULT_SE)
+
+        if len(ready_replicas) != len(input_files):
+            # Send message to delayed job start
+            return
 
 
 
@@ -95,6 +97,7 @@ class JobMaster:
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
         for file in input_files:
+            dataset = "%s:%s.%s" % (scope, scope, job.jobName)
             fileIT = FileSpec()
             fileIT.lfn = file
             fileIT.dataset = pandajob.prodDBlock
@@ -141,5 +144,25 @@ class JobMaster:
 
         return 0
 
+
+def mqSendJob(jobid):
+    routing_key = client_config.MQ_JOBKEY + '.now'
+    mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
+    # Create MQ request
+    data = {}
+    data['id'] = jobid
+    message = json.dumps(data)
+    print '%s: %s' % ('mqSendJob', jobid)
+    mq.sendMessage(message, routing_key)
+
+def mqSendJobDelayed(jobid):
+    routing_key = client_config.MQ_JOBKEY + '.delayed'
+    mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
+    # Create MQ request
+    data = {}
+    data['id'] = jobid
+    message = json.dumps(data)
+    print '%s: %s' % ('mqSendJobDelayed', jobid)
+    mq.sendMessage(message, routing_key)
 
 

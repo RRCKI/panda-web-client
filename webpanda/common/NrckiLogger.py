@@ -8,7 +8,6 @@ _formatter = logging.Formatter('%(asctime)s %(name)-12s: %(levelname)-8s %(messa
 
 class NrckiLogger:
     def __init__(self):
-        print client_config.basedir
         self.logdir = os.path.join(client_config.basedir, client_config.LOG_DIR)
 
     def getLogger(self, name):
