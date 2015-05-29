@@ -2,12 +2,6 @@ DATA_DIR = 'data'
 TMP_DIR = 'tmp'
 LOG_DIR = 'log'
 
-DB_HOST = '127.0.0.1'       # FIXME
-DB_DATABASE = 'db1'         # FIXME
-DB_PORT = 3306              # FIXME
-DB_USERNAME = 'user'        # FIXME
-DB_PASSWORD = 'pass'        # FIXME
-
 HPC_KEY = ''                # FIXME
 HPC_HOST = ''               # FIXME
 HPC_USER = ''               # FIXME
@@ -28,7 +22,7 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024
 
 MQ_HOST = ''
 MQ_EXCHANGE = ''
-MQ_FILEKEY = ''
+MQ_JOBKEY = ''
 MQ_FILEKEY = ''
 
 OAUTH2_PROVIDER_ERROR_URI = '/oauth/errors'
