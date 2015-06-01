@@ -11,6 +11,7 @@ class FileMaster:
         self.table_files = 'files'
 
     def makeReplica(self, fileid, se):
+
         s = DB().getSession()
         file = s.query(File).filter(File.id == fileid).one()
         print file.id
@@ -18,7 +19,7 @@ class FileMaster:
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
             toParams = {'dest': dest}
-            ec, uploaded_input_files = movedata([], [file.lfn], file.se, fromParams, 'hpc', toParams)
+            ec, uploaded_input_files = movedata({}, [file.lfn], file.se, fromParams, 'hpc', toParams)
             if ec == 0:
                 replica = Replica()
                 replica.se = se
@@ -34,6 +35,14 @@ class FileMaster:
 
     def cloneReplica(self, replicaid, se):
         pass
+
+def cloneReplica(replicaid, se):
+    fm = FileMaster()
+    return fm.cloneReplica(replicaid, se)
+
+def makeReplica(fileid, se):
+    fm = FileMaster()
+    return fm.makeReplica(fileid, se)
 
 def mqCloneReplica(replicaid, se):
     routing_key = client_config.MQ_FILEKEY + '.clone'

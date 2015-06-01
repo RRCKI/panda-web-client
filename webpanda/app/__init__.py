@@ -41,5 +41,4 @@ if not app.debug:
     app.logger.info('microblog startup')
 
 if __name__ == '__main__':
-    #app.run()
-    pass
+    app.run()

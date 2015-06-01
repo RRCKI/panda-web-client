@@ -1,15 +1,15 @@
 import subprocess
 from common.NrckiLogger import NrckiLogger
-from nrckiclient import config
+from common import client_config
 
 _logger = NrckiLogger().getLogger("DDM")
 
 class HPCSEPlugin():
     def __init__(self, params=None):
-        self.key = config['HPC_KEY']
-        self.host = config['HPC_HOST']
-        self.user = config['HPC_USER']
-        self.datadir = config['HPC_DATADIR']
+        self.key = client_config.HPC_KEY
+        self.host = client_config.HPC_HOST
+        self.user = client_config.HPC_USER
+        self.datadir = client_config.HPC_DATADIR
 
     def get(self, src, dest):
         _logger.debug('HPC: Try to get file from %s to %s' % (src, dest))

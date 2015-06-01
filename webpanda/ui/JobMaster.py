@@ -8,7 +8,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import mqCloneReplica, mqMakeReplica, FileMaster
+from ui.FileMaster import cloneReplica, makeReplica
 
 _logger = NrckiLogger().getLogger("JobMaster")
 
@@ -16,12 +16,6 @@ class JobMaster:
     def __init__(self):
         self.jobList = []
         self.fileList = []
-        self.dbhost = client_config.DB_HOST
-        self.dbname = client_config.DB_DATABASE
-        self.dbport = client_config.DB_PORT
-        self.dbtimeout = 0
-        self.dbuser = client_config.DB_USERNAME
-        self.dbpasswd = client_config.DB_PASSWORD
         self.table_jobs = 'jobs'
 
 
@@ -38,8 +32,6 @@ class JobMaster:
         return o
 
     def run(self, data):
-        fm = FileMaster()
-
         # Initialize db
         s = DB().getSession()
 
@@ -47,13 +39,13 @@ class JobMaster:
         _logger.debug('Jobid: ' + str(jobid))
 
         job = s.query(Job).filter(Job.id == jobid).one()
-        cont = s.query(Container).filter(Container.id == job.container).one()
+        cont = job.container
         input_files = cont.files
 
         ready_replicas = {}
         for file in input_files:
             replicas = file.replicas
-            if len(replicas) != 0:
+            if replicas.count() != 0:
                 for r in replicas:
                     if r.se == client_config.DEFAULT_SE:
                         if r.status == 'ready':
@@ -62,10 +54,10 @@ class JobMaster:
                             pass
                 if not ready_replicas[file.guid]:
                     # Clone replica from existing
-                    fm.cloneReplica(replicas[0].id, client_config.DEFAULT_SE)
+                    cloneReplica(replicas[0].id, client_config.DEFAULT_SE)
             else:
                 # Make replica of registered file
-                fm.makeReplica(file.id, client_config.DEFAULT_SE)
+                makeReplica(file.id, client_config.DEFAULT_SE)
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
         destName    = client_config.DEFAULT_SE
@@ -87,7 +79,7 @@ class JobMaster:
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site
         pandajob.cloud = 'RU'
-        pandajob.prodDBlock = "%s:%s.%s" % (scope, scope, job.jobName)
+        pandajob.prodDBlock = "%s:%s.%s" % (scope, scope, pandajob.jobName)
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 

@@ -10,7 +10,7 @@ from forms import LoginForm, RegisterForm, NewJobForm
 from models import User, Distributive, Job, Container, File
 from datetime import datetime
 import os
-from ui.FileMaster import mqMakeReplica
+from ui.FileMaster import makeReplica
 from ui.JobMaster import mqSendJob
 
 from userinterface import Client
@@ -176,9 +176,6 @@ def upload():
             container.files.append(file)
             db.session.add(container)
             db.session.commit()
-
-            # Create MQ request
-            mqMakeReplica(file.id, app.config['DEFAULT_SE'])
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
 

@@ -5,7 +5,7 @@ from common.NrckiLogger import NrckiLogger
 from common.utils import adler32
 from nrckiclient import basedir
 
-_logger = NrckiLogger().getLogger("GridSEPlugin")
+_logger = NrckiLogger().getLogger("DDM")
 
 class GridSEPlugin():
     def __init__(self, params={}):

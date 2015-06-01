@@ -1,3 +1,7 @@
+from common.NrckiLogger import NrckiLogger
+
+_logger = NrckiLogger().getLogger("DDM")
+
 class SEFactory:
     def __init__(self):
         pass
@@ -32,7 +36,8 @@ class SEFactory:
                 se = SEPlugin()
         except Exception:
             print Exception.message
-
+            _logger('Unable to get %s instance: %s' % (label, str(Exception.message)))
+            return None
         return se
 
 class SEPlugin(object):
@@ -40,7 +45,9 @@ class SEPlugin(object):
         pass
 
     def get(self, src, dest, fsize, fsum):
+        _logger("SEPlugin.get not implemented")
         raise NotImplementedError("SEPlugin.get not implemented")
 
     def put(self, src, dest):
+        _logger("SEPlugin.put not implemented")
         raise NotImplementedError("SEPlugin.put not implemented")
