@@ -59,7 +59,6 @@ docs/_build/
 target/
 
 *.db
-db/
 *.cfg
 uploads/
 bootstrap/
