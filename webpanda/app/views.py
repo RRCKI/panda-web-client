@@ -182,7 +182,7 @@ def upload():
             return ajax_response(False, "Couldn't save file: %s" % target)
 
     if is_ajax:
-        return ajax_response(True, guid)
+        return ajax_response(True, cguid)
     else:
         return redirect(url_for("upload_success"))
 
