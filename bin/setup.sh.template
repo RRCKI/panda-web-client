@@ -1,3 +1,5 @@
+export X509_USER_PROXY=/tmp/x509up_u500
+export X509_CERT_DIR=/etc/grid-security/certificates
 export PYTHONPATH=$PYTHONPATH:$PANDACOMMON:$PANDASERVER:$WEBPANDA
 export PANDA_URL=http://PANDAHOST:25085/server/panda
 export PANDA_URL_SSL=https://PANDAHOST:25443/server/panda

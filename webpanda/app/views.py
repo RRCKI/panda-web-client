@@ -74,6 +74,8 @@ def register():
         user = User()
         user.username = username
         user.password = password
+        user.active = 0
+        user.role = 0
         db.session.add(user)
         db.session.commit()
         return redirect(url_for('login'))
@@ -131,33 +133,33 @@ def upload():
     form = request.form
 
     # Create a unique container quid for this particular batch of uploads.
-    guid = commands.getoutput('uuidgen')
+    cguid = commands.getoutput('uuidgen')
 
     # Is the upload using Ajax, or a direct POST by the form?
     is_ajax = False
     if form.get("__ajax", None) == "true":
         is_ajax = True
 
-    # Target folder for these uploads.
-    target = os.path.join(app.config['UPLOAD_FOLDER'], guid)
-    try:
-        os.mkdir(target)
-    except:
-        if is_ajax:
-            return ajax_response(False, "Couldn't create upload directory: %s" % target)
-        else:
-            return "Couldn't create upload directory: %s" % target
-
     input_files = []
 
     container = Container()
-    container.guid = guid
+    container.guid = cguid
     db.session.add(container)
     db.session.commit()
 
     for upload in request.files.getlist("file"):
         # Define lfn
         filename = upload.filename.rsplit("/")[0]
+        guid = commands.getoutput('uuidgen')
+        # Target folder for these uploads.
+        target = os.path.join(app.config['UPLOAD_FOLDER'], guid)
+        try:
+            os.mkdir(target)
+        except:
+            if is_ajax:
+                return ajax_response(False, "Couldn't create upload directory: %s" % target)
+            else:
+                return "Couldn't create upload directory: %s" % target
         destination = os.path.join(target, filename)
         upload.save(destination)
         if os.path.isfile(destination):
@@ -165,7 +167,7 @@ def upload():
             input_files.append(destination)
             file = File()
             file.scope = g.user.username
-            file.guid = commands.getoutput('uuidgen')
+            file.guid = guid
             file.type = 'input'
             file.se = 'local'
             file.lfn = destination

@@ -11,10 +11,8 @@ class FileMaster:
         self.table_files = 'files'
 
     def makeReplica(self, fileid, se):
-
         s = DB().getSession()
         file = s.query(File).filter(File.id == fileid).one()
-        print file.id
         if file.status == 'registered':
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
@@ -34,7 +32,31 @@ class FileMaster:
         return ec
 
     def cloneReplica(self, replicaid, se):
-        pass
+        s = DB().getSession()
+        replica = s.query(Replica).filter(Replica.id == replicaid).one()
+        file = replica.original
+        replicas = file.replicas
+        for r in replicas:
+            if se == r.se:
+                print 'Replica is ready'
+                # Update expired time
+                return 0
+
+        fromParams = {}
+        dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
+        toParams = {'dest': dest}
+
+        ec, uploaded_input_files = movedata({}, [replica.lfn], replica.se, fromParams, se, toParams)
+        if ec == 0:
+            replica = Replica()
+            replica.se = se
+            replica.status = 'ready'
+            replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
+            file.replicas.append(replica)
+            s.add(replica)
+            s.commit()
+            s.add(file)
+            s.commit()
 
 def cloneReplica(replicaid, se):
     fm = FileMaster()
