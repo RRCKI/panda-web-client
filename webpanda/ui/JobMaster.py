@@ -84,15 +84,16 @@ class JobMaster:
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
         for file in input_files:
-            dataset = "%s:%s" % (scope, file.guid)
+            guid = file.guid
+            dataset = "%s:%s" % (scope, guid)
             fileIT = FileSpec()
-            fileIT.lfn = file
+            fileIT.lfn = file.lfn.split('/')[-1]
             fileIT.dataset = dataset
             fileIT.prodDBlock = dataset
             fileIT.type = 'input'
             fileIT.scope = scope
             fileIT.status = 'ready'
-            fileIT.GUID = commands.getoutput('uuidgen')
+            fileIT.GUID = guid
             pandajob.addFile(fileIT)
 
         for file in output_files:

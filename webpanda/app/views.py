@@ -227,7 +227,7 @@ def jobs_list():
                     if obj.PandaID == job.pandaid:
                         job.status = obj.jobStatus
                         db.session.add(job)
-        db.session.commit()
+                        db.session.commit()
 
     # prepare json
     jobs_o = []
