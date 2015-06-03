@@ -3,7 +3,7 @@ import commands
 import glob
 import json
 
-from flask import render_template, flash, redirect, session, url_for, request, g, jsonify
+from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from forms import LoginForm, RegisterForm, NewJobForm
@@ -106,6 +106,34 @@ def job():
 
         container_guid = form.container.data
         container = Container.query.filter_by(guid=container_guid).first()
+
+        files = request.form.getlist('files[]')
+        for f in files:
+            if f != '':
+                parts = f.split(':')
+                if len(parts) == 2:
+                    se = parts[0]
+                    lfn = ':'.join(parts[0:2])
+                    token = None
+                elif len(parts) == 4:
+                    # ftp://server/file:user:pass
+                    se = parts[0]
+                    lfn = ':'.join(parts[0:2])
+                    token = ':'.join(parts[2:])
+
+                file = File()
+                file.scope = g.user.username
+                file.guid = commands.getoutput('uuidgen')
+                file.type = 'input'
+                file.se = se
+                file.lfn = lfn
+                file.token = token
+                file.status = 'registered'
+                db.session.add(file)
+                db.session.commit()
+                container.files.append(file)
+                db.session.add(container)
+                db.session.commit()
 
         job = Job()
         job.pandaid = None
@@ -247,4 +275,4 @@ def jobs_list():
     data = {}
     data['data'] = jobs_o
 
-    return json.dumps(data)
+    return make_response(jsonify(data), 200)

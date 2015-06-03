@@ -35,6 +35,52 @@ $(document).ready(function() {
     //    doUpload();
     //    fd = collectFormData();
     //});
+
+    // The maximum number of options
+    var MAX_OPTIONS = 5;
+    // Add button click handler
+    $('#upload-form')
+        .on('click', '.addButton', function() {
+            var $template = $('#ifTemplate'),
+                $clone    = $template
+                                .clone()
+                                .removeClass('hide')
+                                .removeAttr('id')
+                                .insertBefore($template),
+                $option   = $clone.find('[name="lfn[]"]');
+        })
+
+        // Remove button click handler
+        .on('click', '.removeButton', function() {
+            var $row    = $(this).parents('.form-group'),
+                $option = $row.find('[name="lfn[]"]');
+
+            // Remove element containing the option
+            $row.remove();
+
+        })
+
+        // Called after adding new field
+        .on('added.field.fv', function(e, data) {
+            // data.field   --> The field name
+            // data.element --> The new field element
+            // data.options --> The new field options
+
+            if (data.field === 'lfn[]') {
+                if ($('#upload-form').find(':visible[name="files[]"]').length >= MAX_OPTIONS) {
+                    $('#upload-form').find('.addButton').attr('disabled', 'disabled');
+                }
+            }
+        })
+
+        // Called after removing the field
+        .on('removed.field.fv', function(e, data) {
+           if (data.field === 'lfn[]') {
+                if ($('#upload-form').find(':visible[name="files[]"]').length < MAX_OPTIONS) {
+                    $('#upload-form').find('.addButton').removeAttr('disabled');
+                }
+            }
+        });
 });
 
 

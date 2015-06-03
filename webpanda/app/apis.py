@@ -19,7 +19,7 @@ def swAPI():
         a['name'] = d.name
         a['version'] = d.version
         dlist.append(a)
-    return jsonify({'data': dlist})
+    return make_response(jsonify({'data': dlist}), 200)
 
 @app.route('/api/v0.1/upload', methods=['POST'])
 def upload1API():

@@ -6,6 +6,7 @@
 
 {% block css_import %}
 <link href="static/app/css/upload_files.css" rel="stylesheet">
+<link href="static/app/css/jobs_new.css" rel="stylesheet">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 {% endblock %}
 
@@ -16,8 +17,9 @@
             <label for='distr'>Select distributive: </label><br>
             {{ form.distr() }}
     </div>
-    <div class='form-group' title="Input files to upload">
-            <label for='input_files'> Input files: </label>
+    <label for="ifcontent"> Input files: </label>
+    <div id="ifcontent">
+        <div class='form-group'>
             <input id="file-picker" type="file" name="file" accept="image/*" multiple><br>
 
             <div id="dropbox">
@@ -30,11 +32,24 @@
                     <div id="progress-bar" class="progress-bar">0%</div>
                 </div>
             </fieldset>
+        </div>
+
+        <div class="form-group">
+            <label class="col-xs-1 control-label">Urls:</label>
+            <div class="col-xs-7"><input type="text" class="form-control" name="files[]" size="5" /></div>
+            <div class="col-xs-4"><button type="button" class="btn btn-default addButton">Add</button></div>
+        </div>
+        <div class="form-group hide" id="ifTemplate">
+                <div class="col-xs-offset-1 col-xs-7"><input class="form-control" type="text" name="files[]" /></div>
+                <div class="col-xs-4"><button type="button" class="btn btn-default removeButton">Remove</button></div>
+        </div>
+
     </div>
     <div class='form-group' title="Commands sequence to run (separate by semicolon)">
-            <label for='params'>Script:</label><br>
-            {{ form.params() }}
+            <label for="params">Script:</label>
+            <div id="params">{{ form.params() }}</div>
     </div>
+
     <div class='form-group'>
             <input type="reset" name="reset" value="Reset">
             {{ form.submitbtn() }}

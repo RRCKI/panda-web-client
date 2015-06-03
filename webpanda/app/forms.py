@@ -2,7 +2,8 @@ from urlparse import urlparse, urljoin
 
 from flask.ext.wtf import Form
 from flask import url_for, redirect, request
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField, IntegerField, \
+    FieldList, TextField
 from wtforms.validators import Required, EqualTo, Length
 from models import User
 

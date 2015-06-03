@@ -51,3 +51,7 @@ class SEPlugin(object):
     def put(self, src, dest):
         _logger("SEPlugin.put not implemented")
         raise NotImplementedError("SEPlugin.put not implemented")
+
+    def link(self, lfn, dir):
+        _logger("SEPlugin.link not implemented")
+        raise NotImplementedError("SEPlugin.link not implemented")

@@ -8,7 +8,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import cloneReplica, makeReplica
+from ui.FileMaster import cloneReplica, makeReplica, linkReplica
 
 _logger = NrckiLogger().getLogger("JobMaster")
 
@@ -54,10 +54,10 @@ class JobMaster:
                             pass
                 if not ready_replicas[file.guid]:
                     # Clone replica from existing
-                    cloneReplica(replicas[0].id, client_config.DEFAULT_SE)
+                    ready_replicas[file.guid] = cloneReplica(replicas[0].id, client_config.DEFAULT_SE)
             else:
                 # Make replica of registered file
-                makeReplica(file.id, client_config.DEFAULT_SE)
+                ready_replicas[file.guid] = makeReplica(file.id, client_config.DEFAULT_SE)
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
         destName    = client_config.DEFAULT_SE
@@ -79,9 +79,12 @@ class JobMaster:
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site
         pandajob.cloud = 'RU'
-        pandajob.prodDBlock = "%s:%s.%s" % (scope, scope, pandajob.jobName)
+        pandajob.prodDBlock = "%s:%s.%s" % (scope, 'job', pandajob.jobName)
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
+
+        for r in ready_replicas:
+            linkReplica(r, '/'.join(pandajob.prodDBlock.split(':')))
 
         for file in input_files:
             guid = file.guid

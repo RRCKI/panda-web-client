@@ -73,3 +73,8 @@ def movedata(params, fileList, fromType, fromParams, toType, toParams):
 
     shutil.rmtree(tmphome)
     return 0, tmpoutnames
+
+def linkdata(setype, separams, lfn, dir):
+    sefactory = SEFactory()
+    se = sefactory.getSE(setype, separams)
+    se.link(lfn, dir)
