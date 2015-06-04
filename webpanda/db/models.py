@@ -74,6 +74,8 @@ class Job(Base):
     container_id = Column(Integer, ForeignKey('containers.id'))
     creation_time = Column(DateTime)
     modification_time = Column(DateTime)
+    ninputfiles = Column(Integer)
+    noutputfiles = Column(Integer)
 
 catalog = Table('catalog', Base.metadata,
     Column('container_id', Integer, ForeignKey('containers.id')),

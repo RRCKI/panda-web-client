@@ -6,7 +6,8 @@ class SEFactory:
     def __init__(self):
         pass
 
-    def getSE(self, label, params={}):
+    def getSE(self, slabel, params={}):
+        label = slabel.split(':')[0]
         try:
             if label == 'dropbox':
                 from ddm.DropboxSEPlugin import DropboxSEPlugin

@@ -11,34 +11,37 @@ $(document).ready(function() {
         "processing": true,
         "ajax": "/jobs/list",
         "columns": [
+            { "data": "id"},
             { "data": "owner.username" },
             { "data": "pandaid" },
-            { "data": "distr.name" },
+            { "data": "distr.str" },
             { "data": "creation_time" },
             { "data": "modification_time" },
-            { "data": "status" }
+            { "data": "status" },
+            { "data": "ifiles" },
+            { "data": "ofiles" }
         ],
         // Add link - start
         "aoColumnDefs": [
             { //PandaID
-                "aTargets":[1],
+                "aTargets":[2],
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {
                         return '<td><a href="http://144.206.233.187/lsst/job/'+data+'" class="monlink">'+data+'</a></td>';
                     }
-                    return '<td>tobeset</td>'
+                    return '<td></td>'
                 }
             },
             { //CreationDate, ModificationDate
-                "aTargets":[3,4],
+                "aTargets":[4,5],
                 "mData": null,
                 "mRender": function( data, type, full) {
                     return moment(data).format('D.MM.YYYY H:mm');
                 }
             },
             { //Status
-                "aTargets":[5],
+                "aTargets":[6],
                 "fnCreatedCell": function(nTd, sData, oData, iRow, iCol)
                 {
                     if ( sData == "finished" ) {

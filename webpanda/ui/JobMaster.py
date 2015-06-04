@@ -61,7 +61,7 @@ class JobMaster:
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
         destName    = client_config.DEFAULT_SE
-        site = client_config.DEFAULT_SE
+        site = client_config.DEFAULT_SE.split(':')[-1]
         scope = client_config.DEFAULT_SCOPE
 
         distributive = job.distr.name
@@ -83,8 +83,8 @@ class JobMaster:
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
-        for r in ready_replicas:
-            linkReplica(r, '/'.join(pandajob.prodDBlock.split(':')))
+        for r in ready_replicas.values():
+            linkReplica(r.id, '/'.join(pandajob.prodDBlock.split(':')))
 
         for file in input_files:
             guid = file.guid

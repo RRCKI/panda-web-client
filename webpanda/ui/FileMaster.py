@@ -18,7 +18,7 @@ class FileMaster:
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
             toParams = {'dest': dest}
-            ec, uploaded_input_files = movedata({}, [file.lfn], file.se, fromParams, 'hpc', toParams)
+            ec, uploaded_input_files = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
             if ec == 0:
                 replica.se = se
                 replica.status = 'ready'
@@ -59,12 +59,12 @@ class FileMaster:
             s.commit()
             return replica
 
-    def linkReplica(self, replica, dir):
-        se = replica.se.split(':')
+    def linkReplica(self, replicaid, dir):
+        s = DB().getSession()
+        replica = s.query(Replica).filter(Replica.id == replicaid).one()
+        se = replica.se
         lfn = replica.lfn
-        if len(se) > 1:
-            params = {'site': se[1]}
-        ec, linked_files = linkdata(se[0], params, lfn, dir)
+        ec, linked_files = linkdata(se, {}, lfn, dir)
 
 def cloneReplica(replicaid, se):
     fm = FileMaster()
@@ -74,9 +74,9 @@ def makeReplica(fileid, se):
     fm = FileMaster()
     return fm.makeReplica(fileid, se)
 
-def linkReplica(replica, dir):
+def linkReplica(replicaid, dir):
     fm = FileMaster()
-    return fm.linkReplica(replica, dir)
+    return fm.linkReplica(replicaid, dir)
 
 def mqCloneReplica(replicaid, se):
     routing_key = client_config.MQ_FILEKEY + '.clone'

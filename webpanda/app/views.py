@@ -107,7 +107,7 @@ def job():
         container_guid = form.container.data
         container = Container.query.filter_by(guid=container_guid).first()
 
-        files = request.form.getlist('files[]')
+        files = request.form.getlist('ifiles[]')
         for f in files:
             if f != '':
                 parts = f.split(':')
@@ -144,6 +144,8 @@ def job():
         job.container = container
         job.creation_time = datetime.utcnow()
         job.modification_time = datetime.utcnow()
+        job.ninputfiles = len(files)
+        job.noutputfiles = 1
         db.session.add(job)
         db.session.commit()
 
@@ -267,10 +269,13 @@ def jobs_list():
         job_o['pandaid'] = job.pandaid
         job_o['distr'] = {'id': job.distr.id,
                           'name': job.distr.name,
-                          'version': job.distr.version}
+                          'version': job.distr.version,
+                          'str': str(job.distr)}
         job_o['creation_time'] = str(job.creation_time)
         job_o['modification_time'] = str(job.modification_time)
         job_o['status'] = job.status
+        job_o['ifiles'] = '[%s] ready' % job.ninputfiles
+        job_o['ofiles'] = '[%s] preparing' % job.noutputfiles
         jobs_o.append(job_o)
     data = {}
     data['data'] = jobs_o
