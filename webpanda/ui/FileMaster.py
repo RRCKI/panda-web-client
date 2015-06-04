@@ -14,6 +14,7 @@ class FileMaster:
         s = DB().getSession()
         file = s.query(File).filter(File.id == fileid).one()
         replica = Replica()
+        rvalue = 0
         if file.status == 'registered':
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
@@ -28,8 +29,9 @@ class FileMaster:
                 s.commit()
                 s.add(file)
                 s.commit()
+                rvalue = replica.id
         s.close()
-        return replica.id
+        return rvalue
 
     def cloneReplica(self, replicaid, se):
         s = DB().getSession()
