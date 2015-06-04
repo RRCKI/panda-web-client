@@ -47,13 +47,13 @@ $(document).ready(function() {
                                 .removeClass('hide')
                                 .removeAttr('id')
                                 .insertBefore($template),
-                $option   = $clone.find('[name="lfn[]"]');
+                $option   = $clone.find('[name="ifiles[]"]');
         })
 
         // Remove button click handler
         .on('click', '.removeButton', function() {
             var $row    = $(this).parents('.form-group'),
-                $option = $row.find('[name="lfn[]"]');
+                $option = $row.find('[name="ifiles[]"]');
 
             // Remove element containing the option
             $row.remove();
@@ -66,8 +66,8 @@ $(document).ready(function() {
             // data.element --> The new field element
             // data.options --> The new field options
 
-            if (data.field === 'lfn[]') {
-                if ($('#upload-form').find(':visible[name="files[]"]').length >= MAX_OPTIONS) {
+            if (data.field === 'ifiles[]') {
+                if ($('#upload-form').find(':visible[name="ifiles[]"]').length >= MAX_OPTIONS) {
                     $('#upload-form').find('.addButton').attr('disabled', 'disabled');
                 }
             }
@@ -75,8 +75,8 @@ $(document).ready(function() {
 
         // Called after removing the field
         .on('removed.field.fv', function(e, data) {
-           if (data.field === 'lfn[]') {
-                if ($('#upload-form').find(':visible[name="files[]"]').length < MAX_OPTIONS) {
+           if (data.field === 'ifiles[]') {
+                if ($('#upload-form').find(':visible[name="ifiles[]"]').length < MAX_OPTIONS) {
                     $('#upload-form').find('.addButton').removeAttr('disabled');
                 }
             }
