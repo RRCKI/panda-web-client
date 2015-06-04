@@ -83,16 +83,16 @@ class JobMaster:
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
+        rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
         for r in ready_replicas.values():
-            linkReplica(r.id, '/'.join(pandajob.prodDBlock.split(':')))
+            linkReplica(r, rlinkdir)
 
         for file in input_files:
             guid = file.guid
-            dataset = "%s:%s" % (scope, guid)
             fileIT = FileSpec()
             fileIT.lfn = file.lfn.split('/')[-1]
-            fileIT.dataset = dataset
-            fileIT.prodDBlock = dataset
+            fileIT.dataset = pandajob.prodDBlock
+            fileIT.prodDBlock = pandajob.prodDBlock
             fileIT.type = 'input'
             fileIT.scope = scope
             fileIT.status = 'ready'

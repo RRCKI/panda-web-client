@@ -41,7 +41,6 @@ class HPCSEPlugin(SEPlugin):
         _logger.debug('HPC: Try to link file from %s to %s' % (lfn, dir))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            #out = proc.communicate("rsync -av -e 'ssh -i %s' %s %s@%s:%s%s/" % (self.key, src, self.user, self.host, self.datadir, dest))
             out = proc.communicate("ssh -i %s %s@%s 'mkdir -p %s && ln -s %s %s'" % (self.key, self.user, self.host, self.datadir + dir, self.datadir + lfn, self.datadir + dir))
 
         except:

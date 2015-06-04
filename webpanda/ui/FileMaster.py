@@ -66,7 +66,7 @@ class FileMaster:
         replica = s.query(Replica).filter(Replica.id == replicaid).one()
         se = replica.se
         lfn = replica.lfn
-        ec, linked_files = linkdata(se, {}, lfn, dir)
+        linkdata(se, {}, lfn, dir)
 
 def cloneReplica(replicaid, se):
     fm = FileMaster()
