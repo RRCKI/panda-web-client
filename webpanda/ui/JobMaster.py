@@ -49,7 +49,7 @@ class JobMaster:
                 for r in replicas:
                     if r.se == client_config.DEFAULT_SE:
                         if r.status == 'ready':
-                            ready_replicas[file.guid] = r
+                            ready_replicas[file.guid] = r.id
                         elif r.status == 'transferring':
                             pass
                 if not ready_replicas[file.guid]:

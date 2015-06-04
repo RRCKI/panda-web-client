@@ -29,7 +29,7 @@ class FileMaster:
                 s.add(file)
                 s.commit()
         s.close()
-        return replica
+        return replica.id
 
     def cloneReplica(self, replicaid, se):
         s = DB().getSession()
@@ -40,7 +40,7 @@ class FileMaster:
             if se == r.se:
                 print 'Replica is ready'
                 # Update expired time
-                return r
+                return r.id
 
         fromParams = {}
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
@@ -57,7 +57,7 @@ class FileMaster:
             s.commit()
             s.add(file)
             s.commit()
-            return replica
+            return replica.id
 
     def linkReplica(self, replicaid, dir):
         s = DB().getSession()
