@@ -68,14 +68,17 @@ class FileMaster:
         lfn = replica.lfn
         linkdata(se, {}, lfn, dir)
 
+@celery.task
 def cloneReplica(replicaid, se):
     fm = FileMaster()
     return fm.cloneReplica(replicaid, se)
 
+@celery.task
 def makeReplica(fileid, se):
     fm = FileMaster()
     return fm.makeReplica(fileid, se)
 
+@celery.task
 def linkReplica(replicaid, dir):
     fm = FileMaster()
     return fm.linkReplica(replicaid, dir)

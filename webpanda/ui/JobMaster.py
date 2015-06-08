@@ -135,6 +135,92 @@ class JobMaster:
 
         return 0
 
+    def send_job(self, jobid):
+        _logger.debug('Jobid: ' + str(jobid))
+
+        # Initialize db
+        s = DB().getSession()
+
+        job = s.query(Job).filter(Job.id == jobid).one()
+        cont = job.container
+        input_files = cont.files
+
+        datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
+        destName    = client_config.DEFAULT_SE
+        site = client_config.DEFAULT_SE.split(':')[-1]
+        scope = client_config.DEFAULT_SCOPE
+
+        distributive = job.distr.name
+        release = job.distr.release
+        parameters = job.params
+        output_files = ['results.tgz']
+
+        pandajob = JobSpec()
+        pandajob.jobDefinitionID = int(time.time()) % 10000
+        pandajob.jobName = cont.guid
+        pandajob.transformation = client_config.DEFAULT_TRF
+        pandajob.destinationDBlock = datasetName
+        pandajob.destinationSE = destName
+        pandajob.currentPriority = 1000
+        pandajob.prodSourceLabel = 'user'
+        pandajob.computingSite = site
+        pandajob.cloud = 'RU'
+        pandajob.prodDBlock = "%s:%s.%s" % (scope, 'job', pandajob.jobName)
+
+        pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
+
+        for file in input_files:
+            guid = file.guid
+            fileIT = FileSpec()
+            fileIT.lfn = file.lfn.split('/')[-1]
+            fileIT.dataset = pandajob.prodDBlock
+            fileIT.prodDBlock = pandajob.prodDBlock
+            fileIT.type = 'input'
+            fileIT.scope = scope
+            fileIT.status = 'ready'
+            fileIT.GUID = guid
+            pandajob.addFile(fileIT)
+
+        for file in output_files:
+            fileOT = FileSpec()
+            fileOT.lfn = file
+            fileOT.destinationDBlock = pandajob.prodDBlock
+            fileOT.destinationSE = pandajob.destinationSE
+            fileOT.dataset = pandajob.prodDBlock
+            fileOT.type = 'output'
+            fileOT.scope = scope
+            fileOT.GUID = commands.getoutput('uuidgen')
+            pandajob.addFile(fileOT)
+
+
+        fileOL = FileSpec()
+        fileOL.lfn = "%s.log.tgz" % pandajob.jobName
+        fileOL.destinationDBlock = pandajob.destinationDBlock
+        fileOL.destinationSE = pandajob.destinationSE
+        fileOL.dataset = pandajob.destinationDBlock
+        fileOL.type = 'log'
+        fileOL.scope = 'panda'
+        pandajob.addFile(fileOL)
+
+        self.jobList.append(pandajob)
+
+        #submitJob
+        o = self.submitJobs(self.jobList)
+        x = o[0]
+
+        #update PandaID
+        PandaID = int(x[0])
+        job.pandaid = PandaID
+        s.add(job)
+        s.commit()
+        s.close()
+
+        return PandaID
+
+@celery.task
+def send_job(jobid):
+    jm = JobMaster()
+    return jm.send_job(jobid)
 
 def mqSendJob(jobid):
     routing_key = client_config.MQ_JOBKEY + '.now'

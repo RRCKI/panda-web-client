@@ -275,7 +275,7 @@ def jobs_list():
         job_o['modification_time'] = str(job.modification_time)
         job_o['status'] = job.status
         job_o['ifiles'] = '[%s] ready' % job.ninputfiles
-        job_o['ofiles'] = '[%s] preparing' % job.noutputfiles
+        job_o['ofiles'] = '[%s]' % job.noutputfiles
         jobs_o.append(job_o)
     data = {}
     data['data'] = jobs_o

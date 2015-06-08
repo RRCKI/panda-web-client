@@ -8,6 +8,7 @@ $(document).ready(function() {
     moment.locale('ru');
 
     $('#jobstable').dataTable( {
+        "order": [[ 0, "desc" ]],
         "processing": true,
         "ajax": "/jobs/list",
         "columns": [
@@ -30,7 +31,7 @@ $(document).ready(function() {
                     if ( data != undefined ) {
                         return '<td><a href="http://144.206.233.187/lsst/job/'+data+'" class="monlink">'+data+'</a></td>';
                     }
-                    return '<td></td>'
+                    return '<td></td>';
                 }
             },
             { //CreationDate, ModificationDate
