@@ -102,6 +102,7 @@ def job():
     """Handle the definition of a job."""
     form = NewJobForm()
     if request.method == 'POST':
+        site = app.config['DEFAULT_SE']
         distr_name, distr_release = form.distr.data.split(':')
         distr = Distributive.query.filter_by(name=distr_name, release=int(distr_release)).first()
 
@@ -140,7 +141,7 @@ def job():
                 ids.append(file.id)
 
         for f in ids:
-            ftasks.append(makeReplica.s(f))
+            ftasks.append(makeReplica.s(f, site))
 
         job = Job()
         job.pandaid = None
