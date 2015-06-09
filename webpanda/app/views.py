@@ -2,6 +2,7 @@
 import commands
 import glob
 import json
+from celery import chord
 
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response
 from flask.ext.login import login_user, logout_user, current_user, login_required
@@ -10,8 +11,8 @@ from forms import LoginForm, RegisterForm, NewJobForm
 from models import User, Distributive, Job, Container, File
 from datetime import datetime
 import os
-from ui.FileMaster import makeReplica
-from ui.JobMaster import mqSendJob
+from ui.FileMaster import makeReplica, cloneReplica
+from ui.JobMaster import mqSendJob, printsum, send_job
 
 from userinterface import Client
 
@@ -108,6 +109,8 @@ def job():
         container = Container.query.filter_by(guid=container_guid).first()
 
         files = request.form.getlist('ifiles[]')
+        ftasks = []
+        ids = []
         for f in files:
             if f != '':
                 parts = f.split(':')
@@ -134,6 +137,10 @@ def job():
                 container.files.append(file)
                 db.session.add(container)
                 db.session.commit()
+                ids.append(file.id)
+
+        for f in ids:
+            ftasks.append(makeReplica.s(f))
 
         job = Job()
         job.pandaid = None
@@ -149,8 +156,8 @@ def job():
         db.session.add(job)
         db.session.commit()
 
-        # Send message to start job
-        mqSendJob(job.id)
+        # Async sendjob
+        res = chord(ftasks)(send_job.s())
 
         return redirect(url_for('jobs'))
 

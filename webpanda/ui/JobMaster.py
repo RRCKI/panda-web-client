@@ -9,6 +9,7 @@ import userinterface.Client as Client
 from db.models import *
 from common import client_config
 from ui.FileMaster import cloneReplica, makeReplica, linkReplica
+from app import celery
 
 _logger = NrckiLogger().getLogger("JobMaster")
 

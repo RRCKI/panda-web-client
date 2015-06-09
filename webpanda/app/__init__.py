@@ -3,6 +3,7 @@ from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin
 from flask_oauthlib.provider import OAuth2Provider
+from celery import Celery
 import os
 
 app = Flask(__name__)
@@ -13,6 +14,8 @@ lm.init_app(app)
 lm.login_view = 'login'
 adm = Admin(app, name='WEBPANDA - Admin')
 oauth = OAuth2Provider(app)
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 from models import User, AnonymousUser
 #from models_oauth import *

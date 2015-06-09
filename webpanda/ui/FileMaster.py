@@ -1,5 +1,6 @@
 from common import client_config
 import json
+from app import celery
 from ui.Actions import movedata, linkdata
 from mq.MQ import MQ
 from db.models import *
