@@ -215,9 +215,13 @@ class JobMaster:
         log.guid = commands.getoutput('uuidgen')
         log.type = 'log'
         log.se = 'tobeset'
-        log.lfn = os.path.join('/', fileOL.scope, fileOL.destinationDBlock, fileOL.lfn)
+        log.lfn = os.path.join('/', fileOL.destinationDBlock.split(':'), fileOL.lfn)
         s.add(log)
         s.commit()
+        cont.files.append(log)
+        s.add(cont)
+        s.commit()
+
 
         self.jobList.append(pandajob)
 
