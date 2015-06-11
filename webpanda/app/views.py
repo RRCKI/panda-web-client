@@ -173,7 +173,7 @@ def job():
         db.session.commit()
 
         # Async sendjob
-        res = chord(ftasks)(send_job.s())
+        res = chord(ftasks)(send_job.s(jobid=job.id))
 
         return redirect(url_for('jobs'))
 

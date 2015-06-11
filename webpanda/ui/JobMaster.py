@@ -143,7 +143,7 @@ class JobMaster:
         # Initialize db
         s = DB().getSession()
 
-        job = s.query(Job).filter(Job.id == jobid).one()
+        job = s.query(Job).filter(Job.id == int(jobid)).one()
         cont = job.container
         files = cont.files
 
@@ -235,7 +235,10 @@ class JobMaster:
         return PandaID
 
 @celery.task
-def send_job(jobid):
+def send_job(*args, **kwargs):
+    jobid = kwargs.get('jobid', 0L)
+    if int(jobid) == 0:
+        raise Exception('Illegal argument: jobid')
     jm = JobMaster()
     return jm.send_job(jobid)
 

@@ -127,6 +127,7 @@ class File(db.Model):
     lfn = db.Column(db.String(200)) #local file name
     token = db.Column(db.String(200)) #string of params to get file
     status = db.Column(db.String(20)) #ready/transfer
+    transfertask = db.Column(db.String(40)) #ui transfer task id
     replicas = db.relationship('Replica',
         backref=db.backref('original', lazy='joined'), lazy='dynamic')
 
@@ -140,7 +141,6 @@ class Replica(db.Model):
     se = db.Column(db.String(20))
     status = db.Column(db.String(20)) #ready/transfer
     lfn = db.Column(db.String(200)) #local file name
-    transfertask = db.Column(db.String(40)) #ui transfer task id
 
     def __repr__(self):
         return '<Replica id=%s>' % self.id

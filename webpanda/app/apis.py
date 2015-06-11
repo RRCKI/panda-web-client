@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import random
 from app import app, db, lm
 import commands
 import json
@@ -64,15 +66,23 @@ def transferStatusAPI(guid):
     file = File.query.filter_by(guid=guid).one()
     taskid = file.transfertask
     replicas = file.replicas
+    if not replicas:
+        return make_response(jsonify({'status': 'ERROR: File meta exists but no replicas available'}), 200)
     if taskid:
         task = cloneReplica.AsyncResult(taskid)
         status = task.status
+        if status == 'FAILURE':
+            replica = random.choice(replicas)
+            task = cloneReplica(replica.id, 'local')
+            file.transfertask = task.id
+            db.session.add(file)
+            db.session.commit()
+            return make_response(jsonify({'oldstatus': status, 'status': task.status}), 200)
+
         if status == 'SUCCESS':
-            url = app.config['HOSTNAME'] + '/file/' + file.guid + '/' + file.lfn.split('/')[-1]
+            url = '/'.join(app.config['HOSTNAME'], 'file', file.guid, file.lfn.split('/')[-1])
             return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
         return make_response(jsonify({'status': status}), 200)
-    if replicas:
-        return make_response(jsonify({'status': 'ERROR'}), 200)
     task = cloneReplica.s(replicas[0].id, 'local')
     status = task.status
     file.transfertask = task.id

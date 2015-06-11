@@ -105,6 +105,7 @@ class File(Base):
     lfn = Column(String(200)) #local file name
     token = Column(String(200)) #string of params to get file
     status = Column(String(20)) #ready/transfer
+    transfertask = Column(String(40)) #ui transfer task id
     replicas = relationship('Replica',
         backref=backref('original', lazy='joined'), lazy='dynamic')
 
@@ -118,7 +119,7 @@ class Replica(Base):
     se = Column(String(20))
     status = Column(String(20)) #ready/transfer
     lfn = Column(String(200)) #local file name
-    transfertask = Column(String(40)) #ui transfer task id
+
 
     def __repr__(self):
         return '<Replica id=%s>' % self.id
