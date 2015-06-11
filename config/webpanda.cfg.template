@@ -2,6 +2,8 @@ DATA_DIR = 'data'
 TMP_DIR = 'tmp'
 LOG_DIR = 'log'
 
+HOSTNAME = 'https://myserver.com:8443'
+
 HPC_KEY = ''                # FIXME
 HPC_HOST = ''               # FIXME
 HPC_USER = ''               # FIXME

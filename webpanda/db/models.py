@@ -118,6 +118,7 @@ class Replica(Base):
     se = Column(String(20))
     status = Column(String(20)) #ready/transfer
     lfn = Column(String(200)) #local file name
+    transfertask = Column(String(40)) #ui transfer task id
 
     def __repr__(self):
         return '<Replica id=%s>' % self.id

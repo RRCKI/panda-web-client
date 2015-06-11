@@ -12,7 +12,7 @@ from models import User, Distributive, Job, Container, File
 from datetime import datetime
 import os
 from ui.FileMaster import makeReplica, cloneReplica
-from ui.JobMaster import mqSendJob, printsum, send_job
+from ui.JobMaster import mqSendJob, send_job
 
 from userinterface import Client
 
@@ -109,10 +109,12 @@ def job():
         container_guid = form.container.data
         container = Container.query.filter_by(guid=container_guid).first()
 
-        files = request.form.getlist('ifiles[]')
+        ifiles = request.form.getlist('ifiles[]')
+        ofiles = ['results.tgz']
+
         ftasks = []
         ids = []
-        for f in files:
+        for f in ifiles:
             if f != '':
                 parts = f.split(':')
                 if len(parts) == 2:
@@ -143,6 +145,19 @@ def job():
         for f in ids:
             ftasks.append(makeReplica.s(f, site))
 
+        for f in ofiles:
+            file = File()
+            file.scope = g.user.username
+            file.guid = commands.getoutput('uuidgen')
+            file.type = 'output'
+            file.se = 'tobeset'
+            file.lfn = f
+            db.session.add(file)
+            db.session.commit()
+            container.files.append(file)
+            db.session.add(container)
+            db.session.commit()
+
         job = Job()
         job.pandaid = None
         job.status = 'pending'
@@ -152,8 +167,8 @@ def job():
         job.container = container
         job.creation_time = datetime.utcnow()
         job.modification_time = datetime.utcnow()
-        job.ninputfiles = len(files)
-        job.noutputfiles = 1
+        job.ninputfiles = len(ifiles)
+        job.noutputfiles = len(ofiles)
         db.session.add(job)
         db.session.commit()
 

@@ -9,29 +9,31 @@ class SEFactory:
     def getSE(self, slabel, params={}):
         label = slabel.split(':')[0]
         try:
-            if label == 'dropbox':
+            if label in ['dropbox']:
                 from ddm.DropboxSEPlugin import DropboxSEPlugin
                 se = DropboxSEPlugin(params)
 
-            elif label == 'grid':
+            elif label in ['grid']:
                 from ddm.GridSEPlugin import GridSEPlugin
                 se = GridSEPlugin(params)
 
-            elif label == 'local':
+            elif label in ['local']:
                 from ddm.LocalSEPlugin import LocalSEPlugin
                 se = LocalSEPlugin(params)
 
-            elif label == 'http':
+            elif label in ['http', 'https']:
                 from ddm.HttpSEPlugin import HttpSEPlugin
                 se = HttpSEPlugin(params)
 
-            elif label == 'ftp':
+            elif label in ['ftp']:
                 from ddm.FtpSEPlugin import FtpSEPlugin
                 se = FtpSEPlugin(params)
 
-            elif label == 'hpc':
+            elif label in ['hpc']:
                 from ddm.HPCSEPlugin import HPCSEPlugin
                 se = HPCSEPlugin(params)
+            elif label in ['tobeset']:
+                raise Exception('SE needs to be set. Unable to get SE plugin')
 
             else:
                 se = SEPlugin()

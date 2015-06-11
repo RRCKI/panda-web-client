@@ -5,7 +5,7 @@ import json
 from flask import jsonify, request, make_response, g
 from flask_login import login_required
 from models import Distributive, Container, File
-from ui.FileMaster import mqMakeReplica
+from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica
 
 
 @app.route('/api/v0.1/sw', methods=['GET'])
@@ -58,5 +58,26 @@ def upload2API(guid):
         return make_response(jsonify({'status': 'Success'}), 200)
 
     return make_response(jsonify({'error': 'Not found'}), 404)
+
+@app.route('/api/v0.1/transfer/<guid>')
+def transferStatusAPI(guid):
+    file = File.query.filter_by(guid=guid).one()
+    taskid = file.transfertask
+    replicas = file.replicas
+    if taskid:
+        task = cloneReplica.AsyncResult(taskid)
+        status = task.status
+        if status == 'SUCCESS':
+            url = app.config['HOSTNAME'] + '/file/' + file.guid + '/' + file.lfn.split('/')[-1]
+            return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
+        return make_response(jsonify({'status': status}), 200)
+    if replicas:
+        return make_response(jsonify({'status': 'ERROR'}), 200)
+    task = cloneReplica.s(replicas[0].id, 'local')
+    status = task.status
+    file.transfertask = task.id
+    db.session.add(file)
+    db.session.commit()
+    return make_response(jsonify({'status': status}), 200)
 
 

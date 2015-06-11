@@ -1,5 +1,6 @@
 import commands
 import json
+import os
 import time
 from mq.MQ import MQ
 from taskbuffer.JobSpec import JobSpec
@@ -144,7 +145,7 @@ class JobMaster:
 
         job = s.query(Job).filter(Job.id == jobid).one()
         cont = job.container
-        input_files = cont.files
+        files = cont.files
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
         destName    = client_config.DEFAULT_SE
@@ -154,14 +155,13 @@ class JobMaster:
         distributive = job.distr.name
         release = job.distr.release
         parameters = job.params
-        output_files = ['results.tgz']
 
         pandajob = JobSpec()
         pandajob.jobDefinitionID = int(time.time()) % 10000
         pandajob.jobName = cont.guid
         pandajob.transformation = client_config.DEFAULT_TRF
         pandajob.destinationDBlock = datasetName
-        pandajob.destinationSE = destName
+        pandajob.destinationSE = site
         pandajob.currentPriority = 1000
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site
@@ -170,28 +170,34 @@ class JobMaster:
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
-        for file in input_files:
-            guid = file.guid
-            fileIT = FileSpec()
-            fileIT.lfn = file.lfn.split('/')[-1]
-            fileIT.dataset = pandajob.prodDBlock
-            fileIT.prodDBlock = pandajob.prodDBlock
-            fileIT.type = 'input'
-            fileIT.scope = scope
-            fileIT.status = 'ready'
-            fileIT.GUID = guid
-            pandajob.addFile(fileIT)
+        for file in files:
+            if file.type == 'input':
+                guid = file.guid
+                fileIT = FileSpec()
+                fileIT.lfn = file.lfn.split('/')[-1]
+                fileIT.dataset = pandajob.prodDBlock
+                fileIT.prodDBlock = pandajob.prodDBlock
+                fileIT.type = 'input'
+                fileIT.scope = scope
+                fileIT.status = 'ready'
+                fileIT.GUID = guid
+                pandajob.addFile(fileIT)
+            if file.type == 'output':
+                fileOT = FileSpec()
+                fileOT.lfn = file.lfn
+                fileOT.destinationDBlock = pandajob.prodDBlock
+                fileOT.destinationSE = pandajob.destinationSE
+                fileOT.dataset = pandajob.prodDBlock
+                fileOT.type = 'output'
+                fileOT.scope = scope
+                fileOT.GUID = file.guid
+                pandajob.addFile(fileOT)
 
-        for file in output_files:
-            fileOT = FileSpec()
-            fileOT.lfn = file
-            fileOT.destinationDBlock = pandajob.prodDBlock
-            fileOT.destinationSE = pandajob.destinationSE
-            fileOT.dataset = pandajob.prodDBlock
-            fileOT.type = 'output'
-            fileOT.scope = scope
-            fileOT.GUID = commands.getoutput('uuidgen')
-            pandajob.addFile(fileOT)
+                # Update file SE
+                file.se = destName
+                file.lfn = os.path.join('/', fileOT.scope, fileOT.GUID, fileOT.lfn)
+                s.add(file)
+                s.commit()
 
 
         fileOL = FileSpec()
@@ -202,6 +208,16 @@ class JobMaster:
         fileOL.type = 'log'
         fileOL.scope = 'panda'
         pandajob.addFile(fileOL)
+
+        # Save log meta
+        log = File()
+        log.scope = fileOL.scope
+        log.guid = commands.getoutput('uuidgen')
+        log.type = 'log'
+        log.se = 'tobeset'
+        log.lfn = os.path.join('/', fileOL.scope, fileOL.destinationDBlock, fileOL.lfn)
+        s.add(log)
+        s.commit()
 
         self.jobList.append(pandajob)
 
