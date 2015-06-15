@@ -82,6 +82,20 @@ class Distributive(db.Model):
     def __str__(self):
         return '%s [%s]' % (self.name, self.version)
 
+class Site(db.Model):
+    __tablename__ = 'sites'
+    id = db.Column(db.Integer, primary_key=True)
+    se = db.Column(db.String(64))
+    ce = db.Column(db.String(64))
+    plugin = db.Column(db.String(20))
+    active = db.Column(db.Integer, default=1)
+
+    def __repr__(self):
+        return '<SE=%s CE=%s>' % (self.se, self.ce)
+
+    def __str__(self):
+        return self.__repr__()
+
 class Job(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
@@ -252,5 +266,15 @@ class Token(db.Model):
         if self._scopes:
             return self._scopes.split()
         return []
+
+
+class TransferTask(db.Model):
+    __tablename__ = 'transfertasks'
+    id = db.Column(db.Integer, primary_key=True)
+    file_id = db.Column(db.Integer, db.ForeignKey('files.id'))
+    replica_id = db.Column(db.Integer, db.ForeignKey('replicas.id'))
+    se = db.Column(db.String(40))
+    task_id = db.Column(db.String(40))
+    task_status = db.Column(db.String(20))
 
 

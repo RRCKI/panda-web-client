@@ -62,8 +62,8 @@ class JobMaster:
                 ready_replicas[file.guid] = makeReplica(file.id, client_config.DEFAULT_SE)
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
-        destName    = client_config.DEFAULT_SE
-        site = client_config.DEFAULT_SE.split(':')[-1]
+        destName    = client_config.DEFAULT_CE
+        site = client_config.DEFAULT_CE
         scope = client_config.DEFAULT_SCOPE
 
         distributive = job.distr.name
@@ -148,8 +148,8 @@ class JobMaster:
         files = cont.files
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
-        destName    = client_config.DEFAULT_SE
-        site = client_config.DEFAULT_SE.split(':')[-1]
+        destName    = client_config.DEFAULT_CE
+        site = client_config.DEFAULT_CE
         scope = client_config.DEFAULT_SCOPE
 
         distributive = job.distr.name

@@ -1,4 +1,5 @@
 from common.NrckiLogger import NrckiLogger
+from db.models import DB, Site
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -6,40 +7,44 @@ class SEFactory:
     def __init__(self):
         pass
 
-    def getSE(self, slabel, params={}):
-        label = slabel.split(':')[0]
+    def getSE(self, ce, params={}):
+        s = DB().getSession()
+        site = s.query(Site).filter(Site.ce == ce).one()
+        plugin = site.plugin
+        s.close()
         try:
-            if label in ['dropbox']:
+            if plugin in ['dropbox']:
                 from ddm.DropboxSEPlugin import DropboxSEPlugin
                 se = DropboxSEPlugin(params)
 
-            elif label in ['grid']:
+            elif plugin in ['grid']:
                 from ddm.GridSEPlugin import GridSEPlugin
                 se = GridSEPlugin(params)
 
-            elif label in ['local']:
+            elif plugin in ['local']:
                 from ddm.LocalSEPlugin import LocalSEPlugin
                 se = LocalSEPlugin(params)
 
-            elif label in ['http', 'https']:
+            elif plugin in ['http', 'https']:
                 from ddm.HttpSEPlugin import HttpSEPlugin
                 se = HttpSEPlugin(params)
 
-            elif label in ['ftp']:
+            elif plugin in ['ftp']:
                 from ddm.FtpSEPlugin import FtpSEPlugin
                 se = FtpSEPlugin(params)
 
-            elif label in ['hpc']:
+            elif plugin in ['hpc']:
                 from ddm.HPCSEPlugin import HPCSEPlugin
                 se = HPCSEPlugin(params)
-            elif label in ['tobeset']:
+
+            elif plugin in ['tobeset']:
                 raise Exception('SE needs to be set. Unable to get SE plugin')
 
             else:
                 se = SEPlugin()
         except Exception:
             print Exception.message
-            _logger('Unable to get %s instance: %s' % (label, str(Exception.message)))
+            _logger('Unable to get %s instance: %s' % (plugin, str(Exception.message)))
             return None
         return se
 

@@ -7,8 +7,9 @@ from celery import chord
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
-from forms import LoginForm, RegisterForm, NewJobForm
-from models import User, Distributive, Job, Container, File
+from app.apis import makeReplicaAPI
+from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
+from models import *
 from datetime import datetime
 import os
 from ui.FileMaster import makeReplica, cloneReplica
@@ -102,7 +103,7 @@ def job():
     """Handle the definition of a job."""
     form = NewJobForm()
     if request.method == 'POST':
-        site = app.config['DEFAULT_SE']
+        site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
         distr_name, distr_release = form.distr.data.split(':')
         distr = Distributive.query.filter_by(name=distr_name, release=int(distr_release)).first()
 
@@ -143,7 +144,7 @@ def job():
                 ids.append(file.id)
 
         for f in ids:
-            ftasks.append(makeReplica.s(f, site))
+            ftasks.append(makeReplica.s(f, site.se))
 
         for f in ofiles:
             file = File()
@@ -304,3 +305,40 @@ def jobs_list():
     data['data'] = jobs_o
 
     return make_response(jsonify(data), 200)
+
+@app.route("/file", methods=['GET', 'POST'])
+@login_required
+def file():
+    form = NewFileForm()
+    if request.method == 'POST':
+        se = form.se.data
+
+        file = File()
+        file.scope = g.user.username
+        file.guid = commands.getoutput('uuidgen')
+        file.type = 'input'
+        file.se = form.url.data.split(':')[0]
+        file.lfn = form.url.data
+        file.token = ''
+        file.status = 'registered'
+        db.session.add(file)
+        db.session.commit()
+        cont_guid = form.container.data
+        if (cont_guid not in [None, '']): # TODO Check regex
+            container = Container.query.filter_by(guid=cont_guid).one()
+            container.files.append(file)
+            db.session.add(container)
+            db.session.commit()
+
+        resp = makeReplicaAPI(file.guid, se)
+        print resp
+        return redirect(url_for('file_info', guid=file.guid))
+
+    form.se.choices = [("%s" % site.se, "%s" % site.se) for site in Site.query.filter_by(active=1)]
+    return render_template("pandaweb/file_new.html", form=form)
+
+@app.route("/file/<guid>", methods=['GET'])
+@login_required
+def file_info(guid):
+    file = File.query.filter_by(guid=guid).one()
+    return render_template("pandaweb/file.html", file=file, replicas=file.replicas)

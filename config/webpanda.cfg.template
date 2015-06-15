@@ -12,6 +12,7 @@ HPC_DATADIR = ''            # FIXME
 DEFAULT_TRF = 'tobeset'
 DEFAULT_SCOPE = 'tobeset'
 DEFAULT_SE = ''
+DEFAULT_CE = ''
 
 CSRF_ENABLED = True
 SECRET_KEY = 'you-will-never-guess'

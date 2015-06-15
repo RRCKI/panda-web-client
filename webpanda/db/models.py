@@ -63,6 +63,23 @@ class Distributive(Base):
     def __repr__(self):
         return '<Distributive id=%s>' % self.id
 
+    def __str__(self):
+        return '%s [%s]' % (self.name, self.version)
+
+class Site(Base):
+    __tablename__ = 'sites'
+    id = Column(Integer, primary_key=True)
+    se = Column(String(64))
+    ce = Column(String(64))
+    plugin = Column(String(20))
+    active = Column(Integer, default=1)
+
+    def __repr__(self):
+        return '<SE=%s CE=%s>' % (self.se, self.ce)
+
+    def __str__(self):
+        return self.__repr__()
+
 class Job(Base):
     __tablename__ = 'jobs'
     id = Column(Integer, primary_key=True)
@@ -124,3 +141,11 @@ class Replica(Base):
     def __repr__(self):
         return '<Replica id=%s>' % self.id
 
+class TransferTask(Base):
+    __tablename__ = 'transfertasks'
+    id = Column(Integer, primary_key=True)
+    file_id = Column(Integer, ForeignKey('files.id'))
+    replica_id = Column(Integer, ForeignKey('replicas.id'))
+    se = Column(String(40))
+    task_id = Column(String(40))
+    task_status = Column(String(20))
