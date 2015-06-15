@@ -341,4 +341,12 @@ def file():
 @login_required
 def file_info(guid):
     file = File.query.filter_by(guid=guid).one()
+    if file.transfertask:
+        task = makeReplica.AsyncResult(file.transfertask)
+        if task.status != file.status:
+            file.status = task.status
+            db.session.add(file)
+            db.session.commit()
+        else:
+            pass
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)

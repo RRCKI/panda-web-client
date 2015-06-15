@@ -83,7 +83,7 @@ def makeReplicaAPI(guid, se):
         status = task.status
         if status == 'FAILURE':
             replica = random.choice(replicas)
-            task = cloneReplica.s(replica.id, se)
+            task = cloneReplica.delay(replica.id, se)
             file.transfertask = task.id
             db.session.add(file)
             db.session.commit()
@@ -93,7 +93,7 @@ def makeReplicaAPI(guid, se):
             url = '/'.join(app.config['HOSTNAME'], 'file', file.guid, file.lfn.split('/')[-1])
             return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
         return make_response(jsonify({'status': status}), 200)
-    task = cloneReplica.s(replicas[0].id, se)
+    task = cloneReplica.delay(replicas[0].id, se)
     status = task.status
     file.transfertask = task.id
     db.session.add(file)
