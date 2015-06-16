@@ -2,6 +2,8 @@ from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin
+from flask.ext.script import Manager
+from flask.ext.migrate import Migrate, MigrateCommand
 from flask_oauthlib.provider import OAuth2Provider
 from celery import Celery
 import os
@@ -9,6 +11,9 @@ import os
 app = Flask(__name__)
 app.config.from_object('app.config')
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 lm = LoginManager()
 lm.init_app(app)
 lm.login_view = 'login'
@@ -44,4 +49,5 @@ if not app.debug:
     app.logger.info('microblog startup')
 
 if __name__ == '__main__':
-    app.run()
+    #app.run()
+    manager.run()
