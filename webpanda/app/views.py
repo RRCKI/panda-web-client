@@ -351,6 +351,14 @@ def file_info(guid):
             pass
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
 
+@app.route("/files", methods=['GET'])
+@login_required
+def jobs():
+    hours_limit = request.args.get('hours', HOURS_LIMIT, type=int)
+    display_limit = request.args.get('display_limit', DISPLAY_LIMIT, type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("pandaweb/file_list.html")
 
 @app.route("/file/list", methods=['GET'])
 @login_required
