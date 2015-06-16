@@ -114,8 +114,8 @@ def fileChecksumAPI(guid):
 def fileInfoAPI(guid):
     file = File.query.filter_by(guid=guid).first()
     data = {}
-    data['modification_time'] = file.modification_time
-    data['fsize'] = file.fsize
+    data['modification_time'] = str(file.modification_time)
+    data['fsize'] = int(file.fsize)
     return make_response(jsonify(data), 200)
 
 
