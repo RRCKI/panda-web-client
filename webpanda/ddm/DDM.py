@@ -1,5 +1,4 @@
 from common.NrckiLogger import NrckiLogger
-from db.models import DB, Site
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -7,11 +6,7 @@ class SEFactory:
     def __init__(self):
         pass
 
-    def getSE(self, ce, params={}):
-        s = DB().getSession()
-        site = s.query(Site).filter(Site.ce == ce).one()
-        plugin = site.plugin
-        s.close()
+    def getSE(self, plugin, params={}):
         try:
             if plugin in ['dropbox']:
                 from ddm.DropboxSEPlugin import DropboxSEPlugin

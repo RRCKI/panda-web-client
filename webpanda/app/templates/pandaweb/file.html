@@ -13,6 +13,8 @@
 <b>GUID:</b> {{file.guid}} <br>
 <b>LFN:</b> {{file.lfn}} <br>
 <b>SCOPE:</b> {{file.scope}}<br>
+<b><a href="/api/file/{{file.guid}}/checksum">CHECKSUM:</a></b>
+<b><a href="/api/file/{{file.guid}}/info">INFO:</a></b>
 <b>STATUS:</b> {{file.status}}<br>
 {% if file.status == "ready" %}
 <b><a href="/file/{{file.guid}}/get">DOWNLOAD</a></b><br>

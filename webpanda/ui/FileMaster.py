@@ -17,10 +17,17 @@ class FileMaster:
         file = s.query(File).filter(File.id == fileid).one()
         replica = Replica()
         rvalue = 0
+
+        # Define file params
+        from_plugin = file.se
         fromParams = {'token': file.token}
+
+        # Define result replica params
+        to_se = s.query(Site).filter(Site.se == se).one()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest}
-        ec, filesinfo = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
+
+        ec, filesinfo = movedata({}, [file.lfn], from_plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:
             replica.se = se
             replica.status = 'ready'
@@ -48,11 +55,17 @@ class FileMaster:
                 print 'Replica is ready'
                 # Update expired time
                 return r.id
+
+        # Define base replica
+        from_se = s.query(Site).filter(Site.se == replica.se).one()
         fromParams = {}
+
+        # Define result replica params
+        to_se = s.query(Site).filter(Site.se == se).one()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest}
 
-        ec, filesinfo = movedata({}, [replica.lfn], replica.se, fromParams, se, toParams)
+        ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:
             replica = Replica()
             replica.se = se

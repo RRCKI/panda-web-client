@@ -12,7 +12,7 @@ DATA_DIR = os.path.join(client_config.basedir, client_config.TMP_DIR)
 _logger = NrckiLogger().getLogger("Actions")
 
 
-def movedata(params, fileList, fromType, fromParams, toType, toParams):
+def movedata(params, fileList, from_plugin, fromParams, to_plugin, toParams):
     if len(fileList) == 0:
         _logger.debug('No files to move')
         return 0, 'No files to move'
@@ -31,8 +31,8 @@ def movedata(params, fileList, fromType, fromParams, toType, toParams):
     dest = toParams['dest']
 
     sefactory = SEFactory()
-    fromSE = sefactory.getSE(fromType, fromParams)
-    toSE = sefactory.getSE(toType, toParams)
+    fromSE = sefactory.getSE(from_plugin, fromParams)
+    toSE = sefactory.getSE(to_plugin, toParams)
 
     tmphome = "%s/%s" % (DATA_DIR, tmpdir)
     if not os.path.isdir(tmphome):
