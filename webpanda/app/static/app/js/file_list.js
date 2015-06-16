@@ -17,7 +17,7 @@ $(document).ready(function() {
         // Add link - start
         "aoColumnDefs": [
             { //PandaID
-                "aTargets":[3],
+                "aTargets":[2],
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {

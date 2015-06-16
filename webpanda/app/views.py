@@ -353,7 +353,7 @@ def file_info(guid):
 
 @app.route("/files", methods=['GET'])
 @login_required
-def jobs():
+def files():
     hours_limit = request.args.get('hours', HOURS_LIMIT, type=int)
     display_limit = request.args.get('display_limit', DISPLAY_LIMIT, type=int)
     session['hours_limit'] = hours_limit
