@@ -1,4 +1,5 @@
 from common import client_config
+from datetime import datetime
 import json
 from app import celery
 from ui.Actions import movedata, linkdata
@@ -20,14 +21,18 @@ class FileMaster:
             fromParams = {'token': file.token}
             dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
             toParams = {'dest': dest}
-            ec, uploaded_input_files = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
+            ec, filesinfo = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
             if ec == 0:
                 replica.se = se
                 replica.status = 'ready'
                 replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
-                file.replicas.append(replica)
                 s.add(replica)
                 s.commit()
+                file.replicas.append(replica)
+                file.fsize = filesinfo[file.lfn]['fsize']
+                file.md5sum = filesinfo[file.lfn]['md5sum']
+                file.checksum = filesinfo[file.lfn]['checksum']
+                file.modification_time = datetime.utcnow()
                 s.add(file)
                 s.commit()
                 rvalue = replica.id
@@ -44,20 +49,19 @@ class FileMaster:
                 print 'Replica is ready'
                 # Update expired time
                 return r.id
-
         fromParams = {}
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest}
 
-        ec, uploaded_input_files = movedata({}, [replica.lfn], replica.se, fromParams, se, toParams)
+        ec, filesinfo = movedata({}, [replica.lfn], replica.se, fromParams, se, toParams)
         if ec == 0:
             replica = Replica()
             replica.se = se
             replica.status = 'ready'
             replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
-            file.replicas.append(replica)
             s.add(replica)
             s.commit()
+            file.replicas.append(replica)
             s.add(file)
             s.commit()
             return replica.id

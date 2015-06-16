@@ -3,6 +3,7 @@ import os
 import subprocess
 import shutil
 from common.NrckiLogger import NrckiLogger
+from common.utils import adler32, md5sum
 from ddm.DDM import SEFactory
 from common import client_config
 
@@ -39,6 +40,7 @@ def movedata(params, fileList, fromType, fromParams, toType, toParams):
 
     tmpout = []
     tmpoutnames = []
+    filesinfo = {}
     for f in fileList:
         if '/' in f:
             fname = f.split('/')[-1]
@@ -52,27 +54,33 @@ def movedata(params, fileList, fromType, fromParams, toType, toParams):
         tmpout.append(tmpfile)
         tmpoutnames.append(fname)
 
+        # Collect file info
+        filedata = {}
+        filedata['checksum'] = adler32(tmpfile)
+        filedata['md5sum'] = md5sum(tmpfile)
+        filedata['fsize'] = os.path.getsize(tmpfile)
+        filesinfo[f] = filedata
 
-    print 'Need compress? ' + str(compress)
-    if compress:
-        _logger.debug('Compress start: ')
-        tmpTgz = os.path.join(tmphome, tmpTgzName)
-        _logger.debug('TGZ file = ' + tmpTgz)
-        wd = os.getcwd()
-        os.chdir(tmphome)
-        proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        proc.communicate("tar -cvzf %s *" % tmpTgz)
-        tmpout = [tmpTgz]
-        tmpoutnames = [tmpTgzName]
-        os.chdir(wd)
-        _logger.debug('Compress finish:')
+    # print 'Need compress? ' + str(compress)
+    # if compress:
+    #     _logger.debug('Compress start: ')
+    #     tmpTgz = os.path.join(tmphome, tmpTgzName)
+    #     _logger.debug('TGZ file = ' + tmpTgz)
+    #     wd = os.getcwd()
+    #     os.chdir(tmphome)
+    #     proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    #     proc.communicate("tar -cvzf %s *" % tmpTgz)
+    #     tmpout = [tmpTgz]
+    #     tmpoutnames = [tmpTgzName]
+    #     os.chdir(wd)
+    #     _logger.debug('Compress finish:')
 
     for f in tmpout:
         #put file to SE
         toSE.put(f, dest)
 
     shutil.rmtree(tmphome)
-    return 0, tmpoutnames
+    return 0, filesinfo
 
 def linkdata(setype, separams, lfn, dir):
     sefactory = SEFactory()

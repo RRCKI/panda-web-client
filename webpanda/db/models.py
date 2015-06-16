@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, create_engine, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, create_engine, DateTime, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from common import client_config
@@ -123,6 +123,10 @@ class File(Base):
     token = Column(String(200)) #string of params to get file
     status = Column(String(20)) #ready/transfer
     transfertask = Column(String(40)) #ui transfer task id
+    fsize = Column(BigInteger)
+    md5sum = Column(String(36))
+    checksum = Column(String(36))
+    modification_time = Column(DateTime)
     replicas = relationship('Replica',
         backref=backref('original', lazy='joined'), lazy='dynamic')
 

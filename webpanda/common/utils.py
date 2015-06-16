@@ -18,7 +18,7 @@ def adler32(fname):
             checksum += 2**32
         return hex(checksum)[2:10].zfill(8).lower()
 
-def md5sum(self, fname):
+def md5sum(fname):
         BLOCKSIZE = 4096 * 1024
         f = open(fname,'r')
         checksum = hashlib.md5()

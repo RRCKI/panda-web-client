@@ -142,6 +142,10 @@ class File(db.Model):
     token = db.Column(db.String(200)) #string of params to get file
     status = db.Column(db.String(20)) #ready/transfer
     transfertask = db.Column(db.String(40)) #ui transfer task id
+    fsize = db.Column(db.BigInteger)
+    md5sum = db.Column(db.String(36))
+    checksum = db.Column(db.String(36))
+    modification_time = db.Column(db.DateTime)
     replicas = db.relationship('Replica',
         backref=db.backref('original', lazy='joined'), lazy='dynamic')
 

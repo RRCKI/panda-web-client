@@ -100,4 +100,22 @@ def makeReplicaAPI(guid, se):
     db.session.commit()
     return make_response(jsonify({'status': status}), 200)
 
+@app.route('/api/file/<guid>/checksum', methods=['GET'])
+@login_required
+def fileChecksumAPI(guid):
+    file = File.query.filter_by(guid=guid).first()
+    data = {}
+    data['adler32'] = file.checksum
+    data['md5sum'] = file.md5sum
+    return make_response(jsonify(data), 200)
+
+@app.route('/api/file/<guid>/info', methods=['GET'])
+@login_required
+def fileInfoAPI(guid):
+    file = File.query.filter_by(guid=guid).first()
+    data = {}
+    data['modification_time'] = file.modification_time
+    data['fsize'] = file.fsize
+    return make_response(jsonify(data), 200)
+
 
