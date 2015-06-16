@@ -350,3 +350,32 @@ def file_info(guid):
         else:
             pass
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
+
+
+@app.route("/file/list", methods=['GET'])
+@login_required
+def files_list():
+    user = g.user
+
+    hours_limit = session.get('hours_limit', HOURS_LIMIT)
+    display_limit = session.get('display_limit', DISPLAY_LIMIT)
+
+    # show users jobs
+    files = File.query.filter_by(scope=user.username).order_by(File.id).limit(display_limit)
+
+    # prepare json
+    files_o = []
+    for file in files:
+        file_o = {}
+        file_o['id'] = file.id
+        file_o['scope'] = file.scope
+        file_o['guid'] = file.guid
+        file_o['type'] = file.type
+        file_o['se'] = file.se
+        file_o['lfn'] = file.lfn
+        file_o['status'] = file.status
+        files_o.append(file_o)
+    data = {}
+    data['data'] = files_o
+
+    return make_response(jsonify(data), 200)
