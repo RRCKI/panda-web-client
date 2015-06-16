@@ -17,25 +17,24 @@ class FileMaster:
         file = s.query(File).filter(File.id == fileid).one()
         replica = Replica()
         rvalue = 0
-        if file.status == 'registered':
-            fromParams = {'token': file.token}
-            dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
-            toParams = {'dest': dest}
-            ec, filesinfo = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
-            if ec == 0:
-                replica.se = se
-                replica.status = 'ready'
-                replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
-                s.add(replica)
-                s.commit()
-                file.replicas.append(replica)
-                file.fsize = filesinfo[file.lfn]['fsize']
-                file.md5sum = filesinfo[file.lfn]['md5sum']
-                file.checksum = filesinfo[file.lfn]['checksum']
-                file.modification_time = datetime.utcnow()
-                s.add(file)
-                s.commit()
-                rvalue = replica.id
+        fromParams = {'token': file.token}
+        dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
+        toParams = {'dest': dest}
+        ec, filesinfo = movedata({}, [file.lfn], file.se, fromParams, se, toParams)
+        if ec == 0:
+            replica.se = se
+            replica.status = 'ready'
+            replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
+            s.add(replica)
+            s.commit()
+            file.replicas.append(replica)
+            file.fsize = filesinfo[file.lfn]['fsize']
+            file.md5sum = filesinfo[file.lfn]['md5sum']
+            file.checksum = filesinfo[file.lfn]['checksum']
+            file.modification_time = datetime.utcnow()
+            s.add(file)
+            s.commit()
+            rvalue = replica.id
         s.close()
         return rvalue
 
