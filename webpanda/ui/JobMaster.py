@@ -113,6 +113,8 @@ class JobMaster:
             pandajob.addFile(fileOT)
 
 
+
+
         fileOL = FileSpec()
         fileOL.lfn = "%s.log.tgz" % pandajob.jobName
         fileOL.destinationDBlock = pandajob.destinationDBlock
@@ -137,13 +139,13 @@ class JobMaster:
 
         return 0
 
-    def send_job(self, jobid):
+    def send_job(self, jobid, siteid):
         _logger.debug('Jobid: ' + str(jobid))
 
         # Initialize db
         s = DB().getSession()
 
-        site = s.query(Site).filter(Site.ce == 'ANALY_RRC-KI-HPC').one()
+        site = s.query(Site).filter(Site.id == siteid).one()
 
         job = s.query(Job).filter(Job.id == int(jobid)).one()
         cont = job.container
@@ -193,9 +195,14 @@ class JobMaster:
                 fileOT.GUID = file.guid
                 pandajob.addFile(fileOT)
 
-                # Update file SE
-                file.se = site.se
-                file.lfn = os.path.join('/', fileOT.scope, fileOT.GUID, fileOT.lfn)
+                # Save replica meta
+                replica = Replica()
+                replica.se = site.se
+                replica.status = 'defined'
+                replica.lfn = os.path.join('/', fileOT.scope, fileOT.GUID, fileOT.lfn)
+                s.add(replica)
+                s.commit()
+                file.replicas.append(replica)
                 s.add(file)
                 s.commit()
 

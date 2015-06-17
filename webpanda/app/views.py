@@ -116,7 +116,7 @@ def job():
         scope = getScope(g.user.username)
 
         ftasks = []
-        ids = []
+
         for f in ifiles:
             if f != '':
                 from_se, path, token = getUrlInfo(f)
@@ -146,10 +146,7 @@ def job():
                 db.session.add(file)
                 db.session.commit()
 
-                ids.append(file.id)
-
-        for f in ids:
-            ftasks.append(makeReplica.s(f, site.se))
+                ftasks.append(cloneReplica.s(replica.id, site.se))
 
         for lfn in ofiles:
             file = File()
@@ -179,7 +176,7 @@ def job():
         db.session.commit()
 
         # Async sendjob
-        res = chord(ftasks)(send_job.s(jobid=job.id))
+        res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
 
         return redirect(url_for('jobs'))
 
@@ -369,14 +366,14 @@ def file():
 @login_required
 def file_info(guid):
     file = File.query.filter_by(guid=guid).one()
-    if file.transfertask:
-        task = makeReplica.AsyncResult(file.transfertask)
-        if task.status != file.status:
-            file.status = task.status
-            db.session.add(file)
-            db.session.commit()
-        else:
-            pass
+    # if file.transfertask:
+    #     task = makeReplica.AsyncResult(file.transfertask)
+    #     if task.status != file.status:
+    #         file.status = task.status
+    #         db.session.add(file)
+    #         db.session.commit()
+    #     else:
+    #         pass
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
 
 @app.route("/files", methods=['GET'])
