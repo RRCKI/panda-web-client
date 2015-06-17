@@ -70,23 +70,23 @@ class FileMaster:
 
         ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:
-            replica = Replica()
+            r = Replica()
             if not file.fsize:
                 file.fsize = filesinfo[replica.lfn]['fsize']
             if not file.md5sum:
                 file.md5sum = filesinfo[replica.lfn]['md5sum']
             if not file.checksum:
                 file.checksum = filesinfo[replica.lfn]['checksum']
-            replica.se = se
-            replica.status = 'ready'
-            replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
-            s.add(replica)
+            r.se = se
+            r.status = 'ready'
+            r.lfn = os.path.join(dest, file.lfn.split('/')[-1])
+            s.add(r)
             s.commit()
             file.modification_time = datetime.utcnow()
             file.replicas.append(replica)
             s.add(file)
             s.commit()
-            return replica.id
+            return r.id
 
     def linkReplica(self, replicaid, dir):
         s = DB().getSession()
