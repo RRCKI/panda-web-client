@@ -256,10 +256,13 @@ class JobMaster:
 @celery.task
 def send_job(*args, **kwargs):
     jobid = kwargs.get('jobid', 0L)
+    siteid = kwargs.get('siteid', 0L)
     if int(jobid) == 0:
         raise Exception('Illegal argument: jobid')
+    if int(siteid) == 0:
+        raise Exception('Illegal argument: jobid')
     jm = JobMaster()
-    return jm.send_job(jobid)
+    return jm.send_job(jobid, siteid)
 
 def mqSendJob(jobid):
     routing_key = client_config.MQ_JOBKEY + '.now'
