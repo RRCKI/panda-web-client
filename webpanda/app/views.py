@@ -138,7 +138,7 @@ def job():
                 replica = Replica()
                 replica.se = from_se
                 replica.status = 'defined'
-                replica.lfn = ':'.join(from_se, path)
+                replica.lfn = ':'.join([from_se, path])
                 replica.token = token
                 db.session.add(replica)
                 db.session.commit()
