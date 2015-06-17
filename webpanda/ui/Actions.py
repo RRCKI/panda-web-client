@@ -6,6 +6,7 @@ from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum
 from ddm.DDM import SEFactory
 from common import client_config
+from ui.FileMaster import getAdler32, getMD5, getFSize
 
 DATA_DIR = os.path.join(client_config.basedir, client_config.TMP_DIR)
 
@@ -56,9 +57,9 @@ def movedata(params, fileList, from_plugin, fromParams, to_plugin, toParams):
 
         # Collect file info
         filedata = {}
-        filedata['checksum'] = adler32(tmpfile)
-        filedata['md5sum'] = md5sum(tmpfile)
-        filedata['fsize'] = os.path.getsize(tmpfile)
+        filedata['checksum'] = getAdler32(tmpfile)
+        filedata['md5sum'] = getMD5(tmpfile)
+        filedata['fsize'] = getFSize(tmpfile)
         filesinfo[f] = filedata
 
     # print 'Need compress? ' + str(compress)

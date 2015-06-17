@@ -12,7 +12,7 @@ from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
 import os
-from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID, getUrlInfo
+from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID, getUrlInfo, getMD5, getAdler32, getFSize
 from ui.JobMaster import mqSendJob, send_job
 
 from userinterface import Client
@@ -234,6 +234,9 @@ def upload():
             file.token = ''
             file.status = 'defined'
             file.container = container
+            file.md5sum = getMD5(destination)
+            file.checksum = getAdler32(destination)
+            file.fsize = getFSize(destination)
             db.session.add(file)
             db.session.commit()
 
@@ -345,10 +348,8 @@ def file():
         replica.se = se
         replica.status = 'ready'
         replica.lfn = form.url.data
+        replica.original = file
         db.session.add(replica)
-        db.session.commit()
-        file.replicas.append(replica)
-        db.session.add(file)
         db.session.commit()
 
         resp = makeReplicaAPI(file.guid, se)

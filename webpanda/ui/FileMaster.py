@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 from app import celery
 from common.NrckiLogger import NrckiLogger
+from common.utils import adler32, md5sum
 from ui.Actions import movedata, linkdata
 from mq.MQ import MQ
 from db.models import *
@@ -71,11 +72,11 @@ class FileMaster:
         ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:
             r = Replica()
-            if not file.fsize:
+            if file.fsize == None:
                 file.fsize = filesinfo[replica.lfn]['fsize']
-            if not file.md5sum:
+            if file.md5sum == None:
                 file.md5sum = filesinfo[replica.lfn]['md5sum']
-            if not file.checksum:
+            if file.checksum == None:
                 file.checksum = filesinfo[replica.lfn]['checksum']
             r.se = se
             r.status = 'ready'
@@ -158,3 +159,12 @@ def getUrlInfo(url):
     else:
         raise Exception('Illegal URL format')
     return se, path, token
+
+def getAdler32(file):
+    return adler32(file)
+
+def getMD5(file):
+    return md5sum(file)
+
+def getFSize(file):
+    return os.path.getsize(file)
