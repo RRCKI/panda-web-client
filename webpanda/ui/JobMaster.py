@@ -9,7 +9,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import cloneReplica, makeReplica, linkReplica, getFullPath
+from ui.FileMaster import cloneReplica, makeReplica, linkReplica, getFullPath, getGUID
 from app import celery
 
 _logger = NrckiLogger().getLogger("JobMaster")
@@ -218,10 +218,10 @@ class JobMaster:
 
         # Save log meta
         log = File()
-        log.scope = scope
-        log.guid = commands.getoutput('uuidgen')
-        log.type = 'log'
+        log.scope = files[0].scope
         log.lfn = fileOL.lfn
+        log.guid = getGUID(log.scope, log.lfn)
+        log.type = 'log'
         s.add(log)
         s.commit()
         cont.files.append(log)

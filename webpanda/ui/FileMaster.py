@@ -76,9 +76,12 @@ class FileMaster:
             replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
             s.add(replica)
             s.commit()
-            file.fsize = filesinfo[file.lfn]['fsize']
-            file.md5sum = filesinfo[file.lfn]['md5sum']
-            file.checksum = filesinfo[file.lfn]['checksum']
+            if not file.fsize:
+                file.fsize = filesinfo[replica.lfn]['fsize']
+            if not file.md5sum:
+                file.md5sum = filesinfo[replica.lfn]['md5sum']
+            if not file.checksum:
+                file.checksum = filesinfo[replica.lfn]['checksum']
             file.modification_time = datetime.utcnow()
             file.replicas.append(replica)
             s.add(file)
