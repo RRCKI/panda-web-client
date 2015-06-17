@@ -151,13 +151,13 @@ def job():
         for f in ids:
             ftasks.append(makeReplica.s(f, site.se))
 
-        for f in ofiles:
+        for lfn in ofiles:
             file = File()
-            file.scope = g.user.username
-            file.guid = commands.getoutput('uuidgen')
+            file.scope = scope
+            file.guid = getGUID(scope, lfn)
             file.type = 'output'
-            file.se = 'tobeset'
-            file.lfn = f
+            file.lfn = lfn
+            file.status = 'defined'
             db.session.add(file)
             db.session.commit()
             container.files.append(file)
