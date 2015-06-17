@@ -12,7 +12,7 @@ from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
 import os
-from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID
+from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID, getUrlInfo
 from ui.JobMaster import mqSendJob, send_job
 
 from userinterface import Client
@@ -113,34 +113,39 @@ def job():
         ifiles = request.form.getlist('ifiles[]')
         ofiles = ['results.tgz']
 
+        scope = getScope(g.user.username)
+
         ftasks = []
         ids = []
         for f in ifiles:
             if f != '':
-                parts = f.split(':')
-                if len(parts) == 2:
-                    se = parts[0]
-                    lfn = ':'.join(parts[0:2])
-                    token = None
-                elif len(parts) == 4:
-                    # ftp://server/file:user:pass
-                    se = parts[0]
-                    lfn = ':'.join(parts[0:2])
-                    token = ':'.join(parts[2:])
+                from_se, path, token = getUrlInfo(f)
+                lfn = path.split('/')[-1]
+                guid = getGUID(scope, lfn)
 
                 file = File()
-                file.scope = g.user.username
-                file.guid = commands.getoutput('uuidgen')
+                file.scope = scope
+                file.guid = guid
                 file.type = 'input'
-                file.se = se
                 file.lfn = lfn
-                file.token = token
-                file.status = 'registered'
+                file.status = 'defined'
                 db.session.add(file)
                 db.session.commit()
                 container.files.append(file)
                 db.session.add(container)
                 db.session.commit()
+
+                replica = Replica()
+                replica.se = from_se
+                replica.status = 'defined'
+                replica.lfn = ':'.join(from_se, path)
+                replica.token = token
+                db.session.add(replica)
+                db.session.commit()
+                file.replicas.append(replica)
+                db.session.add(file)
+                db.session.commit()
+
                 ids.append(file.id)
 
         for f in ids:

@@ -137,9 +137,7 @@ class File(db.Model):
     attemptn = db.Column(db.Integer, default=0)
     guid = db.Column(db.String(36))
     type = db.Column(db.String(20)) #input/output
-    se = db.Column(db.String(20)) #grid/dropbox/local
     lfn = db.Column(db.String(200)) #local file name
-    token = db.Column(db.String(200)) #string of params to get file
     status = db.Column(db.String(20)) #ready/transfer
     transfertask = db.Column(db.String(40)) #ui transfer task id
     fsize = db.Column(db.BigInteger)
@@ -159,6 +157,7 @@ class Replica(db.Model):
     se = db.Column(db.String(20))
     status = db.Column(db.String(20)) #ready/transfer
     lfn = db.Column(db.String(200)) #local file name
+    token = db.Column(db.String(200)) #string of params to get file
 
     def __repr__(self):
         return '<Replica id=%s>' % self.id

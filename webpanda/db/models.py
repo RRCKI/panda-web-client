@@ -118,9 +118,7 @@ class File(Base):
     attemptn = Column(Integer, default=0)
     guid = Column(String(36))
     type = Column(String(20)) #input/output
-    se = Column(String(20)) #grid/dropbox/local
     lfn = Column(String(200)) #local file name
-    token = Column(String(200)) #string of params to get file
     status = Column(String(20)) #ready/transfer
     transfertask = Column(String(40)) #ui transfer task id
     fsize = Column(BigInteger)
@@ -140,7 +138,7 @@ class Replica(Base):
     se = Column(String(20))
     status = Column(String(20)) #ready/transfer
     lfn = Column(String(200)) #local file name
-
+    token = Column(String(200)) #string of params to get file
 
     def __repr__(self):
         return '<Replica id=%s>' % self.id

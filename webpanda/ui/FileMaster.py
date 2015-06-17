@@ -134,3 +134,18 @@ def getGUID(scope, lfn):
 
 def getFullPath(scope, dataset, lfn):
     return '/'.join(scope, dataset, lfn)
+
+def getUrlInfo(url):
+    # Format - se:path:token
+    parts = url.split(':')
+    if len(parts) == 2:
+        se = parts[0]
+        path = parts[1]
+        token = ""
+    elif len(parts) == 3:
+        se = parts[0]
+        path = parts[1]
+        token = parts[2]
+    else:
+        raise Exception('Illegal URL format')
+    return se, path, token
