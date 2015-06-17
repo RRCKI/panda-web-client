@@ -140,7 +140,9 @@ def getGUID(scope, lfn):
     return scope + '_' + guid
 
 def getFullPath(scope, dataset, lfn):
-    return '/'.join([scope, dataset, lfn])
+    if ':' in dataset:
+        return '/' + '/'.join(dataset.split(':') + [lfn])
+    return '/' + '/'.join([scope, dataset, lfn])
 
 def getUrlInfo(url):
     # Format - se:path:token

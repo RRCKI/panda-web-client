@@ -233,20 +233,16 @@ def upload():
             file.lfn = lfn
             file.token = ''
             file.status = 'defined'
+            file.container = container
             db.session.add(file)
-            db.session.commit()
-            container.files.append(file)
-            db.session.add(container)
             db.session.commit()
 
             replica = Replica()
             replica.se = site.se
             replica.status = 'ready'
             replica.lfn = destination
+            replica.original = file
             db.session.add(replica)
-            db.session.commit()
-            file.replicas.append(replica)
-            db.session.add(file)
             db.session.commit()
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
