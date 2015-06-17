@@ -206,11 +206,12 @@ def upload():
         lfn = upload.filename.rsplit("/")[0]
         scope = getScope(g.user.username)
         guid = getGUID(scope, lfn)
+        site = Site.query.filter_by(se='RRC-KI-CLOUD').first()
 
         # Target folder for these uploads.
         target = os.path.join(app.config['UPLOAD_FOLDER'], scope, guid)
         try:
-            os.mkdir(target)
+            os.makedirs(target)
         except:
             if is_ajax:
                 return ajax_response(False, "Couldn't create upload directory: %s" % target)
@@ -237,9 +238,9 @@ def upload():
             db.session.commit()
 
             replica = Replica()
-            replica.se = form.url.data.split(':')[0]
+            replica.se = site.se
             replica.status = 'ready'
-            replica.lfn = form.url.data
+            replica.lfn = destination
             db.session.add(replica)
             db.session.commit()
             file.replicas.append(replica)
