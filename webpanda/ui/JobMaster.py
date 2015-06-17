@@ -9,7 +9,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import cloneReplica, makeReplica, linkReplica
+from ui.FileMaster import cloneReplica, makeReplica, linkReplica, getFullPath
 from app import celery
 
 _logger = NrckiLogger().getLogger("JobMaster")
@@ -143,13 +143,13 @@ class JobMaster:
         # Initialize db
         s = DB().getSession()
 
+        site = s.query(Site).filter(Site.ce == 'ANALY_RRC-KI-HPC').one()
+
         job = s.query(Job).filter(Job.id == int(jobid)).one()
         cont = job.container
         files = cont.files
 
         datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
-        destName    = client_config.DEFAULT_CE
-        site = client_config.DEFAULT_CE
         scope = client_config.DEFAULT_SCOPE
 
         distributive = job.distr.name
@@ -161,10 +161,10 @@ class JobMaster:
         pandajob.jobName = cont.guid
         pandajob.transformation = client_config.DEFAULT_TRF
         pandajob.destinationDBlock = datasetName
-        pandajob.destinationSE = site
+        pandajob.destinationSE = site.se
         pandajob.currentPriority = 1000
         pandajob.prodSourceLabel = 'user'
-        pandajob.computingSite = site
+        pandajob.computingSite = site.ce
         pandajob.cloud = 'RU'
         pandajob.prodDBlock = "%s:%s.%s" % (scope, 'job', pandajob.jobName)
 
@@ -174,7 +174,7 @@ class JobMaster:
             if file.type == 'input':
                 guid = file.guid
                 fileIT = FileSpec()
-                fileIT.lfn = file.lfn.split('/')[-1]
+                fileIT.lfn = file.lfn
                 fileIT.dataset = pandajob.prodDBlock
                 fileIT.prodDBlock = pandajob.prodDBlock
                 fileIT.type = 'input'
@@ -194,7 +194,7 @@ class JobMaster:
                 pandajob.addFile(fileOT)
 
                 # Update file SE
-                file.se = destName
+                file.se = site.se
                 file.lfn = os.path.join('/', fileOT.scope, fileOT.GUID, fileOT.lfn)
                 s.add(file)
                 s.commit()
@@ -211,15 +211,23 @@ class JobMaster:
 
         # Save log meta
         log = File()
-        log.scope = fileOL.scope
+        log.scope = scope
         log.guid = commands.getoutput('uuidgen')
         log.type = 'log'
-        log.se = 'tobeset'
-        log.lfn = os.path.join('/', fileOL.destinationDBlock.split(':'), fileOL.lfn)
+        log.lfn = fileOL.lfn
         s.add(log)
         s.commit()
         cont.files.append(log)
         s.add(cont)
+        s.commit()
+        replica = Replica()
+        replica.se = pandajob.destinationSE
+        replica.status = 'defined'
+        replica.lfn = getFullPath(fileOL.scope, fileOL.dataset, fileOL.lfn)
+        s.add(replica)
+        s.commit()
+        file.replicas.append(replica)
+        s.add(file)
         s.commit()
 
 

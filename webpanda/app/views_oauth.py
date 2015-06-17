@@ -38,8 +38,6 @@ def load_token(access_token=None, refresh_token=None):
     elif refresh_token:
         return Token.query.filter_by(refresh_token=refresh_token).first()
 
-from datetime import datetime, timedelta
-
 @oauth.tokensetter
 def save_token(token, request, *args, **kwargs):
     toks = Token.query.filter_by(client_id=request.client.client_id,

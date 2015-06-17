@@ -1,4 +1,4 @@
-DATA_DIR = 'data'
+DATA_PATH = '/data'
 TMP_DIR = 'tmp'
 LOG_DIR = 'log'
 

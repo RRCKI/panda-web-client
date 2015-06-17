@@ -1,12 +1,15 @@
+import commands
 from common import client_config
 from datetime import datetime
 import json
 from app import celery
+from common.NrckiLogger import NrckiLogger
 from ui.Actions import movedata, linkdata
 from mq.MQ import MQ
 from db.models import *
 import os
 
+_logger = NrckiLogger().getLogger("FileMaster")
 
 class FileMaster:
     def __init__(self):
@@ -52,7 +55,7 @@ class FileMaster:
         replicas = file.replicas
         for r in replicas:
             if se == r.se:
-                print 'Replica is ready'
+                _logger.debug('Replica is ready: id=%s' % r.id)
                 # Update expired time
                 return r.id
 
@@ -121,3 +124,13 @@ def mqMakeReplica(fileid, se):
     message = json.dumps(data)
     print '%s: %s %s' % ('mqMakeReplica', fileid, se)
     mq.sendMessage(message, routing_key)
+
+def getScope(username):
+    return 'web.' + username
+
+def getGUID(scope, lfn):
+    guid = commands.getoutput('uuidgen')
+    return scope + '_' + guid
+
+def getFullPath(scope, dataset, lfn):
+    return '/'.join(scope, dataset, lfn)

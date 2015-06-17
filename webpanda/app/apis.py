@@ -6,7 +6,7 @@ import commands
 import json
 from flask import jsonify, request, make_response, g
 from flask_login import login_required
-from models import Distributive, Container, File, Site
+from models import Distributive, Container, File, Site, TransferTask
 from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica
 
 
@@ -52,14 +52,14 @@ def upload2API():
         file.se = f['se']
         file.lfn = f['lfn']
         file.token = f['token']
-        file.status = 'registered'
+        file.status = 'defined'
         db.session.add(file)
         db.session.commit()
         cont.files.append(file)
         db.session.add(cont)
         db.session.commit()
 
-        # Create MQ request
+        # Create async task
         task = makeReplica.delay(file.id, site.se)
 
     if isOK:
@@ -69,36 +69,37 @@ def upload2API():
 @app.route('/api/file/<guid>/makereplica/<se>', methods=['POST'])
 def makeReplicaAPI(guid, se):
     file = File.query.filter_by(guid=guid).first()
-    taskid = file.transfertask
     rep_num = file.replicas.count()
     replicas = file.replicas
     if rep_num == 0:
-        task = makeReplica.delay(file.id, se)
-        file.transfertask = task.id
-        db.session.add(file)
-        db.session.commit()
-        return make_response(jsonify({'status': task.status}), 200)
-    if taskid:
-        task = cloneReplica.AsyncResult(taskid)
-        status = task.status
-        if status == 'FAILURE':
-            replica = random.choice(replicas)
-            task = cloneReplica.delay(replica.id, se)
-            file.transfertask = task.id
-            db.session.add(file)
-            db.session.commit()
-            return make_response(jsonify({'oldstatus': status, 'status': task.status}), 200)
+        return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
+    # if taskid:
+    #     task = cloneReplica.AsyncResult(taskid)
+    #     status = task.status
+    #     if status == 'FAILURE':
+    #         replica = random.choice(replicas)
+    #         task = cloneReplica.delay(replica.id, se)
+    #         file.transfertask = task.id
+    #         db.session.add(file)
+    #         db.session.commit()
+    #         return make_response(jsonify({'oldstatus': status, 'status': task.status}), 200)
+    #
+    #     if status == 'SUCCESS':
+    #         url = '/'.join(app.config['HOSTNAME'], 'file', file.guid, file.lfn.split('/')[-1])
+    #         return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
+    #     return make_response(jsonify({'status': status}), 200)
+    replica = replicas[0]
+    task = cloneReplica.delay(replica.id, se)
 
-        if status == 'SUCCESS':
-            url = '/'.join(app.config['HOSTNAME'], 'file', file.guid, file.lfn.split('/')[-1])
-            return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
-        return make_response(jsonify({'status': status}), 200)
-    task = cloneReplica.delay(replicas[0].id, se)
-    status = task.status
-    file.transfertask = task.id
+    transfertask = TransferTask()
+    transfertask.replica_id = replica.id
+    transfertask.se = se
+    transfertask.task_id = task.id
+    transfertask.task_status = task.status
+
     db.session.add(file)
     db.session.commit()
-    return make_response(jsonify({'status': status}), 200)
+    return make_response(jsonify({'status': transfertask.task_status}), 200)
 
 @app.route('/api/file/<guid>/checksum', methods=['GET'])
 @login_required

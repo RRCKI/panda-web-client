@@ -12,7 +12,7 @@ from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
 import os
-from ui.FileMaster import makeReplica, cloneReplica
+from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID
 from ui.JobMaster import mqSendJob, send_job
 
 from userinterface import Client
@@ -202,11 +202,13 @@ def upload():
     db.session.commit()
 
     for upload in request.files.getlist("file"):
-        # Define lfn
-        filename = upload.filename.rsplit("/")[0]
-        guid = commands.getoutput('uuidgen')
+        # Define file params
+        lfn = upload.filename.rsplit("/")[0]
+        scope = getScope(g.user.username)
+        guid = getGUID(scope, lfn)
+
         # Target folder for these uploads.
-        target = os.path.join(app.config['UPLOAD_FOLDER'], guid)
+        target = os.path.join(app.config['UPLOAD_FOLDER'], scope, guid)
         try:
             os.mkdir(target)
         except:
@@ -214,23 +216,34 @@ def upload():
                 return ajax_response(False, "Couldn't create upload directory: %s" % target)
             else:
                 return "Couldn't create upload directory: %s" % target
-        destination = os.path.join(target, filename)
+
+        destination = os.path.join(target, lfn)
         upload.save(destination)
+
         if os.path.isfile(destination):
             # Save metadata
             input_files.append(destination)
             file = File()
-            file.scope = g.user.username
+            file.scope = scope
             file.guid = guid
             file.type = 'input'
-            file.se = 'local'
-            file.lfn = destination
+            file.lfn = lfn
             file.token = ''
-            file.status = 'registered'
+            file.status = 'defined'
             db.session.add(file)
             db.session.commit()
             container.files.append(file)
             db.session.add(container)
+            db.session.commit()
+
+            replica = Replica()
+            replica.se = form.url.data.split(':')[0]
+            replica.status = 'ready'
+            replica.lfn = form.url.data
+            db.session.add(replica)
+            db.session.commit()
+            file.replicas.append(replica)
+            db.session.add(file)
             db.session.commit()
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
@@ -314,13 +327,12 @@ def file():
         se = form.se.data
 
         file = File()
-        file.scope = g.user.username
-        file.guid = commands.getoutput('uuidgen')
+        file.scope = 'web.' + g.user.username
+        file.guid = '.'.join(file.scope, commands.getoutput('uuidgen'))
         file.type = 'input'
-        file.se = form.url.data.split(':')[0]
-        file.lfn = form.url.data
+        file.lfn = form.url.data.split(':')[-1].split('/')[-1]
         file.token = ''
-        file.status = 'registered'
+        file.status = 'defined'
         db.session.add(file)
         db.session.commit()
         cont_guid = form.container.data
@@ -329,6 +341,16 @@ def file():
             container.files.append(file)
             db.session.add(container)
             db.session.commit()
+
+        replica = Replica()
+        replica.se = se
+        replica.status = 'ready'
+        replica.lfn = form.url.data
+        db.session.add(replica)
+        db.session.commit()
+        file.replicas.append(replica)
+        db.session.add(file)
+        db.session.commit()
 
         resp = makeReplicaAPI(file.guid, se)
         print resp
