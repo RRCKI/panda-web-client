@@ -6,7 +6,7 @@ from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum
 from ddm.DDM import SEFactory
 from common import client_config
-from FileMaster import get_adler32, get_md5, get_fsize
+from ui.FileMaster import get_adler32, get_md5, get_fsize
 
 DATA_DIR = os.path.join(client_config.basedir, client_config.TMP_DIR)
 
