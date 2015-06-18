@@ -238,11 +238,11 @@ def upload():
             file.lfn = lfn
             file.token = ''
             file.status = 'defined'
-            file.container = container
             file.md5sum = md5sum(destination)
             file.checksum = adler32(destination)
             file.fsize = fsize(destination)
-            file.modification_time = datetime.etcnow()
+            file.modification_time = datetime.utcnow()
+            file.containers.append(container)
             db.session.add(file)
             db.session.commit()
 
