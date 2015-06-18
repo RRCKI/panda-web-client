@@ -84,7 +84,7 @@ class FileMaster:
             s.add(r)
             s.commit()
             file.modification_time = datetime.utcnow()
-            file.replicas.append(replica)
+            file.replicas.append(r)
             s.add(file)
             s.commit()
             return r.id

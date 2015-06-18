@@ -3,6 +3,7 @@ import commands
 import glob
 import json
 from celery import chord
+from datetime import datetime
 
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response
 from flask.ext.login import login_user, logout_user, current_user, login_required
@@ -241,6 +242,7 @@ def upload():
             file.md5sum = md5sum(destination)
             file.checksum = adler32(destination)
             file.fsize = fsize(destination)
+            file.modification_time = datetime.etcnow()
             db.session.add(file)
             db.session.commit()
 
@@ -406,7 +408,6 @@ def files_list():
         file_o['scope'] = file.scope
         file_o['guid'] = file.guid
         file_o['type'] = file.type
-        file_o['se'] = file.se
         file_o['lfn'] = file.lfn
         file_o['status'] = file.status
         files_o.append(file_o)

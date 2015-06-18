@@ -222,6 +222,7 @@ class JobMaster:
         log.lfn = fileOL.lfn
         log.guid = getGUID(log.scope, log.lfn)
         log.type = 'log'
+        log.status = 'defined'
         s.add(log)
         s.commit()
         cont.files.append(log)

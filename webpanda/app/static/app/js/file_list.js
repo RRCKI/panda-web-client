@@ -10,7 +10,6 @@ $(document).ready(function() {
             { "data": "scope" },
             { "data": "guid" },
             { "data": "type" },
-            { "data": "se" },
             { "data": "lfn" },
             { "data": "status" }
         ],
