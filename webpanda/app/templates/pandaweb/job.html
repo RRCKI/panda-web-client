@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Job info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<b>JOB:</b> {{job.id}} <br>
+<b>PANDAID:</b> {{job.pandaid}} <br>
+<b>OWNER:</b> {{file.owner.username}} <br>
+<b>DISTR:</b> {{file.distr}}<br>
+<b>CONTAINER:</b> {{file.container.guid}}<br>
+<b>STATUS:</b> {{job.status}}<br>
+<b>CREATION TIME:</b> {{job.creation_time}}<br>
+<b>MODIFICATION TIME:</b> {{job.modification_time}}<br>
+<b>INPUT FILES:</b> {{job.ninputfiles}}<br>
+<b>OUTPUT FILES:</b> {{job.noutputfiles}}<br>
+<b>FILES:</b><br>
+<table id="filestable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>GUID</th>
+        <th>TYPE</th>
+        <th>LFN</th>
+    </tr>
+</thead>
+<tbody>
+{% for f in files %}
+    <tr>
+        <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
+        <th>{{f.type}}</th>
+        <th>{{f.lfn}}</th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="/static/app/js/job.js"></script>
+{% endblock %}

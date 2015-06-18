@@ -374,6 +374,13 @@ def file_info(guid):
     #         pass
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
 
+@app.route("/job/<id>", methods=['GET'])
+@login_required
+def job_info(id):
+    job = Job.query.filter_by(id=id).one()
+    container = job.container
+    return render_template("pandaweb/job.html", job=job, files=container.files)
+
 @app.route("/files", methods=['GET'])
 @login_required
 def files():

@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('#replicastable').dataTable( {
+    $('#filestable').dataTable( {
         "paging":   false,
         "ordering": false,
         "info":     false
