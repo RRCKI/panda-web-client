@@ -103,6 +103,7 @@ class Container(Base):
     __tablename__ = 'containers'
     id = Column(Integer, primary_key=True)
     guid = Column(String(36))
+    status = Column(String(20))
     jobs = relationship('Job',
         backref=backref('container', lazy='joined'), lazy='dynamic')
     files = relationship('File', secondary=catalog,

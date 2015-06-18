@@ -4,13 +4,19 @@ import random
 from app import app, db, lm
 import commands
 import json
-from flask import jsonify, request, make_response, g
+from datetime import datetime
+from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
-from models import Distributive, Container, File, Site, TransferTask
-from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica
+from common.NrckiLogger import NrckiLogger
+from common.utils import adler32, md5sum, fsize
+from models import Distributive, Container, File, Site, TransferTask, Replica
+from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID
+from ui.FileMaster import getScope
+
+_logger = NrckiLogger().getLogger("app.api")
 
 
-@app.route('/api/v0.1/sw', methods=['GET'])
+@app.route('/api/sw', methods=['GET'])
 @login_required
 def swAPI():
     ds = Distributive.query.all()
@@ -24,47 +30,34 @@ def swAPI():
     return make_response(jsonify({'data': dlist}), 200)
 
 @app.route('/api/container', methods=['POST'])
-def upload1API():
+def contNewAPI():
     cont = Container()
-    guid = commands.getoutput('uuidgen')
+    guid = 'job.' + commands.getoutput('uuidgen')
 
     cont.guid = guid
+    cont.status = 'open'
     db.session.add(cont)
     db.session.commit()
-    return make_response(jsonify({'guid': guid}), 200)
 
-@app.route('/api/file', methods=['POST'])
-def upload2API():
-    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
+    url = '%s/%s' % (app.config['FTP'], guid)
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid))
+    return make_response(jsonify({'ftp': url, 'guid': cont.guid}), 200)
 
-    content = request.data
-    data = json.loads(content)
-    isOK = True
-    for f in data['files']:
-        cont = Container.query.filter_by(guid=f['container']).first()
-        if not cont:
-            isOK = False
-            continue
-        file = File()
-        file.scope = g.user.username
-        file.guid = commands.getoutput('uuidgen')
-        file.type = 'input'
-        file.se = f['se']
-        file.lfn = f['lfn']
-        file.token = f['token']
-        file.status = 'defined'
-        db.session.add(file)
-        db.session.commit()
-        cont.files.append(file)
-        db.session.add(cont)
-        db.session.commit()
+@app.route('/api/container/<guid>/open', methods=['POST'])
+def contOpenAPI(guid):
+    cont = Container.query.filter_by(guid=guid).first()
+    cont.status = 'open'
+    db.session.add(cont)
+    db.session.commit()
+    return make_response(jsonify({}), 200)
 
-        # Create async task
-        task = makeReplica.delay(file.id, site.se)
-
-    if isOK:
-        return make_response(jsonify({'status': 'Success'}), 200)
-    return make_response(jsonify({'error': 'Not found'}), 404)
+@app.route('/api/container/<guid>/close', methods=['POST'])
+def contCloseAPI(guid):
+    cont = Container.query.filter_by(guid=guid).first()
+    cont.status = 'close'
+    db.session.add(cont)
+    db.session.commit()
+    return make_response(jsonify({}), 200)
 
 @app.route('/api/file/<guid>/makereplica/<se>', methods=['POST'])
 def makeReplicaAPI(guid, se):
@@ -73,21 +66,7 @@ def makeReplicaAPI(guid, se):
     replicas = file.replicas
     if rep_num == 0:
         return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
-    # if taskid:
-    #     task = cloneReplica.AsyncResult(taskid)
-    #     status = task.status
-    #     if status == 'FAILURE':
-    #         replica = random.choice(replicas)
-    #         task = cloneReplica.delay(replica.id, se)
-    #         file.transfertask = task.id
-    #         db.session.add(file)
-    #         db.session.commit()
-    #         return make_response(jsonify({'oldstatus': status, 'status': task.status}), 200)
-    #
-    #     if status == 'SUCCESS':
-    #         url = '/'.join(app.config['HOSTNAME'], 'file', file.guid, file.lfn.split('/')[-1])
-    #         return make_response(jsonify({'status': 'SUCCESS', 'url': url}), 200)
-    #     return make_response(jsonify({'status': status}), 200)
+
     replica = replicas[0]
     task = cloneReplica.delay(replica.id, se)
 
@@ -101,51 +80,95 @@ def makeReplicaAPI(guid, se):
     db.session.commit()
     return make_response(jsonify({'status': transfertask.task_status}), 200)
 
-@app.route('/api/file/<guid>/checksum', methods=['GET'])
-@login_required
-def fileChecksumAPI(guid):
-    file = File.query.filter_by(guid=guid).first()
-    data = {}
-    data['adler32'] = file.checksum
-    data['md5sum'] = file.md5sum
-    return make_response(jsonify(data), 200)
-
-@app.route('/api/file/<guid>/info', methods=['GET'])
-@login_required
-def fileInfoAPI(guid):
-    file = File.query.filter_by(guid=guid).first()
-    data = {}
-    data['modification_time'] = str(file.modification_time)
-    data['fsize'] = int(file.fsize)
-    return make_response(jsonify(data), 200)
-
 @app.route('/api/file/<dataset>/<lfn>/info', methods=['GET'])
-@login_required
-def pilotFileChecksumAPI(dataset, lfn):
+def pilotFileInfoAPI(dataset, lfn):
     if ':' in dataset:
         dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).fisrt()
+    container = Container.query.filter_by(guid=dataset).first()
     files = container.files
     for file in files:
         if file.lfn == lfn:
             data = {}
+            data['lfn'] = file.lfn
+            data['guid'] = file.guid
             data['modification_time'] = str(file.modification_time)
             data['fsize'] = int(file.fsize)
-            return make_response(jsonify(data), 200)
-    return make_response(jsonify({'error': 'File not found'}), 400)
-
-@app.route('/api/file/<dataset>/<lfn>/checksum', methods=['GET'])
-@login_required
-def pilotFileChecksumAPI(dataset, lfn):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).fisrt()
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
-            data = {}
             data['adler32'] = file.checksum
             data['md5sum'] = file.md5sum
             return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
+@app.route('/api/file/<dataset>/<lfn>/save', methods=['POST'])
+def pilotFileSaveAPI(dataset, lfn):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).first()
+    files = container.files
+    for f in files:
+        if f.lfn == lfn:
+            file = f
+    if not file:
+        file = File()
+        file.scope = getScope(g.user.username)
+        file.type = 'input'
+        file.lfn = lfn
+        file.guid = getGUID(file.scope, file.lfn)
+        file.status = 'defined'
+        db.session.add(file)
+        db.session.commit()
+
+    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
+    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), file.guid)
+    dest = os.path.join(path, file.lfn)
+    for r in file.replicas:
+        if r.se == site.se and r.status == 'ready':
+            if os.path.isfile(dest): # Check fsize, md5 or adler
+                return make_response(jsonify({'error': 'Replica exists'}), 400)
+            replica = r
+    if not replica:
+        replica = Replica()
+        if os.path.isfile(dest):
+            return make_response(jsonify({'error': 'Unable to upload: File exists'}), 400)
+    if request.headers['Content-Type'] == 'application/octet-stream':
+        try:
+            os.makedirs(path)
+        except(Exception):
+            _logger.debug('Path exists: %s' % path)
+        f = open(dest, 'wb')
+        f.write(request.data)
+        f.close()
+
+        # Update file info
+        file.checksum = adler32(dest)
+        file.md5sum = md5sum(dest)
+        file.fsize = fsize(dest)
+        file.modification_time = datetime.utcnow()
+        db.session.add(file)
+        db.session.commit()
+
+        # Create/change replica
+        replica.se = site.se
+        replica.status = 'ready'
+        replica.lfn = dest
+        replica.token = ''
+        replica.original = file
+        db.session.add(replica)
+        db.session.commit()
+        return make_response(jsonify({'guid': file.guid}), 200)
+    return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
+
+@app.route('/api/file/<dataset>/<lfn>/fetch', methods=['GET'])
+def pilotFileFetchAPI(dataset, lfn):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).first()
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            replicas = file.replicas
+            for replica in replicas:
+                if replica.se == app.config['DEFAULT_SE']:
+                    f = open(replica.lfn, 'r')
+                    rr = Response(f.read(), status=200, content_type='application/octet-stream')
+                    return rr
+    return make_response(jsonify({'error': 'File not found'}), 400)

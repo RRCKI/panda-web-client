@@ -201,6 +201,7 @@ def upload():
 
     container = Container()
     container.guid = cguid
+    container.status = 'open'
     db.session.add(container)
     db.session.commit()
 
@@ -331,12 +332,13 @@ def file():
     if request.method == 'POST':
         se = form.se.data
 
+        from_se, path, token = getUrlInfo(form.url.data)
+
         file = File()
-        file.scope = 'web.' + g.user.username
-        file.guid = '.'.join(file.scope, commands.getoutput('uuidgen'))
+        file.scope = getScope(g.user.username)
         file.type = 'input'
-        file.lfn = form.url.data.split(':')[-1].split('/')[-1]
-        file.token = ''
+        file.lfn = path.split('/')[-1]
+        file.guid = getGUID(file.scope, file.lfn)
         file.status = 'defined'
         db.session.add(file)
         db.session.commit()
@@ -348,15 +350,15 @@ def file():
             db.session.commit()
 
         replica = Replica()
-        replica.se = se
+        replica.se = from_se
         replica.status = 'ready'
+        replica.token = token
         replica.lfn = form.url.data
         replica.original = file
         db.session.add(replica)
         db.session.commit()
 
-        resp = makeReplicaAPI(file.guid, se)
-        print resp
+        resp = cloneReplica.delay(replica.id, se)
         return redirect(url_for('file_info', guid=file.guid))
 
     form.se.choices = [("%s" % site.se, "%s" % site.se) for site in Site.query.filter_by(active=1)]

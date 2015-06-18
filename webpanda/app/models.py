@@ -122,6 +122,7 @@ class Container(db.Model):
     __tablename__ = 'containers'
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(36))
+    status = db.Column(db.String(20))
     jobs = db.relationship('Job',
         backref=db.backref('container', lazy='joined'), lazy='dynamic')
     files = db.relationship('File', secondary=catalog,
