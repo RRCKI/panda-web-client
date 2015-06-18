@@ -119,4 +119,33 @@ def fileInfoAPI(guid):
     data['fsize'] = int(file.fsize)
     return make_response(jsonify(data), 200)
 
+@app.route('/api/file/<dataset>/<lfn>/info', methods=['GET'])
+@login_required
+def pilotFileChecksumAPI(dataset, lfn):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).fisrt()
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            data = {}
+            data['modification_time'] = str(file.modification_time)
+            data['fsize'] = int(file.fsize)
+            return make_response(jsonify(data), 200)
+    return make_response(jsonify({'error': 'File not found'}), 400)
+
+@app.route('/api/file/<dataset>/<lfn>/checksum', methods=['GET'])
+@login_required
+def pilotFileChecksumAPI(dataset, lfn):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).fisrt()
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            data = {}
+            data['adler32'] = file.checksum
+            data['md5sum'] = file.md5sum
+            return make_response(jsonify(data), 200)
+    return make_response(jsonify({'error': 'File not found'}), 400)
 

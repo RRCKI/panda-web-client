@@ -188,7 +188,7 @@ def upload():
     form = request.form
 
     # Create a unique container quid for this particular batch of uploads.
-    cguid = commands.getoutput('uuidgen')
+    cguid = 'job.' + commands.getoutput('uuidgen')
 
     # Is the upload using Ajax, or a direct POST by the form?
     is_ajax = False

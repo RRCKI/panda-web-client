@@ -151,7 +151,7 @@ class JobMaster:
         cont = job.container
         files = cont.files
 
-        datasetName = 'panda:panda.destDB.%s' % commands.getoutput('uuidgen')
+        datasetName = 'panda:%s' % cont.guid
         scope = client_config.DEFAULT_SCOPE
 
         distributive = job.distr.name
@@ -168,7 +168,7 @@ class JobMaster:
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site.ce
         pandajob.cloud = 'RU'
-        pandajob.prodDBlock = "%s:%s.%s" % (scope, 'job', pandajob.jobName)
+        pandajob.prodDBlock = "%s:%s.%s" % (scope, pandajob.jobName)
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
