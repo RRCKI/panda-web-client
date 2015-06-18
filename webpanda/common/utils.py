@@ -1,4 +1,5 @@
 import hashlib
+import os
 import zlib
 
 
@@ -29,3 +30,6 @@ def md5sum(fname):
             checksum.update(data)
         f.close()
         return checksum.hexdigest().lower()
+
+def fsize(fname):
+    return os.path.getsize(fname)

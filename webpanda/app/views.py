@@ -8,17 +8,21 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
+from common.NrckiLogger import NrckiLogger
+from common.utils import adler32, fsize, md5sum
 from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
 import os
-from ui.FileMaster import makeReplica, cloneReplica, getScope, getGUID, getUrlInfo, getMD5, getAdler32, getFSize
-from ui.JobMaster import mqSendJob, send_job
+from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo
+from ui.JobMaster import send_job
 
 from userinterface import Client
 
 HOURS_LIMIT = 96
 DISPLAY_LIMIT = 6000
+
+_logger = NrckiLogger().getLogger("app.views")
 
 
 @app.before_request
@@ -234,9 +238,9 @@ def upload():
             file.token = ''
             file.status = 'defined'
             file.container = container
-            file.md5sum = getMD5(destination)
-            file.checksum = getAdler32(destination)
-            file.fsize = getFSize(destination)
+            file.md5sum = md5sum(destination)
+            file.checksum = adler32(destination)
+            file.fsize = fsize(destination)
             db.session.add(file)
             db.session.commit()
 
@@ -289,6 +293,7 @@ def jobs_list():
 
     # get status update
     if len(ids) > 0:
+        _logger.debug('getJobStatus: ' + str(ids))
         s, o = Client.getJobStatus(ids)
         for job in jobs:
             if job.pandaid in ids:

@@ -159,12 +159,3 @@ def getUrlInfo(url):
     else:
         raise Exception('Illegal URL format')
     return se, path, token
-
-def get_adler32(file):
-    return adler32(file)
-
-def get_md5(file):
-    return md5sum(file)
-
-def get_fsize(file):
-    return os.path.getsize(file)
