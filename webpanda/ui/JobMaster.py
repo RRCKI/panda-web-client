@@ -261,7 +261,7 @@ def send_job(*args, **kwargs):
     if int(jobid) == 0:
         raise Exception('Illegal argument: jobid')
     if int(siteid) == 0:
-        raise Exception('Illegal argument: jobid')
+        raise Exception('Illegal argument: siteid')
     jm = JobMaster()
     return jm.send_job(jobid, siteid)
 
@@ -285,4 +285,25 @@ def mqSendJobDelayed(jobid):
     print '%s: %s' % ('mqSendJobDelayed', jobid)
     mq.sendMessage(message, routing_key)
 
+def prepareInputFiles(cont_id, se):
+    # Initialize db
+    s = DB().getSession()
+    container = s.query(Container).filter(Container.id == cont_id).one()
+    files = container.files
+    tasks = []
+    for file in files:
+        replicas_len = file.replicas.count()
+        if not replicas_len:
+            raise Exception("No available replicas for file %s" % file.guid)
+            return
+        replicas = file.replicas
+        hasReplica = False
+        for replica in replicas:
+            if replica.se == se and replica.status == 'ready':
+                hasReplica = True
 
+        if hasReplica:
+            continue
+        tasks.append(cloneReplica.s(replicas[0].id, se))
+    s.close()
+    return tasks

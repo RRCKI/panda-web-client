@@ -16,7 +16,7 @@ from models import *
 from datetime import datetime
 import os
 from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo
-from ui.JobMaster import send_job
+from ui.JobMaster import send_job, prepareInputFiles
 
 from userinterface import Client
 
@@ -120,8 +120,6 @@ def job():
 
         scope = getScope(g.user.username)
 
-        ftasks = []
-
         for f in ifiles:
             if f != '':
                 from_se, path, token = getUrlInfo(f)
@@ -134,10 +132,8 @@ def job():
                 file.type = 'input'
                 file.lfn = lfn
                 file.status = 'defined'
+                file.containers.append(container)
                 db.session.add(file)
-                db.session.commit()
-                container.files.append(file)
-                db.session.add(container)
                 db.session.commit()
 
                 replica = Replica()
@@ -145,13 +141,11 @@ def job():
                 replica.status = 'defined'
                 replica.lfn = ':'.join([from_se, path])
                 replica.token = token
+                replica.original = file
                 db.session.add(replica)
                 db.session.commit()
-                file.replicas.append(replica)
-                db.session.add(file)
-                db.session.commit()
 
-                ftasks.append(cloneReplica.s(replica.id, site.se))
+        ftasks = prepareInputFiles(container.id, site.se)
 
         for lfn in ofiles:
             file = File()
