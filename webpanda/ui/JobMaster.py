@@ -223,21 +223,17 @@ class JobMaster:
         log.guid = getGUID(log.scope, log.lfn)
         log.type = 'log'
         log.status = 'defined'
+        log.containers.append(cont)
         s.add(log)
         s.commit()
-        cont.files.append(log)
-        s.add(cont)
-        s.commit()
+
         replica = Replica()
         replica.se = pandajob.destinationSE
         replica.status = 'defined'
         replica.lfn = getFullPath(fileOL.scope, fileOL.dataset, fileOL.lfn)
+        replica.original = log
         s.add(replica)
         s.commit()
-        file.replicas.append(replica)
-        s.add(file)
-        s.commit()
-
 
         self.jobList.append(pandajob)
 
