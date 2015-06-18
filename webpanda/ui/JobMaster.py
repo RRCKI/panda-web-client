@@ -9,7 +9,7 @@ from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
 from db.models import *
 from common import client_config
-from ui.FileMaster import cloneReplica, makeReplica, linkReplica, getFullPath, getGUID
+from ui.FileMaster import cloneReplica, makeReplica, linkReplica, getFullPath, getGUID, linkFile
 from app import celery
 
 _logger = NrckiLogger().getLogger("JobMaster")
@@ -172,6 +172,8 @@ class JobMaster:
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 
+        rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
+
         for file in files:
             if file.type == 'input':
                 guid = file.guid
@@ -184,6 +186,7 @@ class JobMaster:
                 fileIT.status = 'ready'
                 fileIT.GUID = guid
                 pandajob.addFile(fileIT)
+                linkFile(file, site.se, rlinkdir)
             if file.type == 'output':
                 fileOT = FileSpec()
                 fileOT.lfn = file.lfn

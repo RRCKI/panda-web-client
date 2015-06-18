@@ -87,7 +87,11 @@ class FileMaster:
             file.replicas.append(r)
             s.add(file)
             s.commit()
+            s.close()
             return r.id
+        s.close()
+        raise Exception('movedata return code: %s' % ec)
+        return 0
 
     def linkReplica(self, replicaid, dir):
         s = DB().getSession()
@@ -95,6 +99,9 @@ class FileMaster:
         se = replica.se
         lfn = replica.lfn
         linkdata(se, {}, lfn, dir)
+        s.close()
+
+
 
 @celery.task
 def cloneReplica(replicaid, se):
@@ -110,6 +117,18 @@ def makeReplica(fileid, se):
 def linkReplica(replicaid, dir):
     fm = FileMaster()
     return fm.linkReplica(replicaid, dir)
+
+def linkFile(fileid, se, dir):
+    s = DB().getSession()
+    file = s.query(File).filter(File.id == fileid).one()
+    replicas = file.replicas
+    for replica in replicas:
+        if replica.se == se:
+            linkReplica(replica.id, dir)
+            return
+    raise Exception('No replica to link file:%s on SE:%s' % (file.guid, se))
+    s.close()
+    return
 
 def mqCloneReplica(replicaid, se):
     routing_key = client_config.MQ_FILEKEY + '.clone'
