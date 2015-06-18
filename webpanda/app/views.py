@@ -132,8 +132,10 @@ def job():
                 file.type = 'input'
                 file.lfn = lfn
                 file.status = 'defined'
-                file.containers.append(container)
                 db.session.add(file)
+                db.session.commit()
+                container.files.append(file)
+                db.session.add(container)
                 db.session.commit()
 
                 replica = Replica()
