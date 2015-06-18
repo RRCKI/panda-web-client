@@ -202,13 +202,10 @@ class JobMaster:
                 replica = Replica()
                 replica.se = site.se
                 replica.status = 'defined'
-                replica.lfn = os.path.join('/', fileOT.scope, fileOT.GUID, fileOT.lfn)
+                replica.lfn = getFullPath(fileOT.scope, fileOT.dataset, fileOT.lfn)
+                replica.original = file
                 s.add(replica)
                 s.commit()
-                file.replicas.append(replica)
-                s.add(file)
-                s.commit()
-
 
         fileOL = FileSpec()
         fileOL.lfn = "%s.log.tgz" % pandajob.jobName

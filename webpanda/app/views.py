@@ -390,9 +390,9 @@ def files_list():
 
     hours_limit = session.get('hours_limit', HOURS_LIMIT)
     display_limit = session.get('display_limit', DISPLAY_LIMIT)
-
+    scope = getScope(user.username)
     # show users jobs
-    files = File.query.filter_by(scope=user.username).order_by(File.id).limit(display_limit)
+    files = File.query.filter_by(scope=scope).order_by(File.id).limit(display_limit)
 
     # prepare json
     files_o = []
