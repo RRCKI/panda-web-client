@@ -186,7 +186,7 @@ class JobMaster:
                 fileIT.status = 'ready'
                 fileIT.GUID = guid
                 pandajob.addFile(fileIT)
-                linkFile(file, site.se, rlinkdir)
+                linkFile(file.id, site.se, rlinkdir)
             if file.type == 'output':
                 fileOT = FileSpec()
                 fileOT.lfn = file.lfn

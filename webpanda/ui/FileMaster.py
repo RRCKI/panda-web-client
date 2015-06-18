@@ -87,7 +87,6 @@ class FileMaster:
             file.replicas.append(r)
             s.add(file)
             s.commit()
-            s.close()
             return r.id
         s.close()
         raise Exception('movedata return code: %s' % ec)
@@ -96,9 +95,9 @@ class FileMaster:
     def linkReplica(self, replicaid, dir):
         s = DB().getSession()
         replica = s.query(Replica).filter(Replica.id == replicaid).one()
-        se = replica.se
+        site = s.query(Site).filter(Site.se == replica.se).one()
         lfn = replica.lfn
-        linkdata(se, {}, lfn, dir)
+        linkdata(site.plugin, {}, lfn, dir)
         s.close()
 
 
