@@ -102,7 +102,7 @@ catalog = Table('catalog', Base.metadata,
 class Container(Base):
     __tablename__ = 'containers'
     id = Column(Integer, primary_key=True)
-    guid = Column(String(36))
+    guid = Column(String(100))
     status = Column(String(20))
     jobs = relationship('Job',
         backref=backref('container', lazy='joined'), lazy='dynamic')
@@ -117,7 +117,7 @@ class File(Base):
     id = Column(Integer, primary_key=True)
     scope = Column(String(64))
     attemptn = Column(Integer, default=0)
-    guid = Column(String(36))
+    guid = Column(String(100))
     type = Column(String(20)) #input/output
     lfn = Column(String(200)) #local file name
     status = Column(String(20)) #ready/transfer

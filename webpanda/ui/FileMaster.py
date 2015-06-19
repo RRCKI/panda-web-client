@@ -177,3 +177,8 @@ def getUrlInfo(url):
     else:
         raise Exception('Illegal URL format')
     return se, path, token
+
+def getFtpLink(lfn):
+    header = client_config.FTP
+    result = ''
+    return result

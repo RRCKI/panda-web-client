@@ -10,7 +10,7 @@ from flask_login import login_required
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
 from models import Distributive, Container, File, Site, TransferTask, Replica
-from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID
+from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink
 from ui.FileMaster import getScope
 
 _logger = NrckiLogger().getLogger("app.api")
@@ -49,15 +49,19 @@ def contOpenAPI(guid):
     cont.status = 'open'
     db.session.add(cont)
     db.session.commit()
-    return make_response(jsonify({}), 200)
+    return make_response(jsonify({'response': 'Container status: open'}), 200)
 
 @app.route('/api/container/<guid>/close', methods=['POST'])
 def contCloseAPI(guid):
     cont = Container.query.filter_by(guid=guid).first()
+
+    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid)
+    os.path.walk(path, registerLocalFile, cont.guid)
+
     cont.status = 'close'
     db.session.add(cont)
     db.session.commit()
-    return make_response(jsonify({}), 200)
+    return make_response(jsonify({'response': 'Container status: close'}), 200)
 
 @app.route('/api/file/<guid>/makereplica/<se>', methods=['POST'])
 def makeReplicaAPI(guid, se):
@@ -98,12 +102,36 @@ def pilotFileInfoAPI(dataset, lfn):
             return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
+@app.route('/api/file/<dataset>/<lfn>/link', methods=['GET'])
+def pilotFileLinkAPI(dataset, lfn):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).first()
+    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
+
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            replicas = file.replicas
+            for r in replicas:
+                if r.se == site.se and r.status == 'ready':
+                    data = {}
+                    data['lfn'] = file.lfn
+                    data['guid'] = file.guid
+                    data['ftp'] = getFtpLink(r.lfn)
+                    return make_response(jsonify(data), 200)
+    return make_response(jsonify({'error': 'File not found'}), 400)
+
 @app.route('/api/file/<dataset>/<lfn>/save', methods=['POST'])
 def pilotFileSaveAPI(dataset, lfn):
     if ':' in dataset:
         dataset = dataset.split(':')[-1]
     container = Container.query.filter_by(guid=dataset).first()
+    if container.status != 'open':
+        return make_response(jsonify({'error': 'Unable to upload: Container is not open'}), 400)
     files = container.files
+
+    file = None
     for f in files:
         if f.lfn == lfn:
             file = f
@@ -120,6 +148,7 @@ def pilotFileSaveAPI(dataset, lfn):
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
     path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), file.guid)
     dest = os.path.join(path, file.lfn)
+    replica = None
     for r in file.replicas:
         if r.se == site.se and r.status == 'ready':
             if os.path.isfile(dest): # Check fsize, md5 or adler
@@ -172,3 +201,46 @@ def pilotFileFetchAPI(dataset, lfn):
                     rr = Response(f.read(), status=200, content_type='application/octet-stream')
                     return rr
     return make_response(jsonify({'error': 'File not found'}), 400)
+
+def registerLocalFile(arg, dirname, names):
+    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
+    _logger.debug(str(arg))
+    cont = Container.query.filter_by(guid=arg).first()
+    files = cont.files
+
+    for name in names:
+        fpath = os.path.join(dirname, name)
+
+        fobj = None
+        for file in files:
+            if file.lfn == name:
+                fobj = file
+        if not fobj:
+            fobj = File()
+            fobj.scope = getScope(g.user.username)
+            fobj.lfn = name
+            fobj.guid = getGUID(fobj.scope, fobj.lfn)
+            fobj.type = 'input'
+            fobj.status = 'defined'
+            fobj.checksum = adler32(fpath)
+            fobj.md5sum = md5sum(fpath)
+            fobj.fsize = fsize(fpath)
+            fobj.modification_time = datetime.utcnow()
+            fobj.containers.append(cont)
+            db.session.add(fobj)
+            db.session.commit()
+
+        replicas = fobj.replicas
+        replica = None
+        for r in replicas:
+            if r.se == site.se and r.status == 'ready':
+                pass
+        if not replica:
+            replica = Replica()
+            replica.se = site.se
+            replica.status = 'ready'
+            replica.token = ''
+            replica.lfn = fpath
+            replica.original = fobj
+            db.session.add(replica)
+            db.session.commit()

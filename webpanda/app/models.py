@@ -121,7 +121,7 @@ catalog = db.Table('catalog',
 class Container(db.Model):
     __tablename__ = 'containers'
     id = db.Column(db.Integer, primary_key=True)
-    guid = db.Column(db.String(36))
+    guid = db.Column(db.String(100))
     status = db.Column(db.String(20))
     jobs = db.relationship('Job',
         backref=db.backref('container', lazy='joined'), lazy='dynamic')
@@ -136,7 +136,7 @@ class File(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     scope = db.Column(db.String(64))
     attemptn = db.Column(db.Integer, default=0)
-    guid = db.Column(db.String(36))
+    guid = db.Column(db.String(100))
     type = db.Column(db.String(20)) #input/output
     lfn = db.Column(db.String(200)) #local file name
     status = db.Column(db.String(20)) #ready/transfer
