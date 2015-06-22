@@ -58,7 +58,9 @@ def registerLocalFile(arg, dirname, names):
 def updateJobStatus():
     # Method to sync PandaDB job status and local job status
     # show users jobs
-    jobs = Job.query.filter(Job.pandaid != None, Job.status not in ['finished', 'failed', 'canceled']).order_by(Job.id).all()
+    jobs = Job.query.filter(Job.pandaid.isnot(None))\
+        .filter(~Job.status.in_(['finished', 'failed', 'cancelled']))\
+        .all()
 
     ids = []
     for job in jobs:

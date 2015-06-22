@@ -88,6 +88,7 @@ def contListAPI(guid):
         data['fsize'] = file.fsize
         data['adler32'] = file.checksum
         data['md5sum'] = file.md5sum
+        data['scope'] = file.scope
         datalist.append(data)
     return make_response(jsonify({'data': datalist}), 200)
 
