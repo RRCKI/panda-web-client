@@ -168,7 +168,7 @@ class JobMaster:
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site.ce
         pandajob.cloud = 'RU'
-        pandajob.prodDBlock = "%s:%s.%s" % (scope, pandajob.jobName)
+        pandajob.prodDBlock = "%s:%s" % (scope, pandajob.jobName)
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
 

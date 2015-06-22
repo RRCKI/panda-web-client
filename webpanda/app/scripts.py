@@ -83,11 +83,13 @@ def updateJobStatus():
 
     return localids
 
-def registerOutputFiles(ids=[]):
-    jobs = Job.query.filter(Job.id.in_(ids))\
+def registerOutputFiles():
+    jobs = Job.query.filter(Job.status.in_(['finished', 'failed', 'cancelled']))\
         .filter(Job.registered != 1)\
         .all()
+    ids = []
     for job in jobs:
+        ids.append(job.id)
         site = Site.query.filter_by(ce=job.ce).first()
         cont = job.container
         files = cont.files
@@ -103,8 +105,7 @@ def registerOutputFiles(ids=[]):
             slist['output'] = 'failed'
             slist['log'] = 'ready'
         else:
-            raise Exception('Illegal job status to update output files')
-            return
+            continue
 
         for file in files:
             if file.type in ['output', 'log']:
@@ -121,7 +122,7 @@ def registerOutputFiles(ids=[]):
         db.session.add(job)
         db.session.commit()
 
-    return 0
+    return ids
 
 def transferOutputFiles(ids=[]):
     to_site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
