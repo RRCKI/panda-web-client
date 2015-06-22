@@ -116,6 +116,11 @@ def registerOutputFiles(ids=[]):
                         db.session.add(replica)
                         db.session.commit()
 
+        job.registered = 1
+        job.registation_time = datetime.utcnow()
+        db.session.add(job)
+        db.session.commit()
+
     return 0
 
 def transferOutputFiles(ids=[]):
