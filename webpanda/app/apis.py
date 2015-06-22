@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
+from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
 from models import Distributive, Container, File, Site, TransferTask, Replica
@@ -236,45 +237,3 @@ def pilotFileFetchAPI(dataset, lfn):
                     return rr
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-def registerLocalFile(arg, dirname, names):
-    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
-    _logger.debug(str(arg))
-    cont = Container.query.filter_by(guid=arg).first()
-    files = cont.files
-
-    for name in names:
-        fpath = os.path.join(dirname, name)
-
-        fobj = None
-        for file in files:
-            if file.lfn == name:
-                fobj = file
-        if not fobj:
-            fobj = File()
-            fobj.scope = getScope(g.user.username)
-            fobj.lfn = name
-            fobj.guid = getGUID(fobj.scope, fobj.lfn)
-            fobj.type = 'input'
-            fobj.status = 'defined'
-            fobj.checksum = adler32(fpath)
-            fobj.md5sum = md5sum(fpath)
-            fobj.fsize = fsize(fpath)
-            fobj.modification_time = datetime.utcnow()
-            fobj.containers.append(cont)
-            db.session.add(fobj)
-            db.session.commit()
-
-        replicas = fobj.replicas
-        replica = None
-        for r in replicas:
-            if r.se == site.se and r.status == 'ready':
-                pass
-        if not replica:
-            replica = Replica()
-            replica.se = site.se
-            replica.status = 'ready'
-            replica.token = ''
-            replica.lfn = fpath
-            replica.original = fobj
-            db.session.add(replica)
-            db.session.commit()

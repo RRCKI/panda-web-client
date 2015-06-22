@@ -109,6 +109,8 @@ class Job(db.Model):
     modification_time = db.Column(db.DateTime)
     ninputfiles = db.Column(db.Integer)
     noutputfiles = db.Column(db.Integer)
+    registered = db.Column(db.Integer, default=0)
+    registation_time = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<Job id=%s>' % self.id
