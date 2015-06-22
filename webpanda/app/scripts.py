@@ -3,12 +3,12 @@ from datetime import datetime
 import os
 from flask import g
 from app import app, db
-from apis import makeReplicaAPI
+
 from common.utils import adler32, fsize
 from common.utils import md5sum
 from models import Container, Site, File, Replica, Job
 from common.NrckiLogger import NrckiLogger
-from ui.FileMaster import getScope, getGUID
+from ui.FileMaster import getScope, getGUID, cloneReplica
 import userinterface.Client as Client
 
 _logger = NrckiLogger().getLogger('app.scripts')
@@ -131,6 +131,7 @@ def transferOutputFiles(ids=[]):
             if file.type in ['log', 'output']:
                 replicas = file.replicas
                 needReplica = False
+                fromReplica = 0
                 hasReplica = False
                 for replica in replicas:
                     if replica.se == from_site.se and replica.status == 'ready':
@@ -138,9 +139,10 @@ def transferOutputFiles(ids=[]):
                     if replica.se == to_site.se:
                         if replica.status == 'ready':
                             hasReplica = True
+                            fromReplica = replica.id
                         if replica.status != 'ready':
                             raise Exception('Broken replica. File: %s' % file.guid)
                 if needReplica and not hasReplica:
-                    makeReplicaAPI(cont.guid, file.lfn, to_site.se)
+                    task = cloneReplica.delay(fromReplica, to_site.se)
 
     return 0
