@@ -142,10 +142,10 @@ def transferOutputFiles(ids=[]):
                 for replica in replicas:
                     if replica.se == from_site.se and replica.status == 'ready':
                        needReplica = True
+                       fromReplica = replica.id
                     if replica.se == to_site.se:
                         if replica.status == 'ready':
                             hasReplica = True
-                            fromReplica = replica.id
                         if replica.status != 'ready':
                             raise Exception('Broken replica. File: %s' % file.guid)
                 if needReplica and not hasReplica:
