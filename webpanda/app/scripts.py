@@ -125,10 +125,10 @@ def registerOutputFiles():
     return ids
 
 def transferOutputFiles(ids=[]):
+    if len(ids) == 0:
+        return 0
     to_site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
-    jobs = Job.query.filter(Job.id.in_(ids))\
-        .filter(Job.registered != 1)\
-        .all()
+    jobs = Job.query.filter(Job.id.in_(ids)).all()
     for job in jobs:
         from_site = Site.query.filter_by(ce=job.ce).first()
         cont = job.container
