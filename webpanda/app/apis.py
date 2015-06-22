@@ -63,26 +63,59 @@ def contCloseAPI(guid):
     db.session.commit()
     return make_response(jsonify({'response': 'Container status: close'}), 200)
 
-@app.route('/api/file/<guid>/makereplica/<se>', methods=['POST'])
-def makeReplicaAPI(guid, se):
-    file = File.query.filter_by(guid=guid).first()
-    rep_num = file.replicas.count()
-    replicas = file.replicas
-    if rep_num == 0:
-        return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
+@app.route('/api/container/<guid>/info', methods=['GET'])
+def contInfoAPI(guid):
+    cont = Container.query.filter_by(guid=guid).first()
+    data = {}
+    data['id'] = cont.id
+    data['guid'] = cont.guid
+    data['status'] = cont.status
+    data['nfiles'] = cont.files.count()
+    return make_response(jsonify({'data': data}), 200)
 
-    replica = replicas[0]
-    task = cloneReplica.delay(replica.id, se)
+@app.route('/api/container/<guid>/list', methods=['GET'])
+def contListAPI(guid):
+    cont = Container.query.filter_by(guid=guid).first()
+    files = cont.files
 
-    transfertask = TransferTask()
-    transfertask.replica_id = replica.id
-    transfertask.se = se
-    transfertask.task_id = task.id
-    transfertask.task_status = task.status
+    datalist = []
+    for file in files:
+        data = {}
+        data['lfn'] = file.lfn
+        data['guid'] = file.guid
+        data['modification_time'] = str(file.modification_time)
+        data['fsize'] = file.fsize
+        data['adler32'] = file.checksum
+        data['md5sum'] = file.md5sum
+        datalist.append(data)
+    return make_response(jsonify({'data': datalist}), 200)
 
-    db.session.add(file)
-    db.session.commit()
-    return make_response(jsonify({'status': transfertask.task_status}), 200)
+@app.route('/api/file/<dataset>/<lfn>/makereplica/<se>', methods=['POST'])
+def makeReplicaAPI(dataset, lfn, se):
+    if ':' in dataset:
+        dataset = dataset.split(':')[-1]
+    container = Container.query.filter_by(guid=dataset).first()
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            rep_num = file.replicas.count()
+            replicas = file.replicas
+            if rep_num == 0:
+                return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
+
+            replica = replicas[0]
+            task = cloneReplica.delay(replica.id, se)
+
+            transfertask = TransferTask()
+            transfertask.replica_id = replica.id
+            transfertask.se = se
+            transfertask.task_id = task.id
+            transfertask.task_status = task.status
+
+            db.session.add(file)
+            db.session.commit()
+            return make_response(jsonify({'status': transfertask.task_status}), 200)
+    return make_response(jsonify({'error': 'File not found'}), 400)
 
 @app.route('/api/file/<dataset>/<lfn>/info', methods=['GET'])
 def pilotFileInfoAPI(dataset, lfn):
@@ -142,11 +175,12 @@ def pilotFileSaveAPI(dataset, lfn):
         file.lfn = lfn
         file.guid = getGUID(file.scope, file.lfn)
         file.status = 'defined'
+        file.containers.append(container)
         db.session.add(file)
         db.session.commit()
 
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
-    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), file.guid)
+    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), container.guid)
     dest = os.path.join(path, file.lfn)
     replica = None
     for r in file.replicas:
