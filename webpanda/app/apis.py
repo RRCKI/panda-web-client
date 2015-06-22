@@ -105,7 +105,7 @@ def makeReplicaAPI(dataset, lfn, se):
             if rep_num == 0:
                 return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
 
-            replica = replicas[0]
+            replica = replicas[0] #TODO Update chosing method
             task = cloneReplica.delay(replica.id, se)
 
             transfertask = TransferTask()

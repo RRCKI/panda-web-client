@@ -244,6 +244,7 @@ class JobMaster:
         #update PandaID
         PandaID = int(x[0])
         job.pandaid = PandaID
+        job.ce = site.ce
         s.add(job)
         s.commit()
         s.close()

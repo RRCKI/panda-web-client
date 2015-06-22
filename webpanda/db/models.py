@@ -93,6 +93,9 @@ class Job(Base):
     modification_time = Column(DateTime)
     ninputfiles = Column(Integer)
     noutputfiles = Column(Integer)
+    registered = Column(Integer, default=0)
+    registation_time = Column(DateTime)
+    ce = Column(String(40))
 
 catalog = Table('catalog', Base.metadata,
     Column('container_id', Integer, ForeignKey('containers.id')),

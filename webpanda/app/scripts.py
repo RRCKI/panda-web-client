@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 from flask import g
 from app import app, db
+from apis import makeReplicaAPI
 from common.utils import adler32, fsize
 from common.utils import md5sum
 from models import Container, Site, File, Replica, Job
@@ -63,7 +64,9 @@ def updateJobStatus():
         .all()
 
     ids = []
+    localids = []
     for job in jobs:
+        localids.append(job.id)
         ids.append(job.pandaid)
 
     # get status update
@@ -77,3 +80,67 @@ def updateJobStatus():
                         job.status = obj.jobStatus
                         db.session.add(job)
                         db.session.commit()
+
+    return localids
+
+def registerOutputFiles(ids=[]):
+    jobs = Job.query.filter(Job.id.in_(ids))\
+        .filter(Job.registered != 1)\
+        .all()
+    for job in jobs:
+        site = Site.query.filter_by(ce=job.ce).first()
+        cont = job.container
+        files = cont.files
+
+        slist = {}
+        if job.status == 'finished':
+            slist['output'] = 'ready'
+            slist['log'] = 'ready'
+        elif job.status == 'failed':
+            slist['output'] = 'failed'
+            slist['log'] = 'ready'
+        elif job.status == 'cancelled':
+            slist['output'] = 'failed'
+            slist['log'] = 'ready'
+        else:
+            raise Exception('Illegal job status to update output files')
+            return
+
+        for file in files:
+            if file.type in ['output', 'log']:
+                replicas = file.replicas
+                for replica in replicas:
+                    if replica.se == site.se:
+                        # Update replica status
+                        replica.status = slist[file.type]
+                        db.session.add(replica)
+                        db.session.commit()
+
+    return 0
+
+def transferOutputFiles(ids=[]):
+    to_site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
+    jobs = Job.query.filter(Job.id.in_(ids))\
+        .filter(Job.registered != 1)\
+        .all()
+    for job in jobs:
+        from_site = Site.query.filter_by(ce=job.ce).first()
+        cont = job.container
+        files = cont.files
+        for file in files:
+            if file.type in ['log', 'output']:
+                replicas = file.replicas
+                needReplica = False
+                hasReplica = False
+                for replica in replicas:
+                    if replica.se == from_site.se and replica.status == 'ready':
+                       needReplica = True
+                    if replica.se == to_site.se:
+                        if replica.status == 'ready':
+                            hasReplica = True
+                        if replica.status != 'ready':
+                            raise Exception('Broken replica. File: %s' % file.guid)
+                if needReplica and not hasReplica:
+                    makeReplicaAPI(cont.guid, file.lfn, to_site.se)
+
+    return 0
