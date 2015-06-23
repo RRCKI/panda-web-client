@@ -67,7 +67,11 @@ class FileMaster:
         # Define result replica params
         to_se = s.query(Site).filter(Site.se == se).one()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
-        toParams = {'dest': dest}
+        toParams = {'dest': dest,
+                    'basedir': to_se.basedir,
+                    'lfn': file.lfn,
+                    'scope': file.scope,
+                    'cont': file.guid}
 
         ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:

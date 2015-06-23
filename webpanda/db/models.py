@@ -73,6 +73,7 @@ class Site(Base):
     ce = Column(String(64))
     plugin = Column(String(20))
     active = Column(Integer, default=1)
+    datadir = Column(String(200))
 
     def __repr__(self):
         return '<SE=%s CE=%s>' % (self.se, self.ce)

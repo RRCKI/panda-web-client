@@ -182,7 +182,7 @@ def pilotFileSaveAPI(dataset, lfn):
         db.session.commit()
 
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
-    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), container.guid)
+    path = os.path.join(site.datadir, getScope(g.user.username), container.guid)
     dest = os.path.join(path, file.lfn)
     replica = None
     for r in file.replicas:

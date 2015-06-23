@@ -89,6 +89,7 @@ class Site(db.Model):
     ce = db.Column(db.String(64))
     plugin = db.Column(db.String(20))
     active = db.Column(db.Integer, default=1)
+    datadir = db.Column(db.String(200))
 
     def __repr__(self):
         return '<SE=%s CE=%s>' % (self.se, self.ce)

@@ -7,19 +7,18 @@ from ddm.DDM import SEPlugin
 _logger = NrckiLogger().getLogger("DDM")
 
 class HPCSEPlugin(SEPlugin):
-    def __init__(self, params=None):
+    def __init__(self, params={}):
         self.key = client_config.HPC_KEY
         self.host = client_config.HPC_HOST
         self.user = client_config.HPC_USER
-        self.datadir = client_config.HPC_DATADIR
+        self.datadir = params['basedir']
 
     def get(self, src, dest):
         _logger.debug('HPC: Try to get file from %s to %s' % (src, dest))
         try:
-            if not src.startwith('/'):
+            if not src.startswith('/'):
                 src = '/' + src
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            #out = proc.communicate('scp -i %s %s@%s:%s%s %s' % (self.key, self.user, self.host, self.datadir, src, dest))
             out = proc.communicate("rsync -av -e 'ssh -i %s' %s@%s:%s%s %s/" % (self.key, self.user, self.host, self.datadir, src, dest))
 
         except:
@@ -30,7 +29,6 @@ class HPCSEPlugin(SEPlugin):
         _logger.debug('HPC: Try to put file from %s to %s' % (src, dest))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            #out = proc.communicate('scp -i %s %s %s@%s:%s%s' % (self.key, self.user, self.host, self.datadir, src, dest))
             out = proc.communicate("rsync -av -e 'ssh -i %s' %s %s@%s:%s%s/" % (self.key, src, self.user, self.host, self.datadir, dest))
 
         except:

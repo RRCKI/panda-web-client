@@ -6,10 +6,16 @@ _logger = NrckiLogger().getLogger("DDM")
 
 class LocalSEPlugin():
     def __init__(self, params={}):
-        pass
+        self.dest = params['dest']
+        self.datadir = params['basedir']
+        self.lfn = params['lfn']
+        self.scope = params['scope']
+        self.cont = params['cont']
 
     def get(self, src, dest):
-        _logger.debug('LOCAL: Try to get file from %s to %s' % (src, dest))
+        dest = self.datadir + dest + '/' + self.scope + '/' + self.lfn
+        src = self.datadir + src
+        _logger.debug('LOCAL: Try to copy file from %s to %s' % (src, dest))
         try:
             if not os.path.isfile(src):
                 _logger.error("%s: File not found" % src)
@@ -20,9 +26,7 @@ class LocalSEPlugin():
 
 
     def put(self, src, dest):
-        _logger.debug('LOCAL: Try to put file from %s to %s' % (src, dest))
         if not os.path.isfile(src):
             _logger.error("%s: File not found" % src)
 
         self.get(src, dest)
-        shutil.rmtree(os.path.join(src.split('/')[:-1]))
