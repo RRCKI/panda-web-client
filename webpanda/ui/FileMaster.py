@@ -27,7 +27,7 @@ class FileMaster:
         fromParams = {'token': file.token}
 
         # Define result replica params
-        to_se = s.query(Site).filter(Site.se == se).one()
+        to_se = s.query(Site).filter(Site.se == se).first()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest}
 
@@ -61,11 +61,11 @@ class FileMaster:
                 return r.id
 
         # Define base replica
-        from_se = s.query(Site).filter(Site.se == replica.se).one()
+        from_se = s.query(Site).filter(Site.se == replica.se).first()
         fromParams = {}
 
         # Define result replica params
-        to_se = s.query(Site).filter(Site.se == se).one()
+        to_se = s.query(Site).filter(Site.se == se).first()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest,
                     'basedir': to_se.datadir,
@@ -99,7 +99,7 @@ class FileMaster:
     def linkReplica(self, replicaid, dir):
         s = DB().getSession()
         replica = s.query(Replica).filter(Replica.id == replicaid).one()
-        site = s.query(Site).filter(Site.se == replica.se).one()
+        site = s.query(Site).filter(Site.se == replica.se).first()
         lfn = replica.lfn
         linkdata(site.plugin, {}, lfn, dir)
         s.close()
