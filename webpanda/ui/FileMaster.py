@@ -68,7 +68,7 @@ class FileMaster:
         to_se = s.query(Site).filter(Site.se == se).one()
         dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
         toParams = {'dest': dest,
-                    'basedir': to_se.basedir,
+                    'basedir': to_se.datadir,
                     'lfn': file.lfn,
                     'scope': file.scope,
                     'cont': file.guid}

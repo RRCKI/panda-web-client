@@ -1,16 +1,13 @@
 import os
 import shutil
+from common import client_config
 from common.NrckiLogger import NrckiLogger
 
 _logger = NrckiLogger().getLogger("DDM")
 
 class LocalSEPlugin():
     def __init__(self, params={}):
-        self.dest = params['dest']
-        self.datadir = params['basedir']
-        self.lfn = params['lfn']
-        self.scope = params['scope']
-        self.cont = params['cont']
+        self.datadir = client_config.DATA_PATH
 
     def get(self, src, dest):
         dest = self.datadir + dest + '/' + self.scope + '/' + self.lfn

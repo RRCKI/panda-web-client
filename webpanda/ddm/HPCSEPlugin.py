@@ -11,7 +11,7 @@ class HPCSEPlugin(SEPlugin):
         self.key = client_config.HPC_KEY
         self.host = client_config.HPC_HOST
         self.user = client_config.HPC_USER
-        self.datadir = params['basedir']
+        self.datadir = client_config.HPC_DATADIR
 
     def get(self, src, dest):
         _logger.debug('HPC: Try to get file from %s to %s' % (src, dest))

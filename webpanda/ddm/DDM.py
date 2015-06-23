@@ -39,7 +39,7 @@ class SEFactory:
                 se = SEPlugin()
         except Exception:
             print Exception.message
-            _logger('Unable to get %s instance: %s' % (plugin, str(Exception.message)))
+            _logger.error('Unable to get %s instance: %s' % (plugin, str(Exception.message)))
             return None
         return se
 
@@ -48,13 +48,13 @@ class SEPlugin(object):
         pass
 
     def get(self, src, dest, fsize, fsum):
-        _logger("SEPlugin.get not implemented")
+        _logger.error("SEPlugin.get not implemented")
         raise NotImplementedError("SEPlugin.get not implemented")
 
     def put(self, src, dest):
-        _logger("SEPlugin.put not implemented")
+        _logger.error("SEPlugin.put not implemented")
         raise NotImplementedError("SEPlugin.put not implemented")
 
     def link(self, lfn, dir):
-        _logger("SEPlugin.link not implemented")
+        _logger.error("SEPlugin.link not implemented")
         raise NotImplementedError("SEPlugin.link not implemented")
