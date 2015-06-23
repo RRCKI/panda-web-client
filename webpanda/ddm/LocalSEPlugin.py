@@ -35,7 +35,7 @@ class LocalSEPlugin():
         _logger.debug('LOCAL: Try to link file from %s to %s' % (lfn, dir))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("mkdir -p %s && ln -s %s %s" % (self.datadir + dir, self.datadir + lfn, self.datadir + dir))
+            out = proc.communicate("mkdir -p %s && ln -s %s %s" % (dir, lfn, dir))
 
         except:
             _logger.error('Unable to link:%s to %s' % (lfn, dir))
