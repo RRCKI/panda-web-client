@@ -8,7 +8,7 @@ from common.utils import adler32, fsize
 from common.utils import md5sum
 from models import Container, Site, File, Replica, Job
 from common.NrckiLogger import NrckiLogger
-from ui.FileMaster import getScope, getGUID, cloneReplica
+from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
 import userinterface.Client as Client
 
 _logger = NrckiLogger().getLogger('app.scripts')
@@ -33,13 +33,10 @@ def registerLocalFile(arg, dirname, names):
             fobj.guid = getGUID(fobj.scope, fobj.lfn)
             fobj.type = 'input'
             fobj.status = 'defined'
-            fobj.checksum = adler32(fpath)
-            fobj.md5sum = md5sum(fpath)
-            fobj.fsize = fsize(fpath)
-            fobj.modification_time = datetime.utcnow()
             fobj.containers.append(cont)
             db.session.add(fobj)
             db.session.commit()
+            setFileMeta(fobj.id, fpath)
 
         replicas = fobj.replicas
         replica = None
@@ -146,6 +143,7 @@ def transferOutputFiles(ids=[]):
                     if replica.se == to_site.se:
                         if replica.status == 'ready':
                             hasReplica = True
+                            setFileMeta(file.id, app.config['DATA_PATH'] + replica.lfn)
                         if replica.status != 'ready':
                             raise Exception('Broken replica. File: %s' % file.guid)
                 if needReplica and not hasReplica:

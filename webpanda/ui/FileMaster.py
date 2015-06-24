@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 from app import celery
 from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum
+from common.utils import adler32, md5sum, fsize
 from ui.Actions import movedata, linkdata
 from mq.MQ import MQ
 from db.models import *
@@ -186,3 +186,17 @@ def getFtpLink(lfn):
     header = client_config.FTP
     result = ''
     return result
+
+def setFileMeta(fileid, lfn):
+    s = DB().getSession()
+    file = s.query(File).filter(File.id == fileid).one()
+    if file.fsize == None:
+        file.fsize = fsize(lfn)
+    if file.md5sum == None:
+        file.md5sum = md5sum(lfn)
+    if file.checksum == None:
+        file.checksum = adler32(lfn)
+    file.modification_time = datetime.utcnow()
+    s.add(file)
+    s.commit()
+    s.close()

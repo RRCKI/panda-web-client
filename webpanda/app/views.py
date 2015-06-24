@@ -15,7 +15,7 @@ from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
 import os
-from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo
+from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta
 from ui.JobMaster import send_job, prepareInputFiles
 
 from userinterface import Client
@@ -246,13 +246,10 @@ def upload():
             file.lfn = lfn
             file.token = ''
             file.status = 'defined'
-            file.md5sum = md5sum(destination)
-            file.checksum = adler32(destination)
-            file.fsize = fsize(destination)
-            file.modification_time = datetime.utcnow()
             file.containers.append(container)
             db.session.add(file)
             db.session.commit()
+            setFileMeta(file.id, destination)
 
             replica = Replica()
             replica.se = site.se

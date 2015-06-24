@@ -11,7 +11,7 @@ from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
 from models import Distributive, Container, File, Site, TransferTask, Replica
-from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink
+from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink, setFileMeta
 from ui.FileMaster import getScope
 
 _logger = NrckiLogger().getLogger("app.api")
@@ -206,12 +206,7 @@ def pilotFileSaveAPI(dataset, lfn):
     f.close()
 
     # Update file info
-    file.checksum = adler32(dest)
-    file.md5sum = md5sum(dest)
-    file.fsize = fsize(dest)
-    file.modification_time = datetime.utcnow()
-    db.session.add(file)
-    db.session.commit()
+    setFileMeta(file.id, dest)
 
     # Create/change replica
     replica.se = site.se
