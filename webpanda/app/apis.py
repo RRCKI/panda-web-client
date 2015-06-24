@@ -233,8 +233,12 @@ def pilotFileFetchAPI(dataset, lfn):
             replicas = file.replicas
             for replica in replicas:
                 if replica.se == app.config['DEFAULT_SE']:
-                    f = open(replica.lfn, 'r')
+                    fullpath = app.config['DATA_PATH'] + replica.lfn
+                    f = open(fullpath, 'r')
                     rr = Response(f.read(), status=200, content_type='application/octet-stream')
+                    file.downloaded += 1
+                    db.session.add(file)
+                    db.session.commit()
                     return rr
     return make_response(jsonify({'error': 'File not found'}), 400)
 

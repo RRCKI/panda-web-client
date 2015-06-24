@@ -130,6 +130,7 @@ class File(Base):
     md5sum = Column(String(36))
     checksum = Column(String(36))
     modification_time = Column(DateTime)
+    downloaded = Column(Integer, default=0)
     replicas = relationship('Replica',
         backref=backref('original', lazy='joined'), lazy='dynamic')
 

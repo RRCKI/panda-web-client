@@ -213,7 +213,7 @@ def upload():
         site = Site.query.filter_by(se='RRC-KI-CLOUD').first()
 
         # Target folder for these uploads.
-        target = os.path.join(app.config['UPLOAD_FOLDER'], scope, guid)
+        target = app.config['UPLOAD_FOLDER'] + dir
         try:
             os.makedirs(target)
         except:
@@ -222,6 +222,7 @@ def upload():
             else:
                 return "Couldn't create upload directory: %s" % target
 
+        locallfn = '/' + os.path.join(scope, guid, lfn)
         destination = os.path.join(target, lfn)
         upload.save(destination)
 
@@ -246,7 +247,7 @@ def upload():
             replica = Replica()
             replica.se = site.se
             replica.status = 'ready'
-            replica.lfn = destination
+            replica.lfn = locallfn
             replica.original = file
             db.session.add(replica)
             db.session.commit()

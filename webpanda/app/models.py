@@ -149,6 +149,7 @@ class File(db.Model):
     md5sum = db.Column(db.String(36))
     checksum = db.Column(db.String(36))
     modification_time = db.Column(db.DateTime)
+    downloaded = db.Column(db.Integer, default=0)
     replicas = db.relationship('Replica',
         backref=db.backref('original', lazy='joined'), lazy='dynamic')
 
