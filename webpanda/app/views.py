@@ -162,6 +162,15 @@ def job():
             db.session.add(container)
             db.session.commit()
 
+        allfiles = container.files
+        nifiles = 0
+        nofiles = 0
+        for f in allfiles:
+            if f.type == 'input':
+                nifiles += 1
+            if f.type == 'output':
+                nofiles += 1
+
         job = Job()
         job.pandaid = None
         job.status = 'pending'
@@ -171,8 +180,8 @@ def job():
         job.container = container
         job.creation_time = datetime.utcnow()
         job.modification_time = datetime.utcnow()
-        job.ninputfiles = len(ifiles)
-        job.noutputfiles = len(ofiles)
+        job.ninputfiles = nifiles
+        job.noutputfiles = nofiles
         db.session.add(job)
         db.session.commit()
 
@@ -286,23 +295,6 @@ def jobs_list():
 
     # show users jobs
     jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id).limit(display_limit)
-
-    ids = []
-    for job in jobs:
-        if job.pandaid and job.status not in ['finished', 'failed', 'canceled']:
-            ids.append(job.pandaid)
-
-    # get status update
-    if len(ids) > 0:
-        _logger.debug('getJobStatus: ' + str(ids))
-        s, o = Client.getJobStatus(ids)
-        for job in jobs:
-            if job.pandaid in ids:
-                for obj in o:
-                    if obj.PandaID == job.pandaid:
-                        job.status = obj.jobStatus
-                        db.session.add(job)
-                        db.session.commit()
 
     # prepare json
     jobs_o = []
