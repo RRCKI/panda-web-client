@@ -223,7 +223,7 @@ def upload():
             else:
                 return "Couldn't create upload directory: %s" % target
 
-        replfn = dir + lfn
+        replfn = os.path.join(dir, lfn)
         destination = os.path.join(target, lfn)
         upload.save(destination)
 
