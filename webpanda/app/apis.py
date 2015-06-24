@@ -16,6 +16,9 @@ from ui.FileMaster import getScope
 
 _logger = NrckiLogger().getLogger("app.api")
 
+@app.before_request
+def before_requestAPI():
+    _logger.debug(request.url)
 
 @app.route('/api/sw', methods=['GET'])
 @login_required
@@ -194,33 +197,32 @@ def pilotFileSaveAPI(dataset, lfn):
         replica = Replica()
         if os.path.isfile(dest):
             return make_response(jsonify({'error': 'Unable to upload: File exists'}), 400)
-    if request.headers['Content-Type'] == 'application/octet-stream':
-        try:
-            os.makedirs(path)
-        except(Exception):
-            _logger.debug('Path exists: %s' % path)
-        f = open(dest, 'wb')
-        f.write(request.data)
-        f.close()
+    try:
+        os.makedirs(path)
+    except(Exception):
+        _logger.debug('Path exists: %s' % path)
+    f = open(dest, 'wb')
+    f.write(request.data)
+    f.close()
 
-        # Update file info
-        file.checksum = adler32(dest)
-        file.md5sum = md5sum(dest)
-        file.fsize = fsize(dest)
-        file.modification_time = datetime.utcnow()
-        db.session.add(file)
-        db.session.commit()
+    # Update file info
+    file.checksum = adler32(dest)
+    file.md5sum = md5sum(dest)
+    file.fsize = fsize(dest)
+    file.modification_time = datetime.utcnow()
+    db.session.add(file)
+    db.session.commit()
 
-        # Create/change replica
-        replica.se = site.se
-        replica.status = 'ready'
-        replica.lfn = dest
-        replica.token = ''
-        replica.original = file
-        db.session.add(replica)
-        db.session.commit()
-        return make_response(jsonify({'guid': file.guid}), 200)
-    return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
+    # Create/change replica
+    replica.se = site.se
+    replica.status = 'ready'
+    replica.lfn = dest
+    replica.token = ''
+    replica.original = file
+    db.session.add(replica)
+    db.session.commit()
+    return make_response(jsonify({'guid': file.guid}), 200)
+    # return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
 
 @app.route('/api/file/<dataset>/<lfn>/fetch', methods=['GET'])
 def pilotFileFetchAPI(dataset, lfn):
