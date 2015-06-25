@@ -35,7 +35,7 @@ def load_user(id):
 
 from app import views
 from app import views_oauth
-from app import apis as apis
+from app import apis
 from app import admin
 
 if not app.debug:
