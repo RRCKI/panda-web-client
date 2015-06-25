@@ -254,7 +254,8 @@ def pilotFileSaveAPI(container_guid, lfn):
 
 @app.route('/api/file/<container_guid>/<lfn>/fetch', methods=['GET'])
 def pilotFileFetchAPI(container_guid, lfn):
-    """Returns file if response"""
+    """Returns file in response"""
+
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = Container.query.filter_by(guid=container_guid).first()

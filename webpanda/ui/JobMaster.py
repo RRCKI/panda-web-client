@@ -149,7 +149,6 @@ class JobMaster:
 
         job = s.query(Job).filter(Job.id == int(jobid)).one()
         cont = job.container
-        log_cont = s.query(Container).filter(Container.guid == 'logs').one()
         files = cont.files
 
         datasetName = 'panda:%s' % cont.guid
@@ -224,7 +223,7 @@ class JobMaster:
         log.guid = getGUID(log.scope, log.lfn)
         log.type = 'log'
         log.status = 'defined'
-        log.containers.append(log_cont)
+        log.containers.append(cont)
         s.add(log)
         s.commit()
 
