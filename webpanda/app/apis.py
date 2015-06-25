@@ -204,6 +204,7 @@ def pilotFileSaveAPI(container_guid, lfn):
     for r in file.replicas:
         if r.se == site.se:
             destination = site.datadir + r.lfn
+            file_dir = '/'.join(destination.split('/')[:-1])
             if r.status == 'ready':
                 if os.path.isfile(destination): # Check fsize, md5 or adler
                     return make_response(jsonify({'error': 'Replica exists'}), 400)
@@ -212,6 +213,10 @@ def pilotFileSaveAPI(container_guid, lfn):
                 db.session.commit()
                 return make_response(jsonify({'error': 'Broken replica'}), 400)
             elif r.status == 'defined':
+                try:
+                    os.makedirs(file_dir)
+                except(Exception):
+                    pass
                 f = open(destination, 'wb')
                 f.write(request.data)
                 f.close()
