@@ -149,6 +149,7 @@ class JobMaster:
 
         job = s.query(Job).filter(Job.id == int(jobid)).one()
         cont = job.container
+        log_cont = s.query(Container).filter(Container.guid == 'logs').one()
         files = cont.files
 
         datasetName = 'panda:%s' % cont.guid
@@ -211,19 +212,19 @@ class JobMaster:
         fileOL.lfn = "%s.log.tgz" % pandajob.jobName
         fileOL.destinationDBlock = pandajob.destinationDBlock
         fileOL.destinationSE = pandajob.destinationSE
-        fileOL.dataset = pandajob.destinationDBlock
+        fileOL.dataset = 'panda:logs'
         fileOL.type = 'log'
         fileOL.scope = 'panda'
         pandajob.addFile(fileOL)
 
         # Save log meta
         log = File()
-        log.scope = files[0].scope
+        log.scope = 'panda'
         log.lfn = fileOL.lfn
         log.guid = getGUID(log.scope, log.lfn)
         log.type = 'log'
         log.status = 'defined'
-        log.containers.append(cont)
+        log.containers.append(log_cont)
         s.add(log)
         s.commit()
 

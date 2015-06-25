@@ -35,6 +35,7 @@ def swAPI():
 
 @app.route('/api/container', methods=['POST'])
 def contNewAPI():
+    """Returns list of available software"""
     cont = Container()
     guid = 'job.' + commands.getoutput('uuidgen')
 
@@ -49,6 +50,9 @@ def contNewAPI():
 
 @app.route('/api/container/<guid>/open', methods=['POST'])
 def contOpenAPI(guid):
+    """Changes container status to 'open'.
+    :param guid: Container unique id
+    """
     cont = Container.query.filter_by(guid=guid).first()
     cont.status = 'open'
     db.session.add(cont)
@@ -57,6 +61,7 @@ def contOpenAPI(guid):
 
 @app.route('/api/container/<guid>/close', methods=['POST'])
 def contCloseAPI(guid):
+    """Changes container status to 'close'"""
     cont = Container.query.filter_by(guid=guid).first()
 
     path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid)
@@ -69,6 +74,7 @@ def contCloseAPI(guid):
 
 @app.route('/api/container/<guid>/info', methods=['GET'])
 def contInfoAPI(guid):
+    """Returns container metadata"""
     cont = Container.query.filter_by(guid=guid).first()
     data = {}
     data['id'] = cont.id
@@ -79,6 +85,7 @@ def contInfoAPI(guid):
 
 @app.route('/api/container/<guid>/list', methods=['GET'])
 def contListAPI(guid):
+    """Returns list of files registered in container"""
     cont = Container.query.filter_by(guid=guid).first()
     files = cont.files
 
@@ -95,11 +102,12 @@ def contListAPI(guid):
         datalist.append(data)
     return make_response(jsonify({'data': datalist}), 200)
 
-@app.route('/api/file/<dataset>/<lfn>/makereplica/<se>', methods=['POST'])
-def makeReplicaAPI(dataset, lfn, se):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).first()
+@app.route('/api/file/<container_guid>/<lfn>/makereplica/<se>', methods=['POST'])
+def makeReplicaAPI(container_guid, lfn, se):
+    """Creates task to make new file replica"""
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
     files = container.files
     for file in files:
         if file.lfn == lfn:
@@ -122,11 +130,12 @@ def makeReplicaAPI(dataset, lfn, se):
             return make_response(jsonify({'status': transfertask.task_status}), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<dataset>/<lfn>/info', methods=['GET'])
-def pilotFileInfoAPI(dataset, lfn):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).first()
+@app.route('/api/file/<container_guid>/<lfn>/info', methods=['GET'])
+def pilotFileInfoAPI(container_guid, lfn):
+    """Returns file metadata"""
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
     files = container.files
     for file in files:
         if file.lfn == lfn:
@@ -140,11 +149,12 @@ def pilotFileInfoAPI(dataset, lfn):
             return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<dataset>/<lfn>/link', methods=['GET'])
-def pilotFileLinkAPI(dataset, lfn):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).first()
+@app.route('/api/file/<container_guid>/<lfn>/link', methods=['GET'])
+def pilotFileLinkAPI(container_guid, lfn):
+    """Returns ftp link to file"""
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
 
     files = container.files
@@ -160,11 +170,14 @@ def pilotFileLinkAPI(dataset, lfn):
                     return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<dataset>/<lfn>/save', methods=['POST'])
-def pilotFileSaveAPI(dataset, lfn):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).first()
+@app.route('/api/file/<container_guid>/<lfn>/save', methods=['POST'])
+def pilotFileSaveAPI(container_guid, lfn):
+    """Saves file from request, returns file guid"""
+    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
+
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
     if container.status != 'open':
         return make_response(jsonify({'error': 'Unable to upload: Container is not open'}), 400)
     files = container.files
@@ -184,34 +197,54 @@ def pilotFileSaveAPI(dataset, lfn):
         db.session.add(file)
         db.session.commit()
 
-    site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
     path = os.path.join(site.datadir, getScope(g.user.username), container.guid)
-    dest = os.path.join(path, file.lfn)
-    replica = None
+    replfn = '/' + os.path.join(getScope(g.user.username), container.guid, file.lfn)
+    destination = os.path.join(path, file.lfn)
+
     for r in file.replicas:
-        if r.se == site.se and r.status == 'ready':
-            if os.path.isfile(dest): # Check fsize, md5 or adler
-                return make_response(jsonify({'error': 'Replica exists'}), 400)
-            replica = r
-    if not replica:
-        replica = Replica()
-        if os.path.isfile(dest):
-            return make_response(jsonify({'error': 'Unable to upload: File exists'}), 400)
+        if r.se == site.se:
+            destination = site.datadir + r.lfn
+            if r.status == 'ready':
+                if os.path.isfile(destination): # Check fsize, md5 or adler
+                    return make_response(jsonify({'error': 'Replica exists'}), 400)
+                r.status == 'broken'
+                db.session.add(r)
+                db.session.commit()
+                return make_response(jsonify({'error': 'Broken replica'}), 400)
+            elif r.status == 'defined':
+                f = open(destination, 'wb')
+                f.write(request.data)
+                f.close()
+
+                # Update file info
+                setFileMeta(file.id, destination)
+
+                r.status = 'ready'
+                db.session.add(r)
+                db.session.commit()
+                return make_response(jsonify({'guid': file.guid}), 200)
+            else:
+                return make_response(jsonify({'error': 'Replica status: %s' % r.status}), 400)
+
+
+    replica = Replica()
+    if os.path.isfile(destination):
+        return make_response(jsonify({'error': 'Unable to upload: File exists'}), 400)
     try:
         os.makedirs(path)
     except(Exception):
         _logger.debug('Path exists: %s' % path)
-    f = open(dest, 'wb')
+    f = open(destination, 'wb')
     f.write(request.data)
     f.close()
 
     # Update file info
-    setFileMeta(file.id, dest)
+    setFileMeta(file.id, destination)
 
     # Create/change replica
     replica.se = site.se
     replica.status = 'ready'
-    replica.lfn = dest
+    replica.lfn = replfn
     replica.token = ''
     replica.original = file
     db.session.add(replica)
@@ -219,11 +252,12 @@ def pilotFileSaveAPI(dataset, lfn):
     return make_response(jsonify({'guid': file.guid}), 200)
     # return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
 
-@app.route('/api/file/<dataset>/<lfn>/fetch', methods=['GET'])
-def pilotFileFetchAPI(dataset, lfn):
-    if ':' in dataset:
-        dataset = dataset.split(':')[-1]
-    container = Container.query.filter_by(guid=dataset).first()
+@app.route('/api/file/<container_guid>/<lfn>/fetch', methods=['GET'])
+def pilotFileFetchAPI(container_guid, lfn):
+    """Returns file if response"""
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
     files = container.files
     for file in files:
         if file.lfn == lfn:
