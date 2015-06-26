@@ -296,6 +296,7 @@ def pilotFileFetchAPI(container_guid, lfn):
                     fullpath = app.config['DATA_PATH'] + replica.lfn
                     f = open(fullpath, 'r')
                     rr = Response(f.read(), status=200, content_type='application/octet-stream')
+                    rr.headers['Content-Disposition'] = 'inline; filename="%s"' % file.lfn
                     file.downloaded += 1
                     db.session.add(file)
                     db.session.commit()

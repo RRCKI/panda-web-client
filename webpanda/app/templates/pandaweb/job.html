@@ -26,6 +26,7 @@
         <th>GUID</th>
         <th>TYPE</th>
         <th>LFN</th>
+        <th>LINK</th>
     </tr>
 </thead>
 <tbody>
@@ -34,6 +35,17 @@
         <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
         <th>{{f.type}}</th>
         <th>{{f.lfn}}</th>
+        <th>
+            {% if f.type == 'input' %}
+            <a href="/api/file/{{job.container.guid}}/{{f.lfn}}/fetch">download</a>
+            {% endif %}
+            {% if f.type == 'log' and job.status in ['finished', 'failed', 'cancelled'] %}
+            <a href="/api/file/{{job.container.guid}}/{{f.lfn}}/fetch">download</a>
+            {% endif %}
+            {% if f.type == 'output' and job.status == 'finished' %}
+            <a href="/api/file/{{job.container.guid}}/{{f.lfn}}/fetch">download</a>
+            {% endif %}
+        </th>
     </tr>
 {% endfor %}
 </tbody>
