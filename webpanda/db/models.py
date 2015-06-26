@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, create_engine, DateTime, BigInteger
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, create_engine, DateTime, BigInteger, BLOB, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, sessionmaker
 from common import client_config
@@ -152,8 +152,23 @@ class Replica(Base):
 class TransferTask(Base):
     __tablename__ = 'transfertasks'
     id = Column(Integer, primary_key=True)
-    file_id = Column(Integer, ForeignKey('files.id'))
     replica_id = Column(Integer, ForeignKey('replicas.id'))
     se = Column(String(40))
     task_id = Column(String(40))
     task_status = Column(String(20))
+
+class TaskMeta(Base):
+    __tablename__ = 'celery_taskmeta'
+    id = Column(Integer, primary_key=True)
+    task_id = Column(String(255))
+    status = Column(String(50))
+    result = Column(BLOB)
+    date_done = Column(DateTime)
+    traceback = Column(Text)
+
+class TaskSetMeta(Base):
+    __tablename__ = 'celery_tasksetmeta'
+    id = Column(Integer, primary_key=True)
+    taskset_id = Column(String(255))
+    result = Column(BLOB)
+    date_done = Column(DateTime)

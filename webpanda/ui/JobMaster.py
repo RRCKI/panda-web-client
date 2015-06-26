@@ -249,7 +249,7 @@ class JobMaster:
         s.commit()
         s.close()
 
-        return PandaID
+        return 0
 
 @celery.task
 def send_job(*args, **kwargs):

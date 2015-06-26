@@ -129,8 +129,8 @@ def makeReplicaAPI(container_guid, lfn, se):
 @app.route('/api/file/<container_guid>/<lfn>/copy', methods=['POST'])
 def stageinAPI(container_guid, lfn):
     """Creates task to copy file in path on se"""
-    args = request.args
-    if not (args.has_key('to_se') and args.has_key('to_path')):
+    args = request.form
+    if not ('to_se' in args.keys() and 'to_path' in args.keys()):
         return make_response(jsonify({'error': 'Please specify correct request params'}), 400)
 
     to_se = args.get('to_se', type=str)
@@ -301,4 +301,16 @@ def pilotFileFetchAPI(container_guid, lfn):
                     db.session.commit()
                     return rr
     return make_response(jsonify({'error': 'File not found'}), 400)
+
+@app.route('/api/task/<id>/info', methods=['GET'])
+def taskStatusAPI(id):
+    """Returns task status"""
+    task = TaskMeta.query.filter_by(task_id=id).first()
+    data = {}
+    data['id'] = task.task_it
+    data['status'] = task.status
+    data['results'] = str(task.result)
+    data['date_done'] = str(task.date_done)
+    data['traceback'] = task.traceback
+    return make_response(jsonify({'data': data}), 200)
 

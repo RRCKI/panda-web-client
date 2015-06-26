@@ -47,7 +47,7 @@ class FileMaster:
             s.commit()
             rvalue = replica.id
         s.close()
-        return rvalue
+        return 0
 
     def cloneReplica(self, replicaid, se):
         s = DB().getSession()
@@ -104,6 +104,7 @@ class FileMaster:
         lfn = replica.lfn
         linkdata(site.plugin, {}, lfn, dir)
         s.close()
+        return 0
 
 
 
