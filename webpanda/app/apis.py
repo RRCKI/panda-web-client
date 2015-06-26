@@ -10,8 +10,8 @@ from flask_login import login_required
 from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
-from models import Distributive, Container, File, Site, TransferTask, Replica
-from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink, setFileMeta
+from models import Distributive, Container, File, Site, Replica, TaskMeta
+from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
 from ui.FileMaster import getScope
 
 _logger = NrckiLogger().getLogger("app.api")
@@ -119,15 +119,38 @@ def makeReplicaAPI(container_guid, lfn, se):
             replica = replicas[0] #TODO Update chosing method
             task = cloneReplica.delay(replica.id, se)
 
-            transfertask = TransferTask()
-            transfertask.replica_id = replica.id
-            transfertask.se = se
-            transfertask.task_id = task.id
-            transfertask.task_status = task.status
+            task_obj = TaskMeta.query.filter_by(task_id=task.id).one()
 
             db.session.add(file)
             db.session.commit()
-            return make_response(jsonify({'status': transfertask.task_status}), 200)
+            return make_response(jsonify({'status': task_obj.status}), 200)
+    return make_response(jsonify({'error': 'File not found'}), 400)
+
+@app.route('/api/file/<container_guid>/<lfn>/copy', methods=['POST'])
+def stageinAPI(container_guid, lfn):
+    """Creates task to copy file in path on se"""
+    args = request.args
+    if not (args.has_key('to_se') and args.has_key('to_path')):
+        return make_response(jsonify({'error': 'Please specify correct request params'}), 400)
+
+    to_se = args.get('to_se', type=str)
+    to_path = args.get('to_path', type=str)
+
+    if ':' in container_guid:
+        container_guid = container_guid.split(':')[-1]
+    container = Container.query.filter_by(guid=container_guid).first()
+    files = container.files
+    for file in files:
+        if file.lfn == lfn:
+            rep_num = file.replicas.count()
+            replicas = file.replicas
+
+            for r in replicas:
+                if r.status == 'ready':
+                    task = copyReplica.delay(r.id, to_se, to_path)
+                    return make_response(jsonify({'task_id': task.id}), 200)
+
+            return make_response(jsonify({'status': 'Error: no replicas available'}), 204)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
 @app.route('/api/file/<container_guid>/<lfn>/info', methods=['GET'])

@@ -56,7 +56,7 @@ class FileMaster:
         replicas = file.replicas
         for r in replicas:
             if se == r.se:
-                _logger.debug('Replica is ready: id=%s' % r.id)
+                _logger.debug('Replica exists: id=%s' % r.id)
                 # Update expired time
                 return r.id
 
@@ -66,25 +66,21 @@ class FileMaster:
 
         # Define result replica params
         to_se = s.query(Site).filter(Site.se == se).first()
-        dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
-        toParams = {'dest': dest,
-                    'basedir': to_se.datadir,
-                    'lfn': file.lfn,
-                    'scope': file.scope,
-                    'cont': file.guid}
+        dest = '/'.join(replica.lfn.split('/')[:-1])
+        toParams = {'dest': dest}
 
         ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
         if ec == 0:
             r = Replica()
-            if file.fsize == None:
+            if file.fsize is None:
                 file.fsize = filesinfo[replica.lfn]['fsize']
-            if file.md5sum == None:
+            if file.md5sum is None:
                 file.md5sum = filesinfo[replica.lfn]['md5sum']
-            if file.checksum == None:
+            if file.checksum is None:
                 file.checksum = filesinfo[replica.lfn]['checksum']
             r.se = se
             r.status = 'ready'
-            r.lfn = os.path.join(dest, file.lfn.split('/')[-1])
+            r.lfn = replica.lfn
             s.add(r)
             s.commit()
             file.modification_time = datetime.utcnow()
@@ -94,6 +90,11 @@ class FileMaster:
             return r.id
         s.close()
         raise Exception('movedata return code: %s' % ec)
+        return ec
+
+    def copyReplica(self, replicaid, se, path):
+        id = cloneReplica(replicaid, se)
+        linkReplica(id, path)
         return 0
 
     def linkReplica(self, replicaid, dir):
@@ -120,6 +121,11 @@ def makeReplica(fileid, se):
 def linkReplica(replicaid, dir):
     fm = FileMaster()
     return fm.linkReplica(replicaid, dir)
+
+@celery.task
+def copyReplica(replicaid, se, path):
+    fm = FileMaster()
+    return fm.copyReplica(replicaid, se, path)
 
 def linkFile(fileid, se, dir):
     s = DB().getSession()
