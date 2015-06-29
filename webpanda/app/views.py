@@ -374,7 +374,7 @@ def file_download(guid):
         _logger.error(Exception.message)
         return make_response(jsonify({'error': 'File not found'}), 404)
     if file.scope != getScope(g.user.username):
-        return make_response(jsonify({'error': 'File is not in your scope'}), 401)
+        return make_response(jsonify({'error': 'File is not in your scope'}), 403)
 
     replicas = file.replicas
     for replica in replicas:

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import random
+import shutil
 from app import app, db, lm
 import commands
 import json
@@ -10,9 +11,10 @@ from flask_login import login_required
 from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
-from models import Distributive, Container, File, Site, Replica, TaskMeta
-from ui.FileMaster import mqMakeReplica, makeReplica, cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
+from models import Distributive, Container, File, Site, Replica, TaskMeta, Job
+from ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
 from ui.FileMaster import getScope
+from ui.JobMaster import send_job
 
 _logger = NrckiLogger().getLogger("app.api")
 
@@ -302,7 +304,7 @@ def pilotFileFetchAPI(container_guid, lfn):
                     db.session.add(file)
                     db.session.commit()
                     return rr
-    return make_response(jsonify({'error': 'File not found'}), 400)
+    return make_response(jsonify({'error': 'File not found'}), 404)
 
 @app.route('/api/task/<id>/info', methods=['GET'])
 def taskStatusAPI(id):
@@ -316,3 +318,44 @@ def taskStatusAPI(id):
     data['traceback'] = task.traceback
     return make_response(jsonify({'data': data}), 200)
 
+@app.route('/api/job', methods=['POST'])
+def jobAPI():
+    """Creates new job
+    """
+    values = request.values
+    distr_id = values['sw_id']
+    params = values['script']
+    ftp_dir = values['ftp_dir']
+
+    try:
+        distr = Distributive.query.filter_by(id=distr_id).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return make_response(jsonify({'error': 'SW/Container not found'}), 404)
+
+    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
+
+    container = Container()
+    guid = 'job.' + commands.getoutput('uuidgen')
+    container.guid = guid
+    container.status = 'close'
+    db.session.add(container)
+    db.session.commit()
+    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+    os.path.walk(dir, registerLocalFile, container.guid)
+    #shutil.rmtree(dir)
+
+    job = Job()
+    job.pandaid = None
+    job.status = 'pending'
+    job.owner = g.user
+    job.params = params
+    job.distr = distr
+    job.container = container
+    job.creation_time = datetime.utcnow()
+    job.modification_time = datetime.utcnow()
+    db.session.add(job)
+    db.session.commit()
+
+    task = send_job.delay(jobid=job.id, siteid=site.id)
+    return make_response(jsonify({'id': job.id}), 201)

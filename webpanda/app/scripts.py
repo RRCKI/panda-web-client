@@ -14,6 +14,12 @@ import userinterface.Client as Client
 _logger = NrckiLogger().getLogger('app.scripts')
 
 def registerLocalFile(arg, dirname, names):
+    """Register files from local dir to container
+    :param arg:
+    :param dirname:
+    :param names:
+    :return:
+    """
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
     _logger.debug(str(arg))
     cont = Container.query.filter_by(guid=arg).first()
