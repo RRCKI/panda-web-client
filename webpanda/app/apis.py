@@ -2,7 +2,7 @@
 import os
 import random
 import shutil
-from app import app, db, lm
+from app import app, db, lm, oauth
 import commands
 import json
 from datetime import datetime
@@ -23,8 +23,9 @@ def before_requestAPI():
     _logger.debug(request.url)
 
 @app.route('/api/sw', methods=['GET'])
-@login_required
+@oauth.require_oauth('email')
 def swAPI():
+    """Returns list of available software"""
     ds = Distributive.query.all()
     dlist = []
     for d in ds:
@@ -37,7 +38,6 @@ def swAPI():
 
 @app.route('/api/container', methods=['POST'])
 def contNewAPI():
-    """Returns list of available software"""
     cont = Container()
     guid = 'job.' + commands.getoutput('uuidgen')
 
