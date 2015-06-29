@@ -297,6 +297,7 @@ def pilotFileFetchAPI(container_guid, lfn):
                     f = open(fullpath, 'r')
                     rr = Response(f.read(), status=200, content_type='application/octet-stream')
                     rr.headers['Content-Disposition'] = 'inline; filename="%s"' % file.lfn
+                    rr.headers['Content-MD5'] = file.md5sum
                     file.downloaded += 1
                     db.session.add(file)
                     db.session.commit()
@@ -308,7 +309,7 @@ def taskStatusAPI(id):
     """Returns task status"""
     task = TaskMeta.query.filter_by(task_id=id).first()
     data = {}
-    data['id'] = task.task_it
+    data['id'] = task.task_id
     data['status'] = task.status
     data['results'] = str(task.result)
     data['date_done'] = str(task.date_done)

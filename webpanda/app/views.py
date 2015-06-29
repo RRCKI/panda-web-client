@@ -5,7 +5,7 @@ import json
 from celery import chord
 from datetime import datetime
 
-from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response
+from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
@@ -358,16 +358,37 @@ def file():
 @app.route("/file/<guid>", methods=['GET'])
 @login_required
 def file_info(guid):
-    file = File.query.filter_by(guid=guid).one()
-    # if file.transfertask:
-    #     task = makeReplica.AsyncResult(file.transfertask)
-    #     if task.status != file.status:
-    #         file.status = task.status
-    #         db.session.add(file)
-    #         db.session.commit()
-    #     else:
-    #         pass
+    try:
+        file = File.query.filter_by(guid=guid).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return 'File not found'
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
+
+@app.route("/file/<guid>/download", methods=['GET'])
+@login_required
+def file_download(guid):
+    try:
+        file = File.query.filter_by(guid=guid).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return make_response(jsonify({'error': 'File not found'}), 404)
+    if file.scope != getScope(g.user.username):
+        return make_response(jsonify({'error': 'File is not in your scope'}), 401)
+
+    replicas = file.replicas
+    for replica in replicas:
+        if replica.se == app.config['DEFAULT_SE'] and replica.status == 'ready':
+            fullpath = app.config['DATA_PATH'] + replica.lfn
+            f = open(fullpath, 'r')
+            rr = Response(f.read(), status=200, content_type='application/octet-stream')
+            rr.headers['Content-Disposition'] = 'inline; filename="%s"' % file.lfn
+            rr.headers['Content-MD5'] = file.md5sum
+            file.downloaded += 1
+            db.session.add(file)
+            db.session.commit()
+            return rr
+    return make_response(jsonify({'error': 'No ready replica'}), 404)
 
 @app.route("/job/<id>", methods=['GET'])
 @login_required
