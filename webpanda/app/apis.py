@@ -38,6 +38,7 @@ def swAPI():
 
 @app.route('/api/container', methods=['POST'])
 def contNewAPI():
+    """Saves new container"""
     cont = Container()
     guid = 'job.' + commands.getoutput('uuidgen')
 

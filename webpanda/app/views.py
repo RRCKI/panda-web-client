@@ -9,6 +9,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
+from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize, md5sum
 from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
@@ -113,7 +114,11 @@ def job():
         distr = Distributive.query.filter_by(name=distr_name, release=int(distr_release)).first()
 
         container_guid = form.container.data
-        container = Container.query.filter_by(guid=container_guid).first()
+        try:
+            container = Container.query.filter_by(guid=container_guid).one()
+        except(Exception):
+            _logger.error(Exception.message)
+            return make_response(jsonify({'error': 'Container not found'}), 404)
 
         ifiles = request.form.getlist('ifiles[]')
         ofiles = ['results.tgz']
@@ -122,6 +127,11 @@ def job():
 
         for f in ifiles:
             if f != '':
+                if f.startswith('local://'):
+                    ftp_dir = f[len('local://'):]
+                    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+                    os.path.walk(dir, registerLocalFile, container.guid)
+                    continue
                 from_se, path, token = getUrlInfo(f)
                 lfn = path.split('/')[-1]
                 guid = getGUID(scope, lfn)
