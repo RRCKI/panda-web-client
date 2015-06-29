@@ -24,6 +24,16 @@ $(document).ready(function() {
         ],
         // Add link - start
         "aoColumnDefs": [
+            { //ID
+                "aTargets":[0],
+                "mData": null,
+                "mRender": function( data, type, full) {
+                    if ( data != undefined ) {
+                        return '<td><a href="/job/'+data+'">'+data+'</a></td>';
+                    }
+                    return '<td></td>';
+                }
+            },
             { //PandaID
                 "aTargets":[2],
                 "mData": null,

@@ -42,8 +42,7 @@
             <li><a href="{{ url_for('jobs') }}">Job list</a></li>
             <li><a href="{{ url_for('job') }}">New job</a></li>
               <li><a href="{{ url_for('files') }}">File list</a></li>
-            <li><a href="{{ url_for('file') }}">New file</a></li>
-            <li><a href="#">Help</a></li>
+            <!--<li><a href="{{ url_for('file') }}">New file</a></li>-->
           </ul>
           <ul class="nav navbar-nav navbar-right">
               {% if g.user.is_authenticated() %}
