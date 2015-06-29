@@ -15,9 +15,9 @@ _logger = NrckiLogger().getLogger('app.scripts')
 
 def registerLocalFile(arg, dirname, names):
     """Register files from local dir to container
-    :param arg:
-    :param dirname:
-    :param names:
+    :param arg: Container guid
+    :param dirname: Abs dir
+    :param names: File name
     :return:
     """
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
@@ -54,7 +54,7 @@ def registerLocalFile(arg, dirname, names):
             replica.se = site.se
             replica.status = 'ready'
             replica.token = ''
-            replica.lfn = fpath
+            replica.lfn = fpath[len(site.datadir):]
             replica.original = fobj
             db.session.add(replica)
             db.session.commit()
