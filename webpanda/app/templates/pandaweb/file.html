@@ -13,12 +13,10 @@
 <b>GUID:</b> {{file.guid}} <br>
 <b>LFN:</b> {{file.lfn}} <br>
 <b>SCOPE:</b> {{file.scope}}<br>
-<b><a href="/api/file/{{file.guid}}/checksum">CHECKSUM:</a></b><br>
-<b><a href="/api/file/{{file.guid}}/info">INFO:</a></b><br>
+<b>ADLER32: {{file.checksum}}</b><br>
+<b>MD5SUM: {{file.md5sum}}</b><br>
+<b>SIZE: {{file.fsize}}</b><br>
 <b>STATUS:</b> {{file.status}}<br>
-{% if file.status == "ready" %}
-<b><a href="/file/{{file.guid}}/get">DOWNLOAD</a></b><br>
-{% endif %}
 <b>REPLICAS:</b><br>
 <table id="replicastable" class="display" cellspacing="0" width="100%">
 <thead>

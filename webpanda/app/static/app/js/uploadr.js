@@ -52,7 +52,7 @@ $(document).ready(function() {
 
         // Remove button click handler
         .on('click', '.removeButton', function() {
-            var $row    = $(this).parents('.form-group'),
+            var $row    = $(this).parents('.ifile'),
                 $option = $row.find('[name="ifiles[]"]');
 
             // Remove element containing the option

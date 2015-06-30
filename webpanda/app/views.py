@@ -125,13 +125,13 @@ def job():
 
         scope = getScope(g.user.username)
 
+        ftpdir = form.ftpdir.data
+        if ftpdir != '':
+            dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftpdir)
+            os.path.walk(dir, registerLocalFile, container.guid)
+
         for f in ifiles:
             if f != '':
-                if f.startswith('local://'):
-                    ftp_dir = f[len('local://'):]
-                    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
-                    os.path.walk(dir, registerLocalFile, container.guid)
-                    continue
                 from_se, path, token = getUrlInfo(f)
                 lfn = path.split('/')[-1]
                 guid = getGUID(scope, lfn)

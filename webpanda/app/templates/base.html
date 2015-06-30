@@ -26,6 +26,17 @@
 <body>
     <div class='container'>
 
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible" id="alert-unit" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <strong>System message: </strong>{{ message}}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <nav class="navbar navbar-default">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -72,6 +83,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/app/js/base.js"></script>
     {% block js_import %}{% endblock %}
 </body>
 </html>
