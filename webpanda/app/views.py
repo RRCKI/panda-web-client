@@ -130,6 +130,7 @@ def job():
             dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftpdir)
             os.path.walk(dir, registerLocalFile, container.guid)
 
+        # Processes urls
         for f in ifiles:
             if f != '':
                 from_se, path, token = getUrlInfo(f)
@@ -151,14 +152,17 @@ def job():
                 replica = Replica()
                 replica.se = from_se
                 replica.status = 'defined'
+                # Separate url & token
                 replica.lfn = ':'.join([from_se, path])
                 replica.token = token
                 replica.original = file
                 db.session.add(replica)
                 db.session.commit()
 
+        # Starts cloneReplica tasks
         ftasks = prepareInputFiles(container.id, site.se)
 
+        # Saves output files meta
         for lfn in ofiles:
             file = File()
             file.scope = scope
@@ -172,6 +176,7 @@ def job():
             db.session.add(container)
             db.session.commit()
 
+        # Counts files
         allfiles = container.files
         nifiles = 0
         nofiles = 0
@@ -181,6 +186,7 @@ def job():
             if f.type == 'output':
                 nofiles += 1
 
+        # Defines job meta
         job = Job()
         job.pandaid = None
         job.status = 'pending'

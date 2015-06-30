@@ -323,6 +323,7 @@ def taskStatusAPI(id):
 def jobAPI():
     """Creates new job
     """
+    # TODO: Define output files
     values = request.values
     distr_id = values['sw_id']
     params = values['script']
