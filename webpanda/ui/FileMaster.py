@@ -64,7 +64,7 @@ class FileMaster:
         from_se = s.query(Site).filter(Site.se == replica.se).first()
         fromParams = {}
         if replica.status == 'link':
-            lfn = getLFN(replica.lfn)
+            lfn = getLFN(file.scope, replica.lfn)
         else:
             lfn = replica.lfn
 
@@ -179,26 +179,25 @@ def getFullPath(scope, dataset, lfn):
     return '/' + '/'.join([scope, dataset, lfn])
 
 def getUrlInfo(url):
+    # https://www.dropbox.com/get?file=15:dropbox_token=112345AZ
     parts = url.split(':')
-    if len(parts) == 2:
-        # Format - se:/path:token
-        se = parts[0]
-        path = parts[1]
-        token = ""
-    elif len(parts) == 3:
-        # Format - se:/path:token
-        se = parts[0]
-        path = parts[1]
-        token = parts[2]
-    else:
-        raise Exception('Illegal URL format')
+    se = parts[0]
+    if len(parts) > 3:
+        raise Exception('Incorrect url')
+        return
 
-    if path.startswith('//'):
-        path = path[1:]
-    if '?' in path:
-        parts = path.split('?')
-        path = parts[0]
-        token += '?'.join(parts[1:]) + ':'
+    if '?' in parts[1]:
+        path = parts[1].split('?')[0]
+        token = parts[1].split('?')[1]
+    else:
+        path = parts[1]
+        token = ''
+
+    if len(parts) == 3:
+        token = ':'.join(token, parts[2])
+
+    # Removes first leading slash
+    path = path[1:]
     return se, path, token
 
 def getFtpLink(lfn):
