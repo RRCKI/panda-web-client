@@ -12,7 +12,7 @@ class HttpSEPlugin():
         dest = ddm_getlocalabspath(dest)
 
         if url.startswith('/'):
-            url += 'http:/'
+            url = 'http:/' + url
 
         _logger.debug('HTTP: Try to get file from %s to %s' % (url, dest))
         try:

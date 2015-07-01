@@ -8,7 +8,7 @@ _logger = NrckiLogger().getLogger("DDM")
 
 class LocalSEPlugin():
     def __init__(self, params={}):
-        pass
+        self.params = params
 
     def get(self, src, dest):
         dest = ddm_getlocalabspath(dest)

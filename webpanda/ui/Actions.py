@@ -2,7 +2,7 @@ import commands
 import os
 import shutil
 from common.NrckiLogger import NrckiLogger
-from ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs
+from ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs, ddm_localrmtree
 from common import client_config
 
 DATA_DIR = client_config.TMP_DIR
@@ -54,7 +54,7 @@ def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
         #put file to SE
         toSE.put(f, dest)
 
-    shutil.rmtree(tmphome)
+    ddm_localrmtree(tmphome)
     return 0, filesinfo
 
 def linkdata(setype, separams, lfn, dir):

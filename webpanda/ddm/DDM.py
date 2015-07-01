@@ -1,4 +1,5 @@
 import os
+import shutil
 from common import client_config
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize
@@ -84,3 +85,7 @@ def ddm_localisdir(dir):
 def ddm_localmakedirs(dir):
     absdir = ddm_getlocalabspath(dir)
     return os.makedirs(absdir)
+
+def ddm_localrmtree(dir):
+    absdir = ddm_getlocalabspath(dir)
+    shutil.rmtree(absdir)
