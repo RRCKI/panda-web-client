@@ -1,4 +1,8 @@
+import os
+from common import client_config
 from common.NrckiLogger import NrckiLogger
+from common.utils import adler32, fsize
+from common.utils import md5sum
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -58,3 +62,25 @@ class SEPlugin(object):
     def link(self, lfn, dir):
         _logger.error("SEPlugin.link not implemented")
         raise NotImplementedError("SEPlugin.link not implemented")
+
+def ddm_getlocalabspath(path):
+    localdir = client_config.DATA_PATH
+    if path.startswith('/'):
+        return localdir + path
+    return os.path.join(localdir, path)
+
+def ddm_getlocalfilemeta(relpath):
+    abspath = ddm_getlocalabspath(relpath)
+    data = {}
+    data['checksum'] = adler32(abspath)
+    data['md5sum'] = md5sum(abspath)
+    data['fsize'] = fsize(abspath)
+    return data
+
+def ddm_localisdir(dir):
+    absdir = ddm_getlocalabspath(dir)
+    return os.path.isdir(absdir)
+
+def ddm_localmakedirs(dir):
+    absdir = ddm_getlocalabspath(dir)
+    return os.path.makedirs(absdir)

@@ -2,7 +2,7 @@ import os
 import subprocess
 from common.NrckiLogger import NrckiLogger
 from common import client_config
-from ddm.DDM import SEPlugin
+from ddm.DDM import SEPlugin, ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -15,6 +15,7 @@ class HPCSEPlugin(SEPlugin):
 
     def get(self, src, dest):
         src = self.datadir + src
+        dest = ddm_getlocalabspath(dest)
         _logger.debug('HPC: Try to get file from %s to %s' % (src, dest))
         try:
             if not src.startswith('/'):
@@ -27,6 +28,7 @@ class HPCSEPlugin(SEPlugin):
 
 
     def put(self, src, dest):
+        src = ddm_getlocalabspath(src)
         dest = self.datadir + dest
         _logger.debug('HPC: Try to put file from %s to %s' % (src, dest))
         try:

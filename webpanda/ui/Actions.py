@@ -1,42 +1,35 @@
 import commands
 import os
-import subprocess
 import shutil
 from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum, fsize
-from ddm.DDM import SEFactory
+from ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs
 from common import client_config
 
-DATA_DIR = os.path.join(client_config.basedir, client_config.TMP_DIR)
+DATA_DIR = client_config.TMP_DIR
 
 _logger = NrckiLogger().getLogger("Actions")
 
 
-def movedata(params, fileList, from_plugin, fromParams, to_plugin, toParams):
+def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
     if len(fileList) == 0:
         _logger.debug('No files to move')
         return 0, 'No files to move'
 
     tmpdir = commands.getoutput("uuidgen")
 
-    if 'compress' in params.keys() and 'tgzname' in params.keys():
-        compress = params['compress']
-        tmpTgzName = params['tgzname']
-    else:
-        compress = False
-
-    if 'dest' not in toParams.keys():
+    if 'dest' not in to_params.keys():
         _logger.error('Attribute error: dest')
         return 1, 'Attribute error: dest'
-    dest = toParams['dest']
+    dest = to_params['dest']
 
     sefactory = SEFactory()
-    fromSE = sefactory.getSE(from_plugin, fromParams)
-    toSE = sefactory.getSE(to_plugin, toParams)
+    fromSE = sefactory.getSE(from_plugin, from_params)
+    toSE = sefactory.getSE(to_plugin, to_params)
 
-    tmphome = "%s/%s" % (DATA_DIR, tmpdir)
-    if not os.path.isdir(tmphome):
-        os.makedirs(tmphome)
+    tmphome = "/%s/%s" % (DATA_DIR, tmpdir)
+
+    if not ddm_localisdir(tmphome):
+        ddm_localmakedirs(tmphome)
 
     tmpout = []
     tmpoutnames = []
@@ -55,25 +48,7 @@ def movedata(params, fileList, from_plugin, fromParams, to_plugin, toParams):
         tmpoutnames.append(fname)
 
         # Collect file info
-        filedata = {}
-        filedata['checksum'] = adler32(tmpfile)
-        filedata['md5sum'] = md5sum(tmpfile)
-        filedata['fsize'] = fsize(tmpfile)
-        filesinfo[f] = filedata
-
-    # print 'Need compress? ' + str(compress)
-    # if compress:
-    #     _logger.debug('Compress start: ')
-    #     tmpTgz = os.path.join(tmphome, tmpTgzName)
-    #     _logger.debug('TGZ file = ' + tmpTgz)
-    #     wd = os.getcwd()
-    #     os.chdir(tmphome)
-    #     proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    #     proc.communicate("tar -cvzf %s *" % tmpTgz)
-    #     tmpout = [tmpTgz]
-    #     tmpoutnames = [tmpTgzName]
-    #     os.chdir(wd)
-    #     _logger.debug('Compress finish:')
+        filesinfo[f] = ddm_getlocalfilemeta(tmpfile)
 
     for f in tmpout:
         #put file to SE
@@ -86,3 +61,4 @@ def linkdata(setype, separams, lfn, dir):
     sefactory = SEFactory()
     se = sefactory.getSE(setype, separams)
     se.link(lfn, dir)
+

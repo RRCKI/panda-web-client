@@ -1,6 +1,7 @@
 import dropbox
 import os
 from common.NrckiLogger import NrckiLogger
+from ddm.DDM import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -27,6 +28,7 @@ class DropboxSEPlugin():
         return dropbox.client.DropboxClient(auth_key)
 
     def get(self, src, dest):
+        dest = ddm_getlocalabspath(dest)
         _logger.debug('DROPBOX: Try to get file from %s to %s' % (src, dest))
         fname = src.split('/')[-1]
 
@@ -38,6 +40,7 @@ class DropboxSEPlugin():
         _logger.debug('downloaded: ' + metadata)
 
     def put(self, src, dest):
+        src = ddm_getlocalabspath(src)
         _logger.debug('DROPBOX: Try to put file from %s to %s' % (src, dest))
         # put file from local se to dropbox
         f = open(src, 'rb')

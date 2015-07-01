@@ -175,18 +175,26 @@ def getFullPath(scope, dataset, lfn):
     return '/' + '/'.join([scope, dataset, lfn])
 
 def getUrlInfo(url):
-    # Format - se:path:token
     parts = url.split(':')
     if len(parts) == 2:
+        # Format - se:/path:token
         se = parts[0]
         path = parts[1]
         token = ""
     elif len(parts) == 3:
+        # Format - se:/path:token
         se = parts[0]
         path = parts[1]
         token = parts[2]
     else:
         raise Exception('Illegal URL format')
+
+    if path.startswith('//'):
+        path = path[1:]
+    if '?' in path:
+        parts = path.split('?')
+        path = parts[0]
+        token += '?'.join(parts[1:]) + ':'
     return se, path, token
 
 def getFtpLink(lfn):

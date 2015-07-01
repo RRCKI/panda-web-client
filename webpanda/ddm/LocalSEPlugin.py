@@ -1,18 +1,18 @@
 import os
 import shutil
 import subprocess
-from common import client_config
 from common.NrckiLogger import NrckiLogger
+from ddm.DDM import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 
 class LocalSEPlugin():
     def __init__(self, params={}):
-        self.datadir = client_config.DATA_PATH
+        pass
 
     def get(self, src, dest):
-        dest = self.datadir + dest
-        src = self.datadir + src
+        dest = ddm_getlocalabspath(dest)
+        src = ddm_getlocalabspath(src)
         _logger.debug('LOCAL: Try to copy file from %s to %s' % (src, dest))
         try:
             if not os.path.isfile(src):
@@ -20,18 +20,15 @@ class LocalSEPlugin():
 
             shutil.copy2(src, dest)
         except:
-            _logger.error('Unable to move:%s %s' % (src, dest))
+            _logger.error('Unable to copy:%s %s' % (src, dest))
 
 
     def put(self, src, dest):
-        if not os.path.isfile(src):
-            _logger.error("%s: File not found" % src)
-
         self.get(src, dest)
 
     def link(self, lfn, dir):
-        lfn = self.datadir + lfn
-        dir = self.datadir + dir
+        lfn = ddm_getlocalabspath(lfn)
+        dir = ddm_getlocalabspath(dir)
         _logger.debug('LOCAL: Try to link file from %s to %s' % (lfn, dir))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)

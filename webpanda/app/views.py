@@ -153,7 +153,7 @@ def job():
                 replica.se = from_se
                 replica.status = 'defined'
                 # Separate url & token
-                replica.lfn = ':'.join([from_se, path])
+                replica.lfn = path
                 replica.token = token
                 replica.original = file
                 db.session.add(replica)

@@ -1,6 +1,7 @@
 import os
 import ftplib
 from common.NrckiLogger import NrckiLogger
+from ddm.DDM import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -15,6 +16,7 @@ class FtpSEPlugin():
             self.password = params['password']
 
     def get(self, url, dest):
+        dest = ddm_getlocalabspath(dest)
         _logger.debug('FTP: Try to get file from %s to %s' % (url, dest))
         try:
             url = url.split('ftp://')[-1]
@@ -35,6 +37,7 @@ class FtpSEPlugin():
 
 
     def put(self, src, dest):
+        src = ddm_getlocalabspath(src)
         _logger.debug('FTP: Try to put file from %s to %s' % (src, dest))
         try:
             dest = dest.split('ftp://')[-1]

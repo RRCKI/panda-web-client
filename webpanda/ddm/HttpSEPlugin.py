@@ -1,13 +1,16 @@
 import os
 from common.NrckiLogger import NrckiLogger
+from ddm.DDM import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 
 class HttpSEPlugin():
     def __init__(self, params=None):
-        pass
+        self.params = params
 
     def get(self, url, dest):
+        dest = ddm_getlocalabspath(dest)
+
         _logger.debug('HTTP: Try to get file from %s to %s' % (url, dest))
         try:
             import urllib2
@@ -35,8 +38,3 @@ class HttpSEPlugin():
             f.close()
         except:
             _logger.error('Unable to download:%s to %s' % (url, dest))
-
-
-    def put(self, src, dest):
-        _logger.debug('HTTP: Try to put file from %s to %s' % (src, dest))
-        pass
