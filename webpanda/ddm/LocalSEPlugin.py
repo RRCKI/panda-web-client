@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 from common.NrckiLogger import NrckiLogger
-from ddm.DDM import ddm_getlocalabspath
+from ddm.DDM import ddm_getlocalabspath, ddm_localmakedirs, ddm_localisdir
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -11,6 +11,9 @@ class LocalSEPlugin():
         self.params = params
 
     def get(self, src, dest):
+        if not ddm_localisdir(dest):
+            ddm_localmakedirs(dest)
+
         dest = ddm_getlocalabspath(dest)
         src = ddm_getlocalabspath(src)
         _logger.debug('LOCAL: Try to copy file from %s to %s' % (src, dest))
