@@ -11,6 +11,9 @@ class HttpSEPlugin():
     def get(self, url, dest):
         dest = ddm_getlocalabspath(dest)
 
+        if url.startswith('/'):
+            url += 'http:/'
+
         _logger.debug('HTTP: Try to get file from %s to %s' % (url, dest))
         try:
             import urllib2

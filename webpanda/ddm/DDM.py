@@ -83,4 +83,4 @@ def ddm_localisdir(dir):
 
 def ddm_localmakedirs(dir):
     absdir = ddm_getlocalabspath(dir)
-    return os.path.makedirs(absdir)
+    return os.makedirs(absdir)

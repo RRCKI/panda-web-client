@@ -1,4 +1,3 @@
-import os
 import subprocess
 from common.NrckiLogger import NrckiLogger
 from common import client_config
@@ -12,6 +11,7 @@ class HPCSEPlugin(SEPlugin):
         self.host = client_config.HPC_HOST
         self.user = client_config.HPC_USER
         self.datadir = client_config.HPC_DATADIR
+        self.params = params
 
     def get(self, src, dest):
         src = self.datadir + src
