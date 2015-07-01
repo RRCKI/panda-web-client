@@ -153,7 +153,7 @@ def job():
                 replica.se = from_se
                 replica.status = 'link'
                 # Separate url & token
-                replica.lfn = path
+                replica.lfn = ':/'.join(from_se, path)
                 replica.token = token
                 replica.original = file
                 db.session.add(replica)
@@ -360,7 +360,7 @@ def file():
         replica.se = from_se
         replica.status = 'ready'
         replica.token = token
-        replica.lfn = form.url.data
+        replica.lfn = ':/'.join(from_se, path)
         replica.original = file
         db.session.add(replica)
         db.session.commit()
