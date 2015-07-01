@@ -63,10 +63,14 @@ class FileMaster:
         # Define base replica
         from_se = s.query(Site).filter(Site.se == replica.se).first()
         fromParams = {}
+        if replica.status == 'link':
+            lfn = getLFN(replica.lfn)
+        else:
+            lfn = replica.lfn
 
         # Define result replica params
         to_se = s.query(Site).filter(Site.se == se).first()
-        dest = '/'.join(replica.lfn.split('/')[:-1])
+        dest = '/'.join(lfn.split('/')[:-1])
         toParams = {'dest': dest}
 
         ec, filesinfo = movedata({}, [replica.lfn], from_se.plugin, fromParams, to_se.plugin, toParams)
@@ -80,7 +84,7 @@ class FileMaster:
                 file.checksum = filesinfo[replica.lfn]['checksum']
             r.se = se
             r.status = 'ready'
-            r.lfn = replica.lfn
+            r.lfn = lfn
             s.add(r)
             s.commit()
             file.modification_time = datetime.utcnow()
@@ -215,3 +219,8 @@ def setFileMeta(fileid, lfn):
     s.add(file)
     s.commit()
     s.close()
+
+def getLFN(scope, url):
+    fname = url.split('/')[-1]
+    guid = getGUID(scope, fname)
+    return '/%s/%s/%s' % (scope, guid, fname)

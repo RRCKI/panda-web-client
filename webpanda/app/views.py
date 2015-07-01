@@ -151,9 +151,9 @@ def job():
 
                 replica = Replica()
                 replica.se = from_se
-                replica.status = 'defined'
+                replica.status = 'link'
                 # Separate url & token
-                replica.lfn = path
+                replica.lfn = '/'.join([from_se, path])
                 replica.token = token
                 replica.original = file
                 db.session.add(replica)
