@@ -47,9 +47,8 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
 
-    oauth_log = logging.getLogger('flask_oauthlib')
-    oauth_log.addHandler(file_handler)
-    oauth_log.setLevel(logging.DEBUG)
+    from common.NrckiLogger import NrckiLogger
+    oauth_log = NrckiLogger().getLogger('flask_oauthlib')
 
     app.logger.info('microblog startup')
 
