@@ -12,24 +12,6 @@
 
 PanDA web client is a tool intended for interacting with KI's PanDA server.
 
-<h2>Tabs</h2>
-
-<h3>Job list</h3>
-
-Here you can see all your jobs and their information. Clicking on job ID opens detailed info window.
-
-<h3>New job</h3>
-
-This tab allows you to submit jobs (read "Submitting a job" below).
-
-<h3>File list</h3>
-
-List of all your files.
-
-<h3>FTP</h3>
-
-Link to FTP.
-
 <h2>Submitting a job</h2>
 
 Typical process of job submitting looks something like this:
@@ -42,25 +24,29 @@ Web form is more suitable for small jobs with few files. It requires no preparat
 
 FTP is more efficient with large file sizes and numbers. Before submitting a job, you must transfer your files to FTP:
 
-1) Connect to server ftp://144.206.233.179:8021/ using your favorite FTP client (if you have none, you can use https://filezilla-project.org/, for example) and your login and password.
+<ol>
+<li>Connect to server ftp://144.206.233.179:8021/ using your favorite FTP client (if you have none, you can use https://filezilla-project.org/, for example) and your login and password.</li>
 
-2) Create a new directory for a job.
+<li>Create a new directory for a job.</li>
 
-3) Upload files into new directory.
+<li>Upload files into new directory.</li>
+</ol>
 
 <h3>Submit job</h3>
 
 Now you can open a "New job" tab. Here you should specify job parameters:
 
-- SOFTWARE: a distributive to process files. If there is no software you need in this list, you should contact the administration of this web client.
+<ul>
+<li> SOFTWARE: a distributive to process files. If there is no software you need in this list, you should contact the administration of this web client.</li>
 
-- INPUT FILES: drag & drop: if you only have a handful of small files to process, you can drag and drop them here.
+<li> INPUT FILES: drag & drop: if you only have a handful of small files to process, you can drag and drop them here.</li>
 
-- INPUT FILES: ftp dir: if you have uploaded files to FTP, specify a directory with them here. (without "ftp:..." or anything. Example: "tasks/new_task")
+<li> INPUT FILES: ftp dir: if you have uploaded files to FTP, specify a directory with them here. (without "ftp:..." or anything. Example: "tasks/new_task")</li>
 
-- INPUT FILES: http url: http link to download files from the web to process. (Example: http://www.google.com/index.html)
+<li> INPUT FILES: http url: http link to download files from the web to process. (Example: http://www.google.com/index.html)</li>
 
-- RUN SCRIPT: commands to run, separated by semicolon. Software chosen by you will be imported and added to PATH.
+<li> RUN SCRIPT: commands to run, separated by semicolon. Software chosen by you will be imported and added to PATH.</li>
+</ul>
 
 And click "Send job".
 
