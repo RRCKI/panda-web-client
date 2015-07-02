@@ -4,6 +4,7 @@ from common import client_config
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize
 from common.utils import md5sum
+from db.models import DB, File
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -70,22 +71,56 @@ def ddm_getlocalabspath(path):
         return localdir + path
     return os.path.join(localdir, path)
 
-def ddm_getlocalfilemeta(relpath):
-    abspath = ddm_getlocalabspath(relpath)
+def ddm_getlocalfilemeta(path):
+    """
+    returns file metadata
+    :param path:
+    :return:
+    """
+    abspath = ddm_getlocalabspath(path)
     data = {}
     data['checksum'] = adler32(abspath)
     data['md5sum'] = md5sum(abspath)
     data['fsize'] = fsize(abspath)
     return data
 
-def ddm_localisdir(dir):
-    absdir = ddm_getlocalabspath(dir)
+def ddm_localisdir(ldir):
+    """
+    os.path.isdir for ddm dir
+    :param ldir:
+    :return:
+    """
+    absdir = ddm_getlocalabspath(ldir)
     return os.path.isdir(absdir)
 
-def ddm_localmakedirs(dir):
-    absdir = ddm_getlocalabspath(dir)
+def ddm_localmakedirs(ldir):
+    """
+    os.makedirs for ddm dir
+    :param ldir:
+    :return:
+    """
+    absdir = ddm_getlocalabspath(ldir)
     return os.makedirs(absdir)
 
-def ddm_localrmtree(dir):
-    absdir = ddm_getlocalabspath(dir)
+def ddm_localrmtree(ldir):
+    """
+    shutil.rmtree for ddm dir
+    :param dir:
+    :return:
+    """
+    absdir = ddm_getlocalabspath(ldir)
     shutil.rmtree(absdir)
+
+def ddm_checkifexists(name, size, adler, md5):
+    """
+    Checks if file with size and sums exixts in catalog
+    :return:
+    """
+    s = DB().getSession()
+    n = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).count()
+    if n == 0:
+        s.close()
+        return 0
+    file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).one()
+    s.close()
+    return file.id

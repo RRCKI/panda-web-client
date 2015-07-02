@@ -6,6 +6,7 @@ from app import app, db
 
 from common.utils import adler32, fsize
 from common.utils import md5sum
+from ddm.DDM import ddm_checkifexists
 from models import Container, Site, File, Replica, Job
 from common.NrckiLogger import NrckiLogger
 from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
@@ -29,9 +30,23 @@ def registerLocalFile(arg, dirname, names):
         fpath = os.path.join(dirname, name)
 
         fobj = None
+        # Check in container
         for file in files:
             if file.lfn == name:
                 fobj = file
+
+        # Check in catalog
+        if not fobj:
+            destination = os.path.join(dirname, name)
+            adler = adler32(destination)
+            md5 = md5sum(destination)
+            size = fsize(destination)
+            file_id = ddm_checkifexists(name, adler, md5, size)
+
+            if file_id:
+                # If file exists
+                fobj = File.query.filter_by(id=file_id).one()
+
         if not fobj:
             fobj = File()
             fobj.scope = getScope(g.user.username)

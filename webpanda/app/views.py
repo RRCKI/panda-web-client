@@ -9,6 +9,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
+from ddm.DDM import ddm_checkifexists
 from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize, md5sum
@@ -134,29 +135,38 @@ def job():
         for f in ifiles:
             if f != '':
                 from_se, path, token = getUrlInfo(f)
-                lfn = path.split('/')[-1]
-                guid = getGUID(scope, lfn)
 
-                file = File()
-                file.scope = scope
-                file.guid = guid
-                file.type = 'input'
-                file.lfn = lfn
-                file.status = 'defined'
-                db.session.add(file)
-                db.session.commit()
+                # Check if used before
+                n = Replica.query.filter_by(status='link').filter_by(lfn=':/'.join([from_se, path])).count()
+                if n > 0:
+                    replica = Replica.query.filter_by(status='link').filter_by(lfn=':/'.join([from_se, path])).first()
+                    file = replica.original
+                else:
+                    lfn = path.split('/')[-1]
+                    guid = getGUID(scope, lfn)
+
+                    file = File()
+                    file.scope = scope
+                    file.guid = guid
+                    file.type = 'input'
+                    file.lfn = lfn
+                    file.status = 'defined'
+                    db.session.add(file)
+                    db.session.commit()
+
+                    replica = Replica()
+                    replica.se = from_se
+                    replica.status = 'link'
+                    # Separate url & token
+                    replica.lfn = ':/'.join([from_se, path])
+                    replica.token = token
+                    replica.original = file
+                    db.session.add(replica)
+                    db.session.commit()
+
+                # Add file to container
                 container.files.append(file)
                 db.session.add(container)
-                db.session.commit()
-
-                replica = Replica()
-                replica.se = from_se
-                replica.status = 'link'
-                # Separate url & token
-                replica.lfn = ':/'.join(from_se, path)
-                replica.token = token
-                replica.original = file
-                db.session.add(replica)
                 db.session.commit()
 
         # Starts cloneReplica tasks
@@ -222,14 +232,14 @@ def upload():
     if form.get("__ajax", None) == "true":
         is_ajax = True
 
-    input_files = []
-
+    # Create new container
     container = Container()
     container.guid = cguid
     container.status = 'open'
     db.session.add(container)
     db.session.commit()
 
+    # Process files in request
     for upload in request.files.getlist("file"):
         # Define file params
         lfn = upload.filename.rsplit("/")[0]
@@ -238,7 +248,7 @@ def upload():
         site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
 
         # Target folder for these uploads.
-        dir = '/' + os.path.join(scope, guid)
+        dir = '/' + os.path.join('system', scope, guid)
         target = site.datadir + dir
         try:
             os.makedirs(target)
@@ -253,27 +263,41 @@ def upload():
         upload.save(destination)
 
         if os.path.isfile(destination):
-            # Save metadata
-            input_files.append(destination)
-            file = File()
-            file.scope = scope
-            file.guid = guid
-            file.type = 'input'
-            file.lfn = lfn
-            file.token = ''
-            file.status = 'defined'
-            file.containers.append(container)
-            db.session.add(file)
-            db.session.commit()
-            setFileMeta(file.id, destination)
+            # Check file existence in catalog
+            adler = adler32(destination)
+            md5 = md5sum(destination)
+            size = fsize(destination)
+            file_id = ddm_checkifexists(lfn, adler, md5, size)
 
-            replica = Replica()
-            replica.se = site.se
-            replica.status = 'ready'
-            replica.lfn = replfn
-            replica.original = file
-            db.session.add(replica)
+            if file_id:
+                # If file exists
+                file = File.query.filter_by(id=file_id).one()
+            else:
+                # Otherwise create new
+                file = File()
+                file.scope = scope
+                file.guid = guid
+                file.type = 'input'
+                file.lfn = lfn
+                file.token = ''
+                file.status = 'defined'
+                db.session.add(file)
+                db.session.commit()
+                setFileMeta(file.id, destination)
+
+                replica = Replica()
+                replica.se = site.se
+                replica.status = 'ready'
+                replica.lfn = replfn
+                replica.original = file
+                db.session.add(replica)
+                db.session.commit()
+
+            # Add file to container
+            container.files.append(container)
+            db.session.add(container)
             db.session.commit()
+
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
 
@@ -360,7 +384,7 @@ def file():
         replica.se = from_se
         replica.status = 'ready'
         replica.token = token
-        replica.lfn = ':/'.join(from_se, path)
+        replica.lfn = ':/'.join([from_se, path])
         replica.original = file
         db.session.add(replica)
         db.session.commit()
