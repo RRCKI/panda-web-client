@@ -92,6 +92,10 @@ def access_token():
 @oauth.revoke_handler
 def revoke_token(): pass
 
+@oauth.invalid_response
+def invalid_require_oauth(req):
+    return jsonify(message=req.error_message), 401
+    
 @app.route('/api/me')
 @oauth.require_oauth()
 def me():
