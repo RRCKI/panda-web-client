@@ -42,6 +42,11 @@ def index():
         title = 'Home',
         user = user)
 
+@app.route('/help')
+@login_required
+def index():
+    return render_template("pandaweb/index.html")
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     user = g.user
