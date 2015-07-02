@@ -121,6 +121,7 @@ def ddm_checkifexists(name, size, adler, md5):
     if n == 0:
         s.close()
         return 0
-    file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).one()
+    file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).first()
+    #file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).one()
     s.close()
     return file.id

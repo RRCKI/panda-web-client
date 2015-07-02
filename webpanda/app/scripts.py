@@ -41,7 +41,7 @@ def registerLocalFile(arg, dirname, names):
             adler = adler32(destination)
             md5 = md5sum(destination)
             size = fsize(destination)
-            file_id = ddm_checkifexists(name, adler, md5, size)
+            file_id = ddm_checkifexists(name, size, adler, md5)
 
             if file_id:
                 # If file exists
@@ -54,10 +54,13 @@ def registerLocalFile(arg, dirname, names):
             fobj.guid = getGUID(fobj.scope, fobj.lfn)
             fobj.type = 'input'
             fobj.status = 'defined'
-            fobj.containers.append(cont)
             db.session.add(fobj)
             db.session.commit()
             setFileMeta(fobj.id, fpath)
+
+        cont.files.append(fobj)
+        db.session.add(cont)
+        db.session.commit()
 
         replicas = fobj.replicas
         replica = None
