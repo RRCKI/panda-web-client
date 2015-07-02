@@ -40,10 +40,10 @@
             [<a href="/file/{{f.guid}}/download">http</a>] [<a href="/file/{{f.guid}}/download">ftp</a>]
             {% endif %}
             {% if f.type == 'log' and job.status in ['finished', 'failed', 'cancelled'] %}
-            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="/file/{{f.guid}}/download">ftp</a>]
+            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
             {% endif %}
             {% if f.type == 'output' and job.status == 'finished' %}
-            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="/file/{{f.guid}}/download">ftp</a>]
+            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
             {% endif %}
         </th>
     </tr>

@@ -109,7 +109,7 @@ def ddm_localrmtree(ldir):
     :return:
     """
     absdir = ddm_getlocalabspath(ldir)
-    shutil.rmtree(absdir)
+    return shutil.rmtree(absdir)
 
 def ddm_checkifexists(name, size, adler, md5):
     """
@@ -140,3 +140,14 @@ def ddm_checkexternalifexists(storage, lfn):
     file = replica.original
     s.close()
     return file.id
+
+def ddm_localcp(src, dest):
+    """
+    shutil.copy2 dor ddm file
+    :param src:
+    :param dest:
+    :return:
+    """
+    asrc = ddm_getlocalabspath(src)
+    adest = ddm_getlocalabspath(dest)
+    return shutil.copy2(asrc, adest)

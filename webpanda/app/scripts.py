@@ -6,7 +6,7 @@ from app import app, db
 
 from common.utils import adler32, fsize
 from common.utils import md5sum
-from ddm.DDM import ddm_checkifexists
+from ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp
 from models import Container, Site, File, Replica, Job
 from common.NrckiLogger import NrckiLogger
 from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
@@ -68,11 +68,15 @@ def registerLocalFile(arg, dirname, names):
             if r.se == site.se and r.status == 'ready':
                 replica = r
         if not replica:
+            ldir = '/' + os.path.join('system', fobj.scope, fobj.guid)
+            ddm_localmakedirs(ldir)
+            ddm_localcp(fpath[len(site.datadir):], ldir)
+
             replica = Replica()
             replica.se = site.se
             replica.status = 'ready'
             replica.token = ''
-            replica.lfn = fpath[len(site.datadir):]
+            replica.lfn = os.path.join(ldir, fobj.lfn)
             replica.original = fobj
             db.session.add(replica)
             db.session.commit()
