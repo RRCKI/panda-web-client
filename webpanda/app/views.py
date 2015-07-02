@@ -9,7 +9,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
-from ddm.DDM import ddm_checkifexists
+from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists
 from scripts import registerLocalFile
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize, md5sum
@@ -140,12 +140,12 @@ def job():
         for f in ifiles:
             if f != '':
                 from_se, path, token = getUrlInfo(f)
+                replfn = ':/'.join([from_se, path])
 
                 # Check if used before
-                n = Replica.query.filter_by(status='link').filter_by(lfn=':/'.join([from_se, path])).count()
-                if n > 0:
-                    replica = Replica.query.filter_by(status='link').filter_by(lfn=':/'.join([from_se, path])).first()
-                    file = replica.original
+                file_id = ddm_checkexternalifexists('', replfn)
+                if file_id:
+                    file = File.query.filter_by(id=file_id).one()
                 else:
                     lfn = path.split('/')[-1]
                     guid = getGUID(scope, lfn)
@@ -163,7 +163,7 @@ def job():
                     replica.se = from_se
                     replica.status = 'link'
                     # Separate url & token
-                    replica.lfn = ':/'.join([from_se, path])
+                    replica.lfn = replfn
                     replica.token = token
                     replica.original = file
                     db.session.add(replica)
@@ -272,7 +272,7 @@ def upload():
             adler = adler32(destination)
             md5 = md5sum(destination)
             size = fsize(destination)
-            file_id = ddm_checkifexists(lfn, adler, md5, size)
+            file_id = ddm_checkifexists(lfn, size, adler, md5)
 
             if file_id:
                 # If file exists
@@ -299,7 +299,7 @@ def upload():
                 db.session.commit()
 
             # Add file to container
-            container.files.append(container)
+            container.files.append(file)
             db.session.add(container)
             db.session.commit()
 

@@ -4,7 +4,7 @@ from common import client_config
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize
 from common.utils import md5sum
-from db.models import DB, File
+from db.models import DB, File, Replica
 
 _logger = NrckiLogger().getLogger("DDM")
 
@@ -123,5 +123,20 @@ def ddm_checkifexists(name, size, adler, md5):
         return 0
     file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).first()
     #file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).one()
+    s.close()
+    return file.id
+
+def ddm_checkexternalifexists(storage, lfn):
+    """
+    Checks if external file exixts in catalog
+    :return:
+    """
+    s = DB().getSession()
+    n = s.query(Replica).filter(Replica.status == 'link').filter(Replica.lfn == lfn).count()
+    if n == 0:
+        s.close()
+        return 0
+    replica = s.query(Replica).filter(Replica.status == 'link').filter(Replica.lfn == lfn).first()
+    file = replica.original
     s.close()
     return file.id
