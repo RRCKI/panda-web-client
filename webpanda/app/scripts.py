@@ -66,7 +66,7 @@ def registerLocalFile(arg, dirname, names):
         replica = None
         for r in replicas:
             if r.se == site.se and r.status == 'ready':
-                pass
+                replica = r
         if not replica:
             replica = Replica()
             replica.se = site.se
