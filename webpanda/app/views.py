@@ -440,7 +440,7 @@ def file_download(guid):
 def job_info(id):
     job = Job.query.filter_by(id=id).one()
     container = job.container
-    return render_template("pandaweb/job.html", job=job, files=container.files)
+    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'])
 
 @app.route("/files", methods=['GET'])
 @login_required
