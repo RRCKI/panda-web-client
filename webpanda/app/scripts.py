@@ -103,6 +103,7 @@ def updateJobStatus():
                 for obj in o:
                     if obj.PandaID == job.pandaid:
                         job.status = obj.jobStatus
+                        job.modification_time = datetime.utcnow()
                         db.session.add(job)
                         db.session.commit()
 
