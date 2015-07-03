@@ -8,46 +8,12 @@ from common.utils import adler32, md5sum, fsize
 from ui.Actions import movedata, linkdata
 from mq.MQ import MQ
 from db.models import *
-import os
 
 _logger = NrckiLogger().getLogger("FileMaster")
 
 class FileMaster:
     def __init__(self):
         self.table_files = 'files'
-
-    def makeReplica(self, fileid, se):
-        s = DB().getSession()
-        file = s.query(File).filter(File.id == fileid).one()
-        replica = Replica()
-        rvalue = 0
-
-        # Define file params
-        from_plugin = file.se
-        fromParams = {'token': file.token}
-
-        # Define result replica params
-        to_se = s.query(Site).filter(Site.se == se).first()
-        dest = '/' + client_config.DEFAULT_SCOPE + '/' + file.guid
-        toParams = {'dest': dest}
-
-        ec, filesinfo = movedata({}, [file.lfn], from_plugin, fromParams, to_se.plugin, toParams)
-        if ec == 0:
-            replica.se = se
-            replica.status = 'ready'
-            replica.lfn = os.path.join(dest, file.lfn.split('/')[-1])
-            s.add(replica)
-            s.commit()
-            file.replicas.append(replica)
-            file.fsize = filesinfo[file.lfn]['fsize']
-            file.md5sum = filesinfo[file.lfn]['md5sum']
-            file.checksum = filesinfo[file.lfn]['checksum']
-            file.modification_time = datetime.utcnow()
-            s.add(file)
-            s.commit()
-            rvalue = replica.id
-        s.close()
-        return 0
 
     def cloneReplica(self, replicaid, se):
         s = DB().getSession()
@@ -64,7 +30,7 @@ class FileMaster:
         from_se = s.query(Site).filter(Site.se == replica.se).first()
         fromParams = {}
         if replica.status == 'link':
-            lfn = getLFN(file.scope, replica.lfn)
+            lfn = getLinkLFN(file.scope, replica.lfn)
         else:
             lfn = replica.lfn
 
@@ -118,11 +84,6 @@ def cloneReplica(replicaid, se):
     return fm.cloneReplica(replicaid, se)
 
 @celery.task
-def makeReplica(fileid, se):
-    fm = FileMaster()
-    return fm.makeReplica(fileid, se)
-
-@celery.task
 def linkReplica(replicaid, dir):
     fm = FileMaster()
     return fm.linkReplica(replicaid, dir)
@@ -155,17 +116,6 @@ def mqCloneReplica(replicaid, se):
     print '%s: %s %s' % ('mqCloneReplica', replicaid, se)
     mq.sendMessage(message, routing_key)
 
-def mqMakeReplica(fileid, se):
-    routing_key = client_config.MQ_FILEKEY + '.make'
-    mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
-    # Create MQ request
-    data = {}
-    data['fileid'] = fileid
-    data['se'] = se
-    message = json.dumps(data)
-    print '%s: %s %s' % ('mqMakeReplica', fileid, se)
-    mq.sendMessage(message, routing_key)
-
 def getScope(username):
     return 'web.' + username
 
@@ -175,8 +125,8 @@ def getGUID(scope, lfn):
 
 def getFullPath(scope, dataset, lfn):
     if ':' in dataset:
-        return '/' + '/'.join(dataset.split(':') + [lfn])
-    return '/' + '/'.join([scope, dataset, lfn])
+        return '/' + '/'.join([dataset.split(':')[0], '.sys', dataset.split(':')[1], lfn])
+    return '/' + '/'.join([scope, '.sys', dataset, lfn])
 
 def getUrlInfo(url):
     # https://www.dropbox.com/get?file=15:dropbox_token=112345AZ
@@ -219,7 +169,7 @@ def setFileMeta(fileid, lfn):
     s.commit()
     s.close()
 
-def getLFN(scope, url):
+def getLinkLFN(scope, url):
     fname = url.split('/')[-1]
     guid = getGUID(scope, fname)
-    return '/%s/%s/%s' % (scope, guid, fname)
+    return '/%s/.sys/%s/%s' % (scope, guid, fname)

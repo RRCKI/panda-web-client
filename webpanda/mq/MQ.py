@@ -89,7 +89,6 @@ class MQ:
             fileid = data['fileid']
             se = data['se']
             #TODO message checking
-            FileMaster().makeReplica(fileid, se)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
         channel.basic_qos(prefetch_count=1)

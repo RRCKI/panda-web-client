@@ -92,7 +92,7 @@ class JobMaster:
                 replica = Replica()
                 replica.se = site.se
                 replica.status = 'defined'
-                replica.lfn = getFullPath(file.scope, '.sys', pandajob.jobName, file.lfn)
+                replica.lfn = getFullPath(file.scope, pandajob.jobName, file.lfn)
                 replica.original = file
                 s.add(replica)
                 s.commit()
@@ -120,7 +120,7 @@ class JobMaster:
         replica = Replica()
         replica.se = pandajob.destinationSE
         replica.status = 'defined'
-        replica.lfn = getFullPath(log.scope, '.sys', pandajob.jobName, log.lfn)
+        replica.lfn = getFullPath(log.scope, pandajob.jobName, log.lfn)
         replica.original = log
         s.add(replica)
         s.commit()
