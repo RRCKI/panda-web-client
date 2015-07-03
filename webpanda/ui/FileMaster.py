@@ -172,4 +172,4 @@ def setFileMeta(fileid, lfn):
 def getLinkLFN(scope, url):
     fname = url.split('/')[-1]
     guid = getGUID(scope, fname)
-    return '/%s/.sys/%s/%s' % (scope, guid, fname)
+    return '/system/%s/%s/%s' % (scope, guid, fname)
