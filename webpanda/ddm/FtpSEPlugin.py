@@ -42,7 +42,7 @@ class FtpSEPlugin():
         try:
             dest = dest.split('ftp://')[-1]
             host = dest.split('/')[0]
-            path = '/'.join(dest.split('/')[1:])
+            path = '/'.join(dest.split('/')[1:-1])
             fname = src.split('/')[-1]
 
             ftp = self.connect(host, self.login, self.password)
