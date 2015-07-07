@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Files list</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<table id="filestable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>Scope</th>
+        <th>GUID</th>
+        <th>Type</th>
+        <th>LFN</th>
+        <th>Status</th>
+    </tr>
+</thead>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="/static/app/js/moment-with-locales.min.js"></script>
+<script src="/static/app/js/file_list.js"></script>
+{% endblock %}

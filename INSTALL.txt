@@ -1,0 +1,8 @@
+* Create virtualenv into /venv
+* Install modules from requirements.txt
+    # ./venv/bin/pip install -r requirements.txt
+* Create dirs /log /tmp | chmod 777
+* Create /bin/setup.sh (see /bin/setup.sh.template)
+* Create /config/webpanda.cfg (see /config/webpanda.cfg.template)
+* Download bootstrap3 (https://github.com/twbs/bootstrap/releases/download/v3.3.4/bootstrap-3.3.4-dist.zip) and place it into /webpanda/app/static/bootstrap
+* Create /webpanda/webpanda.wsgi (see /webpanda/webpanda.wsgi.template)

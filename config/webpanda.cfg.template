@@ -1,0 +1,36 @@
+DATA_PATH = '/data'
+TMP_DIR = 'tmp'
+LOG_DIR = 'log'
+
+HOSTNAME = 'https://myserver.com:8443'
+FTP = 'ftp://localhost:1234'
+
+HPC_KEY = ''                # FIXME
+HPC_HOST = ''               # FIXME
+HPC_USER = ''               # FIXME
+HPC_DATADIR = ''            # FIXME
+
+DEFAULT_TRF = 'tobeset'
+DEFAULT_SCOPE = 'tobeset'
+DEFAULT_SE = ''
+DEFAULT_CE = ''
+
+CSRF_ENABLED = True
+SECRET_KEY = 'you-will-never-guess'
+
+SQLALCHEMY_DATABASE_URI = 'tobeset'
+SQLALCHEMY_MIGRATE_REPO = 'tobeset'
+
+UPLOAD_FOLDER = 'tobeset'
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+
+MQ_HOST = ''
+MQ_EXCHANGE = ''
+MQ_JOBKEY = ''
+MQ_FILEKEY = ''
+
+OAUTH2_PROVIDER_ERROR_URI = '/oauth/errors'
+OAUTH2_PROVIDER_TOKEN_EXPIRES_IN = 3600
+
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_BACKEND = 'amqp://guest:guest@localhost:5672//'
