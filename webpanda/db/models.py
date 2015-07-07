@@ -97,6 +97,7 @@ class Job(Base):
     registered = Column(Integer, default=0)
     registation_time = Column(DateTime)
     ce = Column(String(40))
+    corecount = Column(Integer, default=0)
 
 catalog = Table('catalog', Base.metadata,
     Column('container_id', Integer, ForeignKey('containers.id')),

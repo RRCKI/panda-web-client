@@ -113,6 +113,7 @@ class Job(db.Model):
     registered = db.Column(db.Integer, default=0)
     registation_time = db.Column(db.DateTime)
     ce = db.Column(db.String(40))
+    corecount = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return '<Job id=%s>' % self.id

@@ -88,6 +88,17 @@
     <hr style="width: 100%; color: grey; height: 1px; background-color:grey;" />
 
     <div class="form-group">
+    <div class="row" title="Number of cores">
+    <div class="col-md-4">
+        <label for="corecount">CORES:</label>
+    </div>
+    <div class="col-md-1">
+        {{ form.corecount(class_='form-control') }}
+    </div>
+    </div>
+    </div>
+
+    <div class="form-group">
     <div class="row" title="Commands sequence to run (separate by semicolon)">
     <div class="col-md-4">
         <label for="params">RUN SCRIPT:</label>
