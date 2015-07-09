@@ -8,9 +8,10 @@ import json
 from datetime import datetime
 from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
+from ddm.DDM import ddm_getlocalabspath
 from scripts import registerLocalFile, extractLog
 from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum, fsize
+from common.utils import adler32, md5sum, fsize, find
 from models import Distributive, Container, File, Site, Replica, TaskMeta, Job
 from ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
 from ui.FileMaster import getScope
@@ -365,9 +366,20 @@ def jobAPI():
 @app.route('/api/job/<id>/log', methods=['GET'])
 def jobLogAPI(id):
     """Returns job stdout & stderr"""
-    job = Job.query.filter_by(id=id).first()
+    job = Job.query.filter_by(id=id).one()
+    extractLog(id)
+    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
+    absdir = ddm_getlocalabspath(locdir)
+    fout = find('runjob.stdout', absdir)
+    ferr = find('runjob.stderr', absdir)
+    out = ''
+    err = ''
+    if fout:
+        with open(fout) as f: out = f.read()
+    if ferr:
+        with open(ferr) as f: err = f.read()
     data = {}
     data['id'] = id
-    data['out'] = ''
-    data['err'] = ''
+    data['out'] = out
+    data['err'] = err
     return make_response(jsonify({'data': data}), 200)
