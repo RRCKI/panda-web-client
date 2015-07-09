@@ -1,5 +1,6 @@
 import os
 import shutil
+import tarfile
 from common import client_config
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize
@@ -143,7 +144,7 @@ def ddm_checkexternalifexists(storage, lfn):
 
 def ddm_localcp(src, dest):
     """
-    shutil.copy2 dor ddm file
+    shutil.copy2 for ddm file
     :param src:
     :param dest:
     :return:
@@ -151,3 +152,14 @@ def ddm_localcp(src, dest):
     asrc = ddm_getlocalabspath(src)
     adest = ddm_getlocalabspath(dest)
     return shutil.copy2(asrc, adest)
+
+def ddm_localextractfile(f):
+    """
+    tar -xf for local ddm file
+    :param f: rel file path
+    :return:
+    """
+    af = ddm_getlocalabspath(f)
+    afdir = '/'.join(af.split('/')[:-1])
+    t = tarfile.open(af, 'r')
+    t.extractall(afdir)

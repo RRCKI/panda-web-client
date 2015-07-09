@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
-from scripts import registerLocalFile
+from scripts import registerLocalFile, extractLog
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
 from models import Distributive, Container, File, Site, Replica, TaskMeta, Job
@@ -361,3 +361,13 @@ def jobAPI():
 
     task = send_job.delay(jobid=job.id, siteid=site.id)
     return make_response(jsonify({'id': job.id}), 201)
+
+@app.route('/api/job/<id>/log', methods=['GET'])
+def jobLogAPI(id):
+    """Returns job stdout & stderr"""
+    job = Job.query.filter_by(id=id).first()
+    data = {}
+    data['id'] = id
+    data['out'] = ''
+    data['err'] = ''
+    return make_response(jsonify({'data': data}), 200)

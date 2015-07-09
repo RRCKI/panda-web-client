@@ -6,7 +6,7 @@ from app import app, db
 
 from common.utils import adler32, fsize
 from common.utils import md5sum
-from ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp
+from ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
 from models import Container, Site, File, Replica, Job
 from common.NrckiLogger import NrckiLogger
 from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
@@ -102,10 +102,11 @@ def updateJobStatus():
             if job.pandaid in ids:
                 for obj in o:
                     if obj.PandaID == job.pandaid:
-                        job.status = obj.jobStatus
-                        job.modification_time = datetime.utcnow()
-                        db.session.add(job)
-                        db.session.commit()
+                        if job.status != obj.jobStatus:
+                            job.status = obj.jobStatus
+                            job.modification_time = datetime.utcnow()
+                            db.session.add(job)
+                            db.session.commit()
 
     return localids
 
@@ -179,3 +180,33 @@ def transferOutputFiles(ids=[]):
                     task = cloneReplica.delay(fromReplica, to_site.se)
 
     return 0
+
+def extractLog(id):
+    """
+    Finds local log archive and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = Job.query.filter_by(id=id).first()
+    files = job.container.files
+    for f in files:
+        if f.type == 'log':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.log.tgz'):
+                    ddm_localextractfile(r.lfn)
+
+def extractOutputs(id):
+    """
+    Finds local output archives and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = Job.query.filter_by(id=id).first()
+    files = job.container.files
+    for f in files:
+        if f.type == 'output':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.tgz'):
+                    ddm_localextractfile(r.lfn)
