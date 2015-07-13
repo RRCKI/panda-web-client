@@ -213,7 +213,10 @@ def job():
         job.modification_time = datetime.utcnow()
         job.ninputfiles = nifiles
         job.noutputfiles = nofiles
-        job.corecount = form.corecount.data
+        if form.corecount.data is not None:
+            job.corecount = form.corecount.data
+        else:
+            job.corecount = 1
         db.session.add(job)
         db.session.commit()
 
