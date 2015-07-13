@@ -61,7 +61,7 @@ class NewJobForm(RedirectForm):
     distr = SelectField(u'Distributive', coerce=str)
     params = TextAreaField(u'Parameters', validators=[Required(), Length(1, 1000)])
     container = HiddenField(default="")
-    corecount = IntegerField('Cores')
+    corecount = IntegerField('Cores', default=1)
     ftpdir = StringField(u'FTP DIR')
     submitbtn = SubmitField(u'Send job')
 
