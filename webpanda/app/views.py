@@ -9,10 +9,10 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from app import app, db
 from app.apis import makeReplicaAPI
-from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists
-from scripts import registerLocalFile
+from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
+from scripts import registerLocalFile, extractLog
 from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, fsize, md5sum
+from common.utils import adler32, fsize, md5sum, find
 from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
 from models import *
 from datetime import datetime
@@ -225,6 +225,37 @@ def job():
     form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
     return render_template("pandaweb/jobs_new.html", form=form)
 
+@app.route("/job/<id>", methods=['GET'])
+@login_required
+def job_info(id):
+    job = Job.query.filter_by(id=id).one()
+    container = job.container
+    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'])
+
+@app.route('/job/<id>/logs', methods=['GET'])
+@login_required
+def jobLog(id):
+    """Returns job stdout & stderr"""
+    job = Job.query.filter_by(id=id).one()
+    extractLog(id)
+    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
+    absdir = ddm_getlocalabspath(locdir)
+    fout = find('payload.stdout', absdir)
+    ferr = find('payload.stderr', absdir)
+    out = ''
+    err = ''
+    if len(fout) > 0:
+        with open(fout[0]) as f:
+            out = f.read()
+    if len(ferr) > 0:
+        with open(ferr[0]) as f:
+            err = f.read()
+    data = {}
+    data['id'] = id
+    data['out'] = out
+    data['err'] = err
+    return make_response(jsonify({'data': data}), 200)
+
 @app.route("/upload", methods=['POST'])
 @login_required
 def upload():
@@ -436,12 +467,7 @@ def file_download(guid):
             return rr
     return make_response(jsonify({'error': 'No ready replica'}), 404)
 
-@app.route("/job/<id>", methods=['GET'])
-@login_required
-def job_info(id):
-    job = Job.query.filter_by(id=id).one()
-    container = job.container
-    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'])
+
 
 @app.route("/files", methods=['GET'])
 @login_required

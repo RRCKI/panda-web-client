@@ -362,25 +362,3 @@ def jobAPI():
     task = send_job.delay(jobid=job.id, siteid=site.id)
     return make_response(jsonify({'id': job.id}), 201)
 
-@app.route('/api/job/<id>/logs', methods=['GET'])
-def jobLogAPI(id):
-    """Returns job stdout & stderr"""
-    job = Job.query.filter_by(id=id).one()
-    extractLog(id)
-    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
-    absdir = ddm_getlocalabspath(locdir)
-    fout = find('payload.stdout', absdir)
-    ferr = find('payload.stderr', absdir)
-    out = ''
-    err = ''
-    if len(fout) > 0:
-        with open(fout[0]) as f:
-            out = f.read()
-    if len(ferr) > 0:
-        with open(ferr[0]) as f:
-            err = f.read()
-    data = {}
-    data['id'] = id
-    data['out'] = out
-    data['err'] = err
-    return make_response(jsonify({'data': data}), 200)
