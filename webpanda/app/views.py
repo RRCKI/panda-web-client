@@ -240,8 +240,8 @@ def jobLog(id):
     extractLog(id)
     locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
     absdir = ddm_getlocalabspath(locdir)
-    fout = find('payload.stdout', absdir)
-    ferr = find('payload.stderr', absdir)
+    fout = find('payload_stdout.txt', absdir)
+    ferr = find('payload_stderr.txt', absdir)
     out = ''
     err = ''
     if len(fout) > 0:

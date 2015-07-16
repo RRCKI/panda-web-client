@@ -1,3 +1,4 @@
+import simplejson as json
 import time
 from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
@@ -142,7 +143,7 @@ class JobMaster:
 
         return 0
 
-@celery.task
+@celery.task(serializer='json')
 def send_job(*args, **kwargs):
     jobid = kwargs.get('jobid', 0L)
     siteid = kwargs.get('siteid', 0L)
@@ -151,7 +152,8 @@ def send_job(*args, **kwargs):
     if int(siteid) == 0:
         raise Exception('Illegal argument: siteid')
     jm = JobMaster()
-    return jm.send_job(jobid, siteid)
+
+    return json.dumps(jm.send_job(jobid, siteid))
 
 def prepareInputFiles(cont_id, se):
     # Initialize db

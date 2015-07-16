@@ -1,7 +1,7 @@
 import commands
 from common import client_config
 from datetime import datetime
-import json
+import simplejson as json
 from app import celery
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, md5sum, fsize
@@ -78,20 +78,20 @@ class FileMaster:
 
 
 
-@celery.task
+@celery.task(serializer='json')
 def cloneReplica(replicaid, se):
     fm = FileMaster()
-    return fm.cloneReplica(replicaid, se)
+    return json.dumps(fm.cloneReplica(replicaid, se))
 
-@celery.task
+@celery.task(serializer='json')
 def linkReplica(replicaid, dir):
     fm = FileMaster()
-    return fm.linkReplica(replicaid, dir)
+    return json.dumps(fm.linkReplica(replicaid, dir))
 
-@celery.task
+@celery.task(serializer='json')
 def copyReplica(replicaid, se, path):
     fm = FileMaster()
-    return fm.copyReplica(replicaid, se, path)
+    return json.dumps(fm.copyReplica(replicaid, se, path))
 
 def linkFile(fileid, se, dir):
     s = DB().getSession()
