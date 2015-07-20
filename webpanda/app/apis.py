@@ -136,6 +136,7 @@ def makeReplicaAPI(container_guid, lfn, se):
 
             task = cloneReplica.delay(ready_replica.id, se)
 
+            _logger.debug(task.id)
             task_obj = TaskMeta.query.filter_by(task_id=task.id).one()
 
             db.session.add(file)
@@ -328,7 +329,7 @@ def taskStatusAPI(id):
     data = {}
     data['id'] = task.task_id
     data['status'] = task.status
-    data['results'] = str(task.result)
+    #data['results'] = str(task.result)
     data['date_done'] = str(task.date_done)
     data['traceback'] = task.traceback
     return make_response(jsonify({'data': data}), 200)
