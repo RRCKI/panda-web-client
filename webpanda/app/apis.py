@@ -137,10 +137,10 @@ def makeReplicaAPI(container_guid, lfn, se):
             task = cloneReplica.delay(ready_replica.id, se)
 
             _logger.debug(task.id)
-            task_obj = TaskMeta.query.filter_by(task_id=task.id).one()
+            task_obj = TaskMeta.query.filter_by(task_id=task.id).first()
 
-            db.session.add(file)
-            db.session.commit()
+            # db.session.add(file)
+            # db.session.commit()
             return make_response(jsonify({'status': task_obj.status}), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 

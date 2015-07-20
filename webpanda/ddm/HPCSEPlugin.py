@@ -33,6 +33,8 @@ class HPCSEPlugin(SEPlugin):
         _logger.debug('HPC: Try to put file from %s to %s' % (src, dest))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            out = proc.communicate("ssh -i %s %s@%s 'mkdir -p %s'" % (self.key, self.user, self.host, dest))
+            proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             out = proc.communicate("rsync -av -e 'ssh -i %s' %s %s@%s:%s/" % (self.key, src, self.user, self.host, dest))
 
         except:
