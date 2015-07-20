@@ -109,6 +109,10 @@ def contListAPI(guid):
 @app.route('/api/file/<container_guid>/<lfn>/makereplica/<se>', methods=['POST'])
 def makeReplicaAPI(container_guid, lfn, se):
     """Creates task to make new file replica"""
+    nsite = Site.query.filter_by(se=se).count()
+    if nsite == 0:
+        return make_response(jsonify({'error': 'SE not found'}), 400)
+
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = Container.query.filter_by(guid=container_guid).first()
@@ -120,8 +124,17 @@ def makeReplicaAPI(container_guid, lfn, se):
             if rep_num == 0:
                 return make_response(jsonify({'status': 'Error: no replicas available'}), 500)
 
-            replica = replicas[0] #TODO Update chosing method
-            task = cloneReplica.delay(replica.id, se)
+            ready_replica = None
+            for r in replicas:
+                if r.se == se:
+                    return make_response(jsonify({'status': r.status}), 200)
+                if r.se == app.config['DEFAULT_SE']:  # and r.status == 'ready'
+                    ready_replica = r
+
+            if ready_replica is None:
+                ready_replica = replicas[0]
+
+            task = cloneReplica.delay(ready_replica.id, se)
 
             task_obj = TaskMeta.query.filter_by(task_id=task.id).one()
 
