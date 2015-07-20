@@ -50,8 +50,6 @@ if not app.debug:
     from common.NrckiLogger import NrckiLogger
     oauth_log = NrckiLogger().getLogger('flask_oauthlib')
 
-    app.logger.info('microblog startup')
-
 if __name__ == '__main__':
     #app.run()
     manager.run()
