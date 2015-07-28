@@ -37,56 +37,6 @@ def swAPI():
         dlist.append(a)
     return make_response(jsonify({'data': dlist}), 200)
 
-@app.route('/api/container', methods=['POST'])
-def contNewAPI():
-    """Saves new container"""
-    cont = Container()
-    guid = 'job.' + commands.getoutput('uuidgen')
-
-    cont.guid = guid
-    cont.status = 'open'
-    db.session.add(cont)
-    db.session.commit()
-
-    url = '%s/%s' % (app.config['FTP'], guid)
-    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid))
-    return make_response(jsonify({'ftp': url, 'guid': cont.guid}), 200)
-
-@app.route('/api/container/<guid>/open', methods=['POST'])
-def contOpenAPI(guid):
-    """Changes container status to 'open'.
-    :param guid: Container unique id
-    """
-    cont = Container.query.filter_by(guid=guid).first()
-    cont.status = 'open'
-    db.session.add(cont)
-    db.session.commit()
-    return make_response(jsonify({'response': 'Container status: open'}), 200)
-
-@app.route('/api/container/<guid>/close', methods=['POST'])
-def contCloseAPI(guid):
-    """Changes container status to 'close'"""
-    cont = Container.query.filter_by(guid=guid).first()
-
-    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid)
-    os.path.walk(path, registerLocalFile, cont.guid)
-
-    cont.status = 'close'
-    db.session.add(cont)
-    db.session.commit()
-    return make_response(jsonify({'response': 'Container status: close'}), 200)
-
-@app.route('/api/container/<guid>/info', methods=['GET'])
-def contInfoAPI(guid):
-    """Returns container metadata"""
-    cont = Container.query.filter_by(guid=guid).first()
-    data = {}
-    data['id'] = cont.id
-    data['guid'] = cont.guid
-    data['status'] = cont.status
-    data['nfiles'] = cont.files.count()
-    return make_response(jsonify({'data': data}), 200)
-
 @app.route('/api/container/<guid>/list', methods=['GET'])
 @oauth.require_oauth('api')
 def contListAPI(guid):
@@ -107,7 +57,126 @@ def contListAPI(guid):
         datalist.append(data)
     return make_response(jsonify({'data': datalist}), 200)
 
-@app.route('/api/file/<container_guid>/<lfn>/makereplica/<se>', methods=['POST'])
+@app.route('/api/job', methods=['POST'])
+@oauth.require_oauth('api')
+def jobAPI():
+    """Creates new job
+    """
+    # TODO: Define output files
+    values = request.values
+    distr_id = values['sw_id']
+    params = values['script']
+    ftp_dir = values['ftp_dir']
+
+    try:
+        distr = Distributive.query.filter_by(id=distr_id).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return make_response(jsonify({'error': 'SW/Container not found'}), 404)
+
+    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
+
+    container = Container()
+    guid = 'job.' + commands.getoutput('uuidgen')
+    container.guid = guid
+    container.status = 'close'
+    db.session.add(container)
+    db.session.commit()
+    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+    os.path.walk(dir, registerLocalFile, container.guid)
+    #shutil.rmtree(dir)
+
+    job = Job()
+    job.pandaid = None
+    job.status = 'pending'
+    job.owner = g.user
+    job.params = params
+    job.distr = distr
+    job.container = container
+    job.creation_time = datetime.utcnow()
+    job.modification_time = datetime.utcnow()
+    db.session.add(job)
+    db.session.commit()
+
+    task = send_job.delay(jobid=job.id, siteid=site.id)
+    return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
+
+@app.route('/api/job/<id>/logs', methods=['GET'])
+@oauth.require_oauth('api')
+def jobLogAPI(id):
+    """Returns job stdout & stderr"""
+    job = Job.query.filter_by(id=id).one()
+    extractLog(id)
+    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
+    absdir = ddm_getlocalabspath(locdir)
+    fout = find('payload.stdout', absdir)
+    ferr = find('payload.stderr', absdir)
+    out = ''
+    err = ''
+    if len(fout) > 0:
+        with open(fout[0]) as f:
+            out = f.read()
+    if len(ferr) > 0:
+        with open(ferr[0]) as f:
+            err = f.read()
+    data = {}
+    data['id'] = id
+    data['out'] = out
+    data['err'] = err
+    return make_response(jsonify({'data': data}), 200)
+
+
+@app.route('/pilot/container', methods=['POST'])
+def contNewAPI():
+    """Saves new container"""
+    cont = Container()
+    guid = 'job.' + commands.getoutput('uuidgen')
+
+    cont.guid = guid
+    cont.status = 'open'
+    db.session.add(cont)
+    db.session.commit()
+
+    url = '%s/%s' % (app.config['FTP'], guid)
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid))
+    return make_response(jsonify({'ftp': url, 'guid': cont.guid}), 200)
+
+@app.route('/pilot/container/<guid>/open', methods=['POST'])
+def contOpenAPI(guid):
+    """Changes container status to 'open'.
+    :param guid: Container unique id
+    """
+    cont = Container.query.filter_by(guid=guid).first()
+    cont.status = 'open'
+    db.session.add(cont)
+    db.session.commit()
+    return make_response(jsonify({'response': 'Container status: open'}), 200)
+
+@app.route('/pilot/container/<guid>/close', methods=['POST'])
+def contCloseAPI(guid):
+    """Changes container status to 'close'"""
+    cont = Container.query.filter_by(guid=guid).first()
+
+    path = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), cont.guid)
+    os.path.walk(path, registerLocalFile, cont.guid)
+
+    cont.status = 'close'
+    db.session.add(cont)
+    db.session.commit()
+    return make_response(jsonify({'response': 'Container status: close'}), 200)
+
+@app.route('/pilot/container/<guid>/info', methods=['GET'])
+def contInfoAPI(guid):
+    """Returns container metadata"""
+    cont = Container.query.filter_by(guid=guid).first()
+    data = {}
+    data['id'] = cont.id
+    data['guid'] = cont.guid
+    data['status'] = cont.status
+    data['nfiles'] = cont.files.count()
+    return make_response(jsonify({'data': data}), 200)
+
+@app.route('/pilot/file/<container_guid>/<lfn>/makereplica/<se>', methods=['POST'])
 def makeReplicaAPI(container_guid, lfn, se):
     """Creates task to make new file replica"""
     nsite = Site.query.filter_by(se=se).count()
@@ -139,7 +208,7 @@ def makeReplicaAPI(container_guid, lfn, se):
             return make_response(jsonify({'task_id': task.id}), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<container_guid>/<lfn>/copy', methods=['POST'])
+@app.route('/pilot/file/<container_guid>/<lfn>/copy', methods=['POST'])
 def stageinAPI(container_guid, lfn):
     """Creates task to copy file in path on se"""
     args = request.form
@@ -166,7 +235,7 @@ def stageinAPI(container_guid, lfn):
             return make_response(jsonify({'status': 'Error: no replicas available'}), 204)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<container_guid>/<lfn>/info', methods=['GET'])
+@app.route('/pilot/file/<container_guid>/<lfn>/info', methods=['GET'])
 def pilotFileInfoAPI(container_guid, lfn):
     """Returns file metadata"""
     if ':' in container_guid:
@@ -185,7 +254,7 @@ def pilotFileInfoAPI(container_guid, lfn):
             return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<container_guid>/<lfn>/link', methods=['GET'])
+@app.route('/pilot/file/<container_guid>/<lfn>/link', methods=['GET'])
 def pilotFileLinkAPI(container_guid, lfn):
     """Returns ftp link to file"""
     if ':' in container_guid:
@@ -206,7 +275,7 @@ def pilotFileLinkAPI(container_guid, lfn):
                     return make_response(jsonify(data), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 
-@app.route('/api/file/<container_guid>/<lfn>/save', methods=['POST'])
+@app.route('/pilot/file/<container_guid>/<lfn>/save', methods=['POST'])
 def pilotFileSaveAPI(container_guid, lfn):
     """Saves file from request, returns file guid"""
     site = Site.query.filter_by(se=app.config['DEFAULT_SE']).first()
@@ -293,7 +362,7 @@ def pilotFileSaveAPI(container_guid, lfn):
     return make_response(jsonify({'guid': file.guid}), 200)
     # return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
 
-@app.route('/api/file/<container_guid>/<lfn>/fetch', methods=['GET'])
+@app.route('/pilot/file/<container_guid>/<lfn>/fetch', methods=['GET'])
 def pilotFileFetchAPI(container_guid, lfn):
     """Returns file in response"""
 
@@ -317,7 +386,7 @@ def pilotFileFetchAPI(container_guid, lfn):
                     return rr
     return make_response(jsonify({'error': 'File not found'}), 404)
 
-@app.route('/api/task/<id>/info', methods=['GET'])
+@app.route('/pilot/task/<id>/info', methods=['GET'])
 def taskStatusAPI(id):
     """Returns task status"""
     task = TaskMeta.query.filter_by(task_id=id).first()
@@ -327,72 +396,4 @@ def taskStatusAPI(id):
     #data['results'] = str(task.result)
     data['date_done'] = str(task.date_done)
     data['traceback'] = task.traceback
-    return make_response(jsonify({'data': data}), 200)
-
-@app.route('/api/job', methods=['POST'])
-@oauth.require_oauth('api')
-def jobAPI():
-    """Creates new job
-    """
-    # TODO: Define output files
-    values = request.values
-    distr_id = values['sw_id']
-    params = values['script']
-    ftp_dir = values['ftp_dir']
-
-    try:
-        distr = Distributive.query.filter_by(id=distr_id).one()
-    except(Exception):
-        _logger.error(Exception.message)
-        return make_response(jsonify({'error': 'SW/Container not found'}), 404)
-
-    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
-
-    container = Container()
-    guid = 'job.' + commands.getoutput('uuidgen')
-    container.guid = guid
-    container.status = 'close'
-    db.session.add(container)
-    db.session.commit()
-    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
-    os.path.walk(dir, registerLocalFile, container.guid)
-    #shutil.rmtree(dir)
-
-    job = Job()
-    job.pandaid = None
-    job.status = 'pending'
-    job.owner = g.user
-    job.params = params
-    job.distr = distr
-    job.container = container
-    job.creation_time = datetime.utcnow()
-    job.modification_time = datetime.utcnow()
-    db.session.add(job)
-    db.session.commit()
-
-    task = send_job.delay(jobid=job.id, siteid=site.id)
-    return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
-
-@app.route('/api/job/<id>/logs', methods=['GET'])
-@oauth.require_oauth('api')
-def jobLogAPI(id):
-    """Returns job stdout & stderr"""
-    job = Job.query.filter_by(id=id).one()
-    extractLog(id)
-    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
-    absdir = ddm_getlocalabspath(locdir)
-    fout = find('payload.stdout', absdir)
-    ferr = find('payload.stderr', absdir)
-    out = ''
-    err = ''
-    if len(fout) > 0:
-        with open(fout[0]) as f:
-            out = f.read()
-    if len(ferr) > 0:
-        with open(ferr[0]) as f:
-            err = f.read()
-    data = {}
-    data['id'] = id
-    data['out'] = out
-    data['err'] = err
     return make_response(jsonify({'data': data}), 200)
