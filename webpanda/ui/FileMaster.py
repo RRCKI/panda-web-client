@@ -59,7 +59,7 @@ class FileMaster:
             s.commit()
 
             for cont in file.containers:
-                self.linkReplica(r.id, '%s/%s' % (client_config.DEFAULT_SCOPE, cont.guid))
+                self.linkReplica(r.id, '/%s/%s' % (client_config.DEFAULT_SCOPE, cont.guid))
 
             return r.id
         s.close()
