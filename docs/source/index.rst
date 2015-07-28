@@ -1,9 +1,9 @@
 .. panda-web-client documentation master file, created by
-   sphinx-quickstart on Wed Jun 24 16:54:59 2015.
+   sphinx-quickstart on Fri May 29 13:30:23 2015.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to panda-web-client's documentation!
+Panda Web Client
 ============================================
 
 Contents:
@@ -11,18 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro
-   tutorial
-   ...
-
-.. autoflask:: app:app
-   :endpoints: swAPI, contNewAPI, contInfoAPI, contOpenAPI, contCloseAPI, contListAPI, pilotFileInfoAPI, pilotFileLinkAPI, pilotFileSaveAPI, pilotFileFetchAPI
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   overview
+   registration
+   webclient
+   api
 

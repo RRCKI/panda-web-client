@@ -23,6 +23,8 @@ _logger = NrckiLogger().getLogger("app.api")
 def before_requestAPI():
     _logger.debug(request.url)
 
+## CLAVIRE ZONE
+
 @app.route('/api/sw', methods=['GET'])
 @oauth.require_oauth('api')
 def swAPI():
@@ -125,6 +127,7 @@ def jobLogAPI(id):
     data['err'] = err
     return make_response(jsonify({'data': data}), 200)
 
+## PILOT ZONE
 
 @app.route('/pilot/container', methods=['POST'])
 def contNewAPI():

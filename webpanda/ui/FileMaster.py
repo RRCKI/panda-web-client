@@ -57,6 +57,10 @@ class FileMaster:
             file.replicas.append(r)
             s.add(file)
             s.commit()
+
+            for cont in r.original.containers:
+                self.linkReplica(r.id, '%s/%s' % (client_config.DEFAULT_SCOPE, cont.guid))
+
             return r.id
         s.close()
         raise Exception('movedata return code: %s' % ec)
