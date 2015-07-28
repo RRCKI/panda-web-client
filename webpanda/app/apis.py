@@ -24,7 +24,7 @@ def before_requestAPI():
     _logger.debug(request.url)
 
 @app.route('/api/sw', methods=['GET'])
-@oauth.require_oauth('email')
+@oauth.require_oauth('api')
 def swAPI():
     """Returns list of available software"""
     ds = Distributive.query.all()
@@ -88,6 +88,7 @@ def contInfoAPI(guid):
     return make_response(jsonify({'data': data}), 200)
 
 @app.route('/api/container/<guid>/list', methods=['GET'])
+@oauth.require_oauth('api')
 def contListAPI(guid):
     """Returns list of files registered in container"""
     cont = Container.query.filter_by(guid=guid).first()
@@ -329,6 +330,7 @@ def taskStatusAPI(id):
     return make_response(jsonify({'data': data}), 200)
 
 @app.route('/api/job', methods=['POST'])
+@oauth.require_oauth('api')
 def jobAPI():
     """Creates new job
     """
@@ -369,9 +371,10 @@ def jobAPI():
     db.session.commit()
 
     task = send_job.delay(jobid=job.id, siteid=site.id)
-    return make_response(jsonify({'id': job.id}), 201)
+    return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
 
 @app.route('/api/job/<id>/logs', methods=['GET'])
+@oauth.require_oauth('api')
 def jobLogAPI(id):
     """Returns job stdout & stderr"""
     job = Job.query.filter_by(id=id).one()
