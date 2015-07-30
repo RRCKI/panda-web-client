@@ -2,6 +2,7 @@
 import os
 import random
 import shutil
+from celery import chord
 from app import app, db, lm, oauth
 import commands
 import json
@@ -15,7 +16,7 @@ from common.utils import adler32, md5sum, fsize, find
 from models import Distributive, Container, File, Site, Replica, TaskMeta, Job
 from ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
 from ui.FileMaster import getScope
-from ui.JobMaster import send_job
+from ui.JobMaster import send_job, prepareInputFiles
 
 _logger = NrckiLogger().getLogger("app.api")
 
@@ -64,19 +65,20 @@ def contListAPI(guid):
 def jobAPI():
     """Creates new job
     """
-    # TODO: Define output files
-    values = request.values
-    distr_id = values['sw_id']
-    params = values['script']
-    ftp_dir = values['ftp_dir']
+    js = request.json
+    data = js['data']
 
+    distr_id = data['sw_id']
+    params = data['script']
+    ftp_dir = data['ftp_dir']
+    corecount = data['cores']
+
+    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
     try:
         distr = Distributive.query.filter_by(id=distr_id).one()
     except(Exception):
         _logger.error(Exception.message)
         return make_response(jsonify({'error': 'SW/Container not found'}), 404)
-
-    site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
 
     container = Container()
     guid = 'job.' + commands.getoutput('uuidgen')
@@ -84,23 +86,57 @@ def jobAPI():
     container.status = 'close'
     db.session.add(container)
     db.session.commit()
-    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(request.oauth.user.username), ftp_dir)
     os.path.walk(dir, registerLocalFile, container.guid)
-    #shutil.rmtree(dir)
 
+    ofiles = ['results.tgz']
+    scope = getScope(request.oauth.user.username)
+
+    # Starts cloneReplica tasks
+    ftasks = prepareInputFiles(container.id, site.se)
+
+    # Saves output files meta
+    for lfn in ofiles:
+        file = File()
+        file.scope = scope
+        file.guid = getGUID(scope, lfn)
+        file.type = 'output'
+        file.lfn = lfn
+        file.status = 'defined'
+        db.session.add(file)
+        db.session.commit()
+        container.files.append(file)
+        db.session.add(container)
+        db.session.commit()
+
+    # Counts files
+    allfiles = container.files
+    nifiles = 0
+    nofiles = 0
+    for f in allfiles:
+        if f.type == 'input':
+            nifiles += 1
+        if f.type == 'output':
+            nofiles += 1
+
+    # Defines job meta
     job = Job()
     job.pandaid = None
     job.status = 'pending'
-    job.owner = g.user
+    job.owner = request.oauth.user
     job.params = params
     job.distr = distr
     job.container = container
     job.creation_time = datetime.utcnow()
     job.modification_time = datetime.utcnow()
+    job.ninputfiles = nifiles
+    job.noutputfiles = nofiles
+    job.corecount = corecount
     db.session.add(job)
     db.session.commit()
 
-    task = send_job.delay(jobid=job.id, siteid=site.id)
+    # Async sendjob
+    res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
     return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
 
 @app.route('/api/job/<id>/logs', methods=['GET'])
