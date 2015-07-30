@@ -392,6 +392,14 @@ def pilotFileFetchAPI(container_guid, lfn):
 @app.route('/pilot/task/<id>/info', methods=['GET'])
 def taskStatusAPI(id):
     """Returns task status"""
+    n = TaskMeta.query.filter_by(task_id=id).count()
+    if n == 0:
+        data = {}
+        data['id'] = id
+        data['status'] = 'unknown'
+        data['date_done'] = ''
+        data['traceback'] = ''
+        return make_response(jsonify({'data': data}), 200)
     task = TaskMeta.query.filter_by(task_id=id).first()
     data = {}
     data['id'] = task.task_id
