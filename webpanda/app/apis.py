@@ -139,6 +139,24 @@ def jobAPI():
     res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
     return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
 
+@app.route('/api/job/<id>/info', methods=['GET'])
+@oauth.require_oauth('api')
+def jobStatusAPI(id):
+    """Returns job status"""
+    n = Job.query.filter_by(id=id).count()
+    if n == 0:
+        data = {}
+        data['status'] = 'Not found'
+        return make_response(jsonify({'data': data}), 200)
+    job = Job.query.filter_by(id=id).first()
+    data = {}
+    data['id'] = job.id
+    data['panda_id'] = job.pandaid
+    data['creation_time'] = job.creation_time
+    data['modification_time'] = job.modification_time
+    data['status'] = job.status
+    return make_response(jsonify({'data': data}), 200)
+
 @app.route('/api/job/<id>/logs', methods=['GET'])
 @oauth.require_oauth('api')
 def jobLogAPI(id):
