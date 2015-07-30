@@ -152,8 +152,8 @@ def jobStatusAPI(id):
     data = {}
     data['id'] = job.id
     data['panda_id'] = job.pandaid
-    data['creation_time'] = job.creation_time
-    data['modification_time'] = job.modification_time
+    data['creation_time'] = str(job.creation_time)
+    data['modification_time'] = str(job.modification_time)
     data['status'] = job.status
     return make_response(jsonify({'data': data}), 200)
 
