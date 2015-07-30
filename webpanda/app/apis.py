@@ -30,6 +30,8 @@ def before_requestAPI():
 @oauth.require_oauth('api')
 def swAPI():
     """Returns list of available software"""
+    g.user = request.oauth.user
+
     ds = Distributive.query.all()
     dlist = []
     for d in ds:
@@ -44,6 +46,8 @@ def swAPI():
 @oauth.require_oauth('api')
 def contListAPI(guid):
     """Returns list of files registered in container"""
+    g.user = request.oauth.user
+
     cont = Container.query.filter_by(guid=guid).first()
     files = cont.files
 
@@ -65,6 +69,8 @@ def contListAPI(guid):
 def jobAPI():
     """Creates new job
     """
+    g.user = request.oauth.user
+
     js = request.json
     data = js['data']
 
@@ -143,6 +149,8 @@ def jobAPI():
 @oauth.require_oauth('api')
 def jobStatusAPI(id):
     """Returns job status"""
+    g.user = request.oauth.user
+
     n = Job.query.filter_by(id=id).count()
     if n == 0:
         data = {}
@@ -161,6 +169,8 @@ def jobStatusAPI(id):
 @oauth.require_oauth('api')
 def jobLogAPI(id):
     """Returns job stdout & stderr"""
+    g.user = request.oauth.user
+
     job = Job.query.filter_by(id=id).one()
     extractLog(id)
     locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
