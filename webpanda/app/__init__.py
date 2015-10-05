@@ -11,7 +11,7 @@ from celery import Celery
 
 
 app = Flask(__name__)
-app.config.from_object('app.config')
+app.config.from_object('webpanda.app.config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 manager = Manager(app)
