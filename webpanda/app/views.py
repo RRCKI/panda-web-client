@@ -10,7 +10,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 from app import app, db
 from app.apis import makeReplicaAPI
 from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
-from scripts import registerLocalFile, extractLog
+from scripts import registerLocalFile, extractLog, register_ftp_files
 from common.NrckiLogger import NrckiLogger
 from common.utils import adler32, fsize, md5sum, find
 from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
@@ -131,10 +131,9 @@ def job():
 
         scope = getScope(g.user.username)
 
+        # Process ftp files
         ftpdir = form.ftpdir.data
-        if ftpdir != '':
-            dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftpdir)
-            os.path.walk(dir, registerLocalFile, container.guid)
+        register_ftp_files(ftpdir)
 
         # Processes urls
         for f in ifiles:

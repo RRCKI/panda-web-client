@@ -81,6 +81,17 @@ def registerLocalFile(arg, dirname, names):
             db.session.add(replica)
             db.session.commit()
 
+def register_ftp_files(ftp_dir, guid):
+    if ftp_dir == '':
+        return []
+
+    dir_name = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+    ftp_walk = os.walk(dir_name)
+    for item in ftp_walk:
+        # Calculate files' hash, size
+        # Register it If db hasn't similar file
+        registerLocalFile(guid, item[0], item[2])
+
 def updateJobStatus():
     # Method to sync PandaDB job status and local job status
     # show users jobs
