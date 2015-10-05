@@ -83,12 +83,17 @@ def registerLocalFile(arg, dirname, names):
             db.session.add(replica)
             db.session.commit()
 
-def register_ftp_files(ftp_dir, guid):
-    if ftp_dir == '':
+def register_ftp_files(ftp_dir_full, guid):
+    """
+    Walks through ftp dir and registers all files
+    :param ftp_dir_full: Absolute ftpdir path
+    :param guid: Container's guid to register in
+    :return:
+    """
+    if ftp_dir_full == '':
         return []
 
-    dir_name = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
-    ftp_walk = os.walk(dir_name)
+    ftp_walk = os.walk(ftp_dir_full)
     for item in ftp_walk:
         # Calculate files' hash, size
         # Register it If db hasn't similar file

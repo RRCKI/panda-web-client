@@ -133,8 +133,9 @@ def job():
         scope = getScope(g.user.username)
 
         # Process ftp files
-        ftpdir = form.ftpdir.data
-        register_ftp_files(ftpdir, container.guid)
+        ftp_dir = form.ftpdir.data
+        ftp_dir_full = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftp_dir)
+        register_ftp_files(ftp_dir_full, container.guid)
 
         # Processes urls
         for f in ifiles:

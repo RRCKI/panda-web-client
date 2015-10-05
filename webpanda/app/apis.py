@@ -12,7 +12,7 @@ from flask_login import login_required
 
 from webpanda.app import app, db, lm, oauth
 from webpanda.ddm.DDM import ddm_getlocalabspath
-from webpanda.app.scripts import registerLocalFile, extractLog
+from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize, find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
@@ -78,7 +78,6 @@ def jobAPI():
 
     distr_id = data['sw_id']
     params = data['script']
-    ftp_dir = data['ftp_dir']
     corecount = data['cores']
 
     site = Site.query.filter_by(ce=app.config['DEFAULT_CE']).first()
@@ -94,8 +93,11 @@ def jobAPI():
     container.status = 'close'
     db.session.add(container)
     db.session.commit()
-    dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(request.oauth.user.username), ftp_dir)
-    os.path.walk(dir, registerLocalFile, container.guid)
+
+    # Process ftp files
+    ftp_dir = data['ftp_dir']
+    ftp_dir_full = os.path.join(app.config['UPLOAD_FOLDER'], getScope(request.oauth.user.username), ftp_dir)
+    register_ftp_files(ftp_dir_full, container.guid)
 
     ofiles = ['results.tgz']
     scope = getScope(request.oauth.user.username)
