@@ -133,7 +133,7 @@ def job():
 
         # Process ftp files
         ftpdir = form.ftpdir.data
-        register_ftp_files(ftpdir)
+        register_ftp_files(ftpdir, container.guid)
 
         # Processes urls
         for f in ifiles:
