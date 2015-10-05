@@ -72,6 +72,7 @@ def jobAPI():
     """Creates new job
     """
     g.user = request.oauth.user
+    scope = getScope(request.oauth.user.username)
 
     js = request.json
     data = js['data']
@@ -96,11 +97,9 @@ def jobAPI():
 
     # Process ftp files
     ftp_dir = data['ftp_dir']
-    ftp_dir_full = os.path.join(app.config['UPLOAD_FOLDER'], getScope(request.oauth.user.username), ftp_dir)
-    register_ftp_files(ftp_dir_full, container.guid)
+    register_ftp_files(ftp_dir, scope, container.guid)
 
     ofiles = ['results.tgz']
-    scope = getScope(request.oauth.user.username)
 
     # Starts cloneReplica tasks
     ftasks = prepareInputFiles(container.id, site.se)

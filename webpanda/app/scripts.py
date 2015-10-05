@@ -83,15 +83,18 @@ def registerLocalFile(arg, dirname, names):
             db.session.add(replica)
             db.session.commit()
 
-def register_ftp_files(ftp_dir_full, guid):
+def register_ftp_files(ftp_dir, scope, guid):
     """
     Walks through ftp dir and registers all files
-    :param ftp_dir_full: Absolute ftpdir path
+    :param ftp_dir: Relative ftpdir path
+    :param scope: Files' scope
     :param guid: Container's guid to register in
     :return:
     """
-    if ftp_dir_full == '':
+    if ftp_dir == '':
         return []
+
+    ftp_dir_full = os.path.join(app.config['UPLOAD_FOLDER'], scope, ftp_dir)
 
     ftp_walk = os.walk(ftp_dir_full)
     for item in ftp_walk:
