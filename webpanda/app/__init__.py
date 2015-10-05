@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -6,7 +8,7 @@ from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 from flask_oauthlib.provider import OAuth2Provider
 from celery import Celery
-import os
+
 
 app = Flask(__name__)
 app.config.from_object('app.config')
@@ -33,10 +35,10 @@ def load_user(id):
     return User.query.filter_by(id=id).first()
 
 
-from app import views
-from app import views_oauth
-from app import apis
-from app import admin
+from webpanda.app import views
+from webpanda.app import views_oauth
+from webpanda.app import apis
+from webpanda.app import admin
 
 if not app.debug:
     import logging
@@ -47,7 +49,7 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
 
-    from common.NrckiLogger import NrckiLogger
+    from webpanda.common.NrckiLogger import NrckiLogger
     oauth_log = NrckiLogger().getLogger('flask_oauthlib')
 
 if __name__ == '__main__':

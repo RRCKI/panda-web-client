@@ -1,8 +1,9 @@
 import os
 import shutil
 import subprocess
-from common.NrckiLogger import NrckiLogger
-from ddm.DDM import ddm_getlocalabspath, ddm_localmakedirs, ddm_localisdir
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.DDM import ddm_getlocalabspath, ddm_localmakedirs, ddm_localisdir
 
 _logger = NrckiLogger().getLogger("DDM")
 

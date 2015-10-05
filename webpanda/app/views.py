@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+import os
 import commands
 import glob
 import json
-from celery import chord
 from datetime import datetime
 
+from celery import chord
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db
-from app.apis import makeReplicaAPI
-from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
-from scripts import registerLocalFile, extractLog, register_ftp_files
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, fsize, md5sum, find
-from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
-from models import *
-from datetime import datetime
-import os
-from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta
-from ui.JobMaster import send_job, prepareInputFiles
+
+from webpanda.app import app, db
+from webpanda.app.apis import makeReplicaAPI
+from webpanda.ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
+from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, fsize, md5sum, find
+from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
+from webpanda.app.models import *
+from webpanda.ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta
+from webpanda.ui.JobMaster import send_job, prepareInputFiles
 
 from userinterface import Client
 

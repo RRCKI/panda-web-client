@@ -1,11 +1,12 @@
 import os
 import shutil
 import tarfile
-from common import client_config
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, fsize
-from common.utils import md5sum
-from db.models import DB, File, Replica
+
+from webpanda.common import client_config
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, fsize
+from webpanda.common.utils import md5sum
+from webpanda.db.models import DB, File, Replica
 
 _logger = NrckiLogger().getLogger("DDM")
 

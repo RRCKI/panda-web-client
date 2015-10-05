@@ -1,7 +1,7 @@
 import sys
-from common.NrckiLogger import NrckiLogger
-from mq.MQ import MQ
-from common import client_config
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.mq.MQ import MQ
+from webpanda.common import client_config
 _logger = NrckiLogger().getLogger("comsumer")
 
 if __name__ == '__main__':

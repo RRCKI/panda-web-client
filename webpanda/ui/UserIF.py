@@ -1,4 +1,4 @@
-from common.NrckiLogger import NrckiLogger
+from webpanda.common.NrckiLogger import NrckiLogger
 
 _logger = NrckiLogger().getLogger("UserIF")
 

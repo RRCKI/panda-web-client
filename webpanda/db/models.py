@@ -1,9 +1,10 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, create_engine, DateTime, BigInteger, BLOB, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref, sessionmaker
-from common import client_config
 from werkzeug.security import generate_password_hash
 from werkzeug.security import check_password_hash
+
+from webpanda.common import client_config
 
 ROLE_USER = 0
 ROLE_ADMIN = 1

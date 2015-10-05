@@ -1,7 +1,8 @@
 import pika
 import json
-from common.NrckiLogger import NrckiLogger
-from common import client_config
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common import client_config
 
 _logger = NrckiLogger().getLogger("MQ")
 

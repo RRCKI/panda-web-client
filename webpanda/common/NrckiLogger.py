@@ -1,7 +1,7 @@
 import os
 import logging
 
-from common import client_config
+from webpanda.common import client_config
 
 # setup logger
 _formatter = logging.Formatter('%(asctime)s %(name)-12s: %(levelname)-8s %(message)s')

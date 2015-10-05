@@ -2,21 +2,23 @@
 import os
 import random
 import shutil
-from celery import chord
-from app import app, db, lm, oauth
 import commands
 import json
 from datetime import datetime
+
+from celery import chord
 from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
-from ddm.DDM import ddm_getlocalabspath
-from scripts import registerLocalFile, extractLog
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum, fsize, find
-from models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
-from ui.FileMaster import getScope
-from ui.JobMaster import send_job, prepareInputFiles
+
+from webpanda.app import app, db, lm, oauth
+from webpanda.ddm.DDM import ddm_getlocalabspath
+from webpanda.app.scripts import registerLocalFile, extractLog
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, md5sum, fsize, find
+from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
+from webpanda.ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
+from webpanda.ui.FileMaster import getScope
+from webpanda.ui.JobMaster import send_job, prepareInputFiles
 
 _logger = NrckiLogger().getLogger("app.api")
 

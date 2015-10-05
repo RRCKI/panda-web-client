@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import os
-from flask import g
-from app import app, db
 
-from common.utils import adler32, fsize
-from common.utils import md5sum
-from ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
-from models import Container, Site, File, Replica, Job
-from common.NrckiLogger import NrckiLogger
-from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
+from flask import g
 import userinterface.Client as Client
+
+from webpanda.app import app, db
+from webpanda.common.utils import adler32, fsize
+from webpanda.common.utils import md5sum
+from webpanda.ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
+from webpanda.app.models import Container, Site, File, Replica, Job
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
+
 
 _logger = NrckiLogger().getLogger('app.scripts')
 

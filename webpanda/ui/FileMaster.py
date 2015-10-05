@@ -1,13 +1,14 @@
 import commands
-from common import client_config
 from datetime import datetime
 import simplejson as json
-from app import celery
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum, fsize
-from ui.Actions import movedata, linkdata
-from mq.MQ import MQ
-from db.models import *
+
+from webpanda.app import celery
+from webpanda.common import client_config
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, md5sum, fsize
+from webpanda.ui.Actions import movedata, linkdata
+from webpanda.mq.MQ import MQ
+from webpanda.db.models import *
 
 _logger = NrckiLogger().getLogger("FileMaster")
 

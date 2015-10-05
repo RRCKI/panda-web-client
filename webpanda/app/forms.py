@@ -5,7 +5,8 @@ from flask import url_for, redirect, request
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField, IntegerField, \
     FieldList, TextField
 from wtforms.validators import Required, EqualTo, Length
-from models import User
+
+from webpanda.app.models import User
 
 
 def is_safe_url(target):

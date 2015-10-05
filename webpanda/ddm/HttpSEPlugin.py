@@ -1,6 +1,7 @@
 import os
-from common.NrckiLogger import NrckiLogger
-from ddm.DDM import ddm_getlocalabspath
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.DDM import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 

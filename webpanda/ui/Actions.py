@@ -1,9 +1,10 @@
 import commands
 import os
 import shutil
-from common.NrckiLogger import NrckiLogger
-from ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs, ddm_localrmtree
-from common import client_config
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs, ddm_localrmtree
+from webpanda.common import client_config
 
 DATA_DIR = client_config.TMP_DIR
 

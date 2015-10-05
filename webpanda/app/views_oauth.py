@@ -1,11 +1,15 @@
-from app import app, oauth, db
+from datetime import datetime, timedelta
+
 from flask import request, jsonify, session, g
 from flask import render_template
 from flask_login import current_user, login_required
-from models import User, Client, Grant, Token
 from werkzeug.security import gen_salt
 from werkzeug.utils import redirect
-from datetime import datetime, timedelta
+
+from webpanda.app import app, oauth, db
+from webpanda.app.models import User, Client, Grant, Token
+
+
 
 @oauth.clientgetter
 def load_client(client_id):

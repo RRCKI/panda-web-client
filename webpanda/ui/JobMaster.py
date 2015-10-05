@@ -1,13 +1,15 @@
 import simplejson as json
 import time
+
 from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
-from common.NrckiLogger import NrckiLogger
 import userinterface.Client as Client
-from db.models import *
-from common import client_config
-from ui.FileMaster import cloneReplica, getFullPath, getGUID, linkFile, getScope
-from app import celery
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.db.models import *
+from webpanda.common import client_config
+from webpanda.ui.FileMaster import cloneReplica, getFullPath, getGUID, linkFile, getScope
+from webpanda.app import celery
 
 _logger = NrckiLogger().getLogger("JobMaster")
 
