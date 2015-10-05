@@ -1,9 +1,11 @@
+import os
+
 from flask import Flask
 from flask.ext.script import Manager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask_oauthlib.provider import OAuth2Provider
 from celery import Celery
-import os
+
 
 app = Flask(__name__)
 app.config.from_object('api.config')
@@ -13,7 +15,7 @@ oauth = OAuth2Provider(app)
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
-from api import views
+from webpanda.api import views
 
 if not app.debug:
     import logging
@@ -24,7 +26,7 @@ if not app.debug:
     file_handler.setLevel(logging.INFO)
     app.logger.addHandler(file_handler)
 
-    from common.NrckiLogger import NrckiLogger
+    from webpanda.common.NrckiLogger import NrckiLogger
     oauth_log = NrckiLogger().getLogger('flask_oauthlib')
 
     app.logger.info('api startup')

@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-from api import app
-from app import db, oauth
 import commands
 from datetime import datetime
+
 from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
-from ddm.DDM import ddm_getlocalabspath
-from app.scripts import registerLocalFile, extractLog
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, md5sum, fsize, find
-from app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
-from ui.FileMaster import getScope
-from ui.JobMaster import send_job
+
+from webpanda.api import app
+from webpanda.app import db, oauth
+from webpanda.ddm.DDM import ddm_getlocalabspath
+from webpanda.app.scripts import registerLocalFile, extractLog
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, md5sum, fsize, find
+from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
+from webpanda.ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
+from webpanda.ui.FileMaster import getScope
+from webpanda.ui.JobMaster import send_job
 
 _logger = NrckiLogger().getLogger("api.views")
 

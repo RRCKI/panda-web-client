@@ -24,7 +24,7 @@ oauth = OAuth2Provider(app)
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
-from models import User, AnonymousUser
+from webpanda.app.models import User, AnonymousUser
 #from models_oauth import *
 
 lm.anonymous_user = AnonymousUser
