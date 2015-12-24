@@ -43,9 +43,9 @@ class JobMaster:
         cont = job.container
         files = cont.files
 
-        datasetName = 'panda:%s' % cont.guid
         scope = client_config.DEFAULT_SCOPE
         fscope = getScope(job.owner.username)
+	datasetName = '{}:{}'.format(fscope, cont.guid)
 
         distributive = job.distr.name
         release = job.distr.release
@@ -61,7 +61,8 @@ class JobMaster:
         pandajob.prodSourceLabel = 'user'
         pandajob.computingSite = site.ce
         pandajob.cloud = 'RU'
-        pandajob.prodDBlock = "%s:%s" % (scope, pandajob.jobName)
+        pandajob.VO = 'atlas'
+        pandajob.prodDBlock = "%s:%s" % (fscope, pandajob.jobName)
         pandajob.coreCount = job.corecount
 
         pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
@@ -76,7 +77,7 @@ class JobMaster:
                 fileIT.dataset = pandajob.prodDBlock
                 fileIT.prodDBlock = pandajob.prodDBlock
                 fileIT.type = 'input'
-                fileIT.scope = scope
+                fileIT.scope = fscope
                 fileIT.status = 'ready'
                 fileIT.GUID = guid
                 pandajob.addFile(fileIT)
@@ -88,7 +89,7 @@ class JobMaster:
                 fileOT.destinationSE = pandajob.destinationSE
                 fileOT.dataset = pandajob.prodDBlock
                 fileOT.type = 'output'
-                fileOT.scope = scope
+                fileOT.scope = fscope
                 fileOT.GUID = file.guid
                 pandajob.addFile(fileOT)
 
@@ -105,7 +106,7 @@ class JobMaster:
         fileOL.lfn = "%s.log.tgz" % pandajob.jobName
         fileOL.destinationDBlock = pandajob.destinationDBlock
         fileOL.destinationSE = pandajob.destinationSE
-        fileOL.dataset = 'panda:logs'
+        fileOL.dataset = '{}:logs'.format(fscope)
         fileOL.type = 'log'
         fileOL.scope = 'panda'
         pandajob.addFile(fileOL)

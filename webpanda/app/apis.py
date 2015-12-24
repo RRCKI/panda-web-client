@@ -91,10 +91,10 @@ def jobAPI():
     container = Container()
     guid = 'job.' + commands.getoutput('uuidgen')
     container.guid = guid
-    container.status = 'close'
+    container.status = 'open'
     db.session.add(container)
     db.session.commit()
-
+    
     # Process ftp files
     ftp_dir = data['ftp_dir']
     register_ftp_files(ftp_dir, scope, container.guid)
