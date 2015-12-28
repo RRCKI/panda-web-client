@@ -22,7 +22,7 @@ class HPCSEPlugin(SEPlugin):
             if not src.startswith('/'):
                 src = '/' + src
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("rsync -av -e 'ssh -i %s' %s@%s:%s %s/" % (self.key, self.user, self.host, src, dest))
+            out = proc.communicate("rsync --bwlimit=2500 -av -e 'ssh -i %s' %s@%s:%s %s/" % (self.key, self.user, self.host, src, dest))
 
         except:
             _logger.error('Unable to download:%s to %s' % (src, dest))
@@ -36,7 +36,7 @@ class HPCSEPlugin(SEPlugin):
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             out = proc.communicate("ssh -i %s %s@%s 'mkdir -p %s'" % (self.key, self.user, self.host, dest))
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("rsync -av -e 'ssh -i %s' %s %s@%s:%s/" % (self.key, src, self.user, self.host, dest))
+            out = proc.communicate("rsync --bwlimit=2500 -av -e 'ssh -i %s' %s %s@%s:%s/" % (self.key, src, self.user, self.host, dest))
 
         except:
             _logger.error('Unable to upload:%s to %s' % (src, dest))

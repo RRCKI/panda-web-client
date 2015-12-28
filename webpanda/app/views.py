@@ -128,6 +128,9 @@ def job():
             return make_response(jsonify({'error': 'Container not found'}), 404)
 
         ifiles = request.form.getlist('ifiles[]')
+        iguids = request.form.getlist('iguids[]')
+        _logger.debug("Form content:")
+        _logger.debug(str(iguids))
         ofiles = ['results.tgz']
 
         scope = getScope(g.user.username)
@@ -136,6 +139,18 @@ def job():
         ftp_dir = form.ftpdir.data
         register_ftp_files(ftp_dir, scope, container.guid)
 
+	# Process guid list
+	for f in iguids:
+	    if f != '':
+                file = File.query.filter_by(guid=f).first()
+	        if file is not None:
+                    # Add file to container
+                    container.files.append(file)
+                    db.session.add(container)
+                    db.session.commit()
+	        else:
+		    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
+	
         # Processes urls
         for f in ifiles:
             if f != '':

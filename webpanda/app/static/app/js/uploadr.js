@@ -80,7 +80,41 @@ $(document).ready(function() {
                     $('#upload-form').find('.addButton').removeAttr('disabled');
                 }
             }
-        });
+        })
+
+	.on('click', '.addGuidButton', function() {
+            var $template = $('#igTemplate'),
+                $clone    = $template
+                                .clone()
+                                .removeClass('hide')
+                                .removeAttr('id')
+                                .insertBefore($template),
+                $option   = $clone.find('[name="iguids[]"]');
+        })
+
+	.on('click', '.removeGuidButton', function() {
+            var $row    = $(this).parents('.iguid'),
+                $option = $row.find('[name="iguids[]"]');
+
+            // Remove element containing the option
+            $row.remove();
+        })
+	
+	.on('added.field.fv', function(e, data) {
+	    if (data.field === 'iguids[]') {
+                if ($('#upload-form').find(':visible[name="iguids[]"]').length >= MAX_OPTIONS) {
+                    $('#upload-form').find('.addGuidButton').attr('disabled', 'disabled');
+                }
+            }
+        })
+
+	.on('removed.field.fv', function(e, data) {
+           if (data.field === 'iguids[]') {
+                if ($('#upload-form').find(':visible[name="iguids[]"]').length < MAX_OPTIONS) {
+                    $('#upload-form').find('.addGuidButton').removeAttr('disabled');
+                }
+            }
+        })
 });
 
 
