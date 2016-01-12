@@ -65,6 +65,7 @@ class NewJobForm(RedirectForm):
     corecount = IntegerField('Cores', default=1)
     ftpdir = StringField(u'FTP DIR')
     submitbtn = SubmitField(u'Send job')
+    onebyone = BooleanField(u'One file one job', default=False)
 
 class NewFileForm(RedirectForm):
     se = SelectField(u'SE', coerce=str)
