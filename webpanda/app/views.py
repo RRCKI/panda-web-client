@@ -533,3 +533,38 @@ def files_list():
     data['data'] = files_o
 
     return make_response(jsonify(data), 200)
+
+@app.route("/containers", methods=['GET'])
+@login_required
+def containers():
+    hours_limit = request.args.get('hours', HOURS_LIMIT, type=int)
+    display_limit = request.args.get('display_limit', DISPLAY_LIMIT, type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("pandaweb/cont_list.html")
+
+
+@app.route("/cont/list", methods=['GET'])
+@login_required
+def conts_list():
+    user = g.user
+
+    hours_limit = session.get('hours_limit', HOURS_LIMIT)
+    display_limit = session.get('display_limit', DISPLAY_LIMIT)
+    scope = getScope(user.username)
+    # show users jobs
+    conts = Container.query.order_by(Container.id).limit(30)
+
+    # prepare json
+    conts_o = []
+    for cont in conts:
+        cont_o = {}
+        cont_o['id'] = cont.id
+        cont_o['guid'] = cont.guid
+        cont_o['status'] = cont.status
+        cont_o['n'] = cont.files.count()
+        conts_o.append(cont_o)
+    data = {}
+    data['data'] = conts_o
+
+    return make_response(jsonify(data), 200)
