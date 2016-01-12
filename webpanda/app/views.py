@@ -129,6 +129,7 @@ def job():
 
         ifiles = request.form.getlist('ifiles[]')
         iguids = request.form.getlist('iguids[]')
+        iconts = request.form.getlist('iconts[]')
         _logger.debug("Form content:")
         _logger.debug(str(iguids))
         ofiles = ['results.tgz']
@@ -150,6 +151,19 @@ def job():
                     db.session.commit()
 	        else:
 		    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
+	
+	# Process containers
+	for c in iconts:
+	    if c != '':
+		try:
+		    form_cont = Container.query.filter_by(guid=c).one()
+		except(Exception):
+		    _logger.error(Exception.message)
+		    return make_response(jsonify({'error': 'Container in form not found'}), 404)
+		for form_cont_file in form_cont.files:
+		    container.files.append(form_cont_file)
+		    db.session.add(container)
+		    db.session.commit()
 	
         # Processes urls
         for f in ifiles:

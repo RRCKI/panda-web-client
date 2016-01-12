@@ -70,7 +70,21 @@ $(document).ready(function() {
                 if ($('#upload-form').find(':visible[name="ifiles[]"]').length >= MAX_OPTIONS) {
                     $('#upload-form').find('.addButton').attr('disabled', 'disabled');
                 }
+            };
+
+	    if (data.field === 'iguids[]') {
+                if ($('#upload-form').find(':visible[name="iguids[]"]').length >= MAX_OPTIONS) {
+                    $('#upload-form').find('.addGuidButton').attr('disabled', 'disabled');
+                }
+            };
+
+	    if (data.field === 'iconts[]') {
+                if ($('#upload-form').find(':visible[name="iconts[]"]').length >= MAX_OPTIONS) {
+                    $('#upload-form').find('.addContButton').attr('disabled', 'disabled');
+                }
             }
+
+
         })
 
         // Called after removing the field
@@ -79,7 +93,19 @@ $(document).ready(function() {
                 if ($('#upload-form').find(':visible[name="ifiles[]"]').length < MAX_OPTIONS) {
                     $('#upload-form').find('.addButton').removeAttr('disabled');
                 }
-            }
+            };
+	    
+	    if (data.field === 'iguids[]') {
+                if ($('#upload-form').find(':visible[name="iguids[]"]').length < MAX_OPTIONS) {
+                    $('#upload-form').find('.addGuidButton').removeAttr('disabled');
+                }
+            };
+
+	    if (data.field === 'iconts[]') {
+                if ($('#upload-form').find(':visible[name="iconts[]"]').length < MAX_OPTIONS) {
+                    $('#upload-form').find('.addContButton').removeAttr('disabled');
+                }
+            };
         })
 
 	.on('click', '.addGuidButton', function() {
@@ -100,20 +126,22 @@ $(document).ready(function() {
             $row.remove();
         })
 	
-	.on('added.field.fv', function(e, data) {
-	    if (data.field === 'iguids[]') {
-                if ($('#upload-form').find(':visible[name="iguids[]"]').length >= MAX_OPTIONS) {
-                    $('#upload-form').find('.addGuidButton').attr('disabled', 'disabled');
-                }
-            }
+	.on('click', '.addContButton', function() {
+            var $template = $('#icTemplate'),
+                $clone    = $template
+                                .clone()
+                                .removeClass('hide')
+                                .removeAttr('id')
+                                .insertBefore($template),
+                $option   = $clone.find('[name="iconts[]"]');
         })
 
-	.on('removed.field.fv', function(e, data) {
-           if (data.field === 'iguids[]') {
-                if ($('#upload-form').find(':visible[name="iguids[]"]').length < MAX_OPTIONS) {
-                    $('#upload-form').find('.addGuidButton').removeAttr('disabled');
-                }
-            }
+	.on('click', '.removeContButton', function() {
+            var $row    = $(this).parents('.icont'),
+                $option = $row.find('[name="iconts[]"]');
+
+            // Remove element containing the option
+            $row.remove();
         })
 });
 
