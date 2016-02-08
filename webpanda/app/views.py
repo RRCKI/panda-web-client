@@ -16,9 +16,9 @@ from webpanda.ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_g
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
-from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
+from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm
 from webpanda.app.models import *
-from webpanda.ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta
+from webpanda.ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta, async_uploadContainer
 from webpanda.ui.JobMaster import send_job, prepareInputFiles
 
 from userinterface import Client
@@ -135,7 +135,7 @@ def job():
         ofiles = ['results.tgz']
 
         scope = getScope(g.user.username)
-
+        
         # Process ftp files
         ftp_dir = form.ftpdir.data
         register_ftp_files(ftp_dir, scope, container.guid)
@@ -243,6 +243,7 @@ def job():
         job.ninputfiles = nifiles
         job.noutputfiles = nofiles
         job.corecount = form.corecount.data
+	job.tags = form.tags.data if form.tags.data != "" else None
         db.session.add(job)
         db.session.commit()
 
@@ -395,9 +396,11 @@ def jobs_list():
 
     hours_limit = session.get('hours_limit', HOURS_LIMIT)
     display_limit = session.get('display_limit', DISPLAY_LIMIT)
+    status = request.args.get('status', "")
+    tags = request.args.get('tag', "")
 
     # show users jobs
-    jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id).limit(display_limit)
+    jobs = Job.query.filter_by(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id).limit(display_limit)
 
     # prepare json
     jobs_o = []
@@ -534,6 +537,44 @@ def files_list():
 
     return make_response(jsonify(data), 200)
 
+@app.route("/cont", methods=['GET', 'POST'])
+@login_required
+def container():
+    form = NewContainerForm()
+    if request.method == 'POST':
+	user = g.user
+	scope = getScope(user.username)
+
+	ftpdir = form.ftpdir.data
+
+	#Create a unique container quid for this particular batch of uploads.
+	cguid = 'job.' + commands.getoutput('uuidgen')
+
+	# Create new container
+	container = Container()
+	container.guid = cguid
+	container.status = 'user'
+	db.session.add(container)
+	db.session.commit()
+    
+	resp = async_uploadContainer.delay(ftpdir, scope, container.guid)
+	# resp = async_uploadContainer(ftpdir, scope, container.guid)
+	return redirect(url_for('cont_info', guid=container.guid))
+
+    return render_template("pandaweb/cont_new.html", form=form)
+
+@app.route("/cont/<guid>", methods=['GET'])
+@login_required
+def cont_info(guid):
+    try:
+        container = Container.query.filter_by(guid=guid).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return make_response(jsonify({'message': 'Container not found'}), 404)
+    return render_template("pandaweb/cont.html", cont=container, files=container.files)
+
+
+
 @app.route("/containers", methods=['GET'])
 @login_required
 def containers():
@@ -553,7 +594,7 @@ def conts_list():
     display_limit = session.get('display_limit', DISPLAY_LIMIT)
     scope = getScope(user.username)
     # show users jobs
-    conts = Container.query.order_by(Container.id).limit(30)
+    conts = Container.query.filter_by(status='user').order_by(Container.id.desc()).limit(30)
 
     # prepare json
     conts_o = []

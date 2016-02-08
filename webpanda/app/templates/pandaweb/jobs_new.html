@@ -7,6 +7,7 @@
 {% block css_import %}
 <link href="static/app/css/upload_files.css" rel="stylesheet">
 <link href="static/app/css/jobs_new.css" rel="stylesheet">
+<link rel="stylesheet" href="static/app/css/bootstrap-tagsinput.css">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 {% endblock %}
 
@@ -156,6 +157,18 @@
     </div>
     </div>
 
+    
+    <div class="form-group">
+    <div class="row" title="Commands sequence to run (separate by semicolon)">
+    <div class="col-md-4">
+        <label for="params">TAGS:</label>
+    </div>
+    <div class="col-md-8">
+        <input type="text" class="form-control" name="tags" data-role="tagsinput" />
+    </div>
+    </div>
+    </div>
+
     <div class='form-group'>
             <input type="reset" name="reset" value="Reset">
             {{ form.submitbtn() }}
@@ -167,6 +180,7 @@
 
 {% block js_import %}
 <script type="text/javascript" src="static/app/js/uploadr.js"></script>
+<script type="text/javascript" src="static/app/js/bootstrap-tagsinput.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 {% endblock %}
 

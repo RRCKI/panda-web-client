@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Container info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<b>CONTAINER:</b> {{cont.id}} <br>
+<b>GUID:</b> {{cont.guid}} <br>
+<b>STATUS:</b> {{cont.status}} <br>
+<table id="filestable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>GUID</th>
+        <th>TYPE</th>
+        <th>LFN</th>
+        <th>LINK</th>
+    </tr>
+</thead>
+<tbody>
+{% for f in files %}
+    <tr>
+        <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
+        <th>{{f.type}}</th>
+        <th>{{f.lfn}}</th>
+        <th>
+            [<a href="/file/{{f.guid}}/download">http</a>]
+        </th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="/static/app/js/job.js"></script>
+{% endblock %}

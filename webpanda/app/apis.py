@@ -96,8 +96,23 @@ def jobAPI():
     db.session.commit()
     
     # Process ftp files
-    ftp_dir = data['ftp_dir']
-    register_ftp_files(ftp_dir, scope, container.guid)
+    if 'ftp_dir' in data.keys():
+	ftp_dir = data['ftp_dir']
+	register_ftp_files(ftp_dir, scope, container.guid)
+
+    # Process guid list
+    if 'guids' in data.keys():
+	guids = data['guids']
+        for f in guids:
+	    if f != '':
+		file_ = File.query.filter_by(guid=f).first()
+		if file_ is not None:
+		    # Add file to container
+		    container.files.append(file_)
+		    db.session.add(container)
+		    db.session.commit()
+		else:
+		    return make_response(jsonify({'error': 'GUID %s not found' % f}))
 
     ofiles = ['results.tgz']
 

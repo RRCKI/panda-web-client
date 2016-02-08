@@ -81,7 +81,7 @@ class JobMaster:
                 fileIT.status = 'ready'
                 fileIT.GUID = guid
                 pandajob.addFile(fileIT)
-                linkFile(file.id, site.se, rlinkdir)
+                #linkFile(file.id, site.se, rlinkdir)
             if file.type == 'output':
                 fileOT = FileSpec()
                 fileOT.lfn = file.lfn
@@ -159,24 +159,25 @@ def send_job(*args, **kwargs):
     return json.dumps(jm.send_job(jobid, siteid))
 
 def prepareInputFiles(cont_id, se):
+    _logger.debug('prepareInputFiles')
     # Initialize db
     s = DB().getSession()
     container = s.query(Container).filter(Container.id == cont_id).one()
     files = container.files
     tasks = []
-    for file in files:
-        replicas_len = file.replicas.count()
+    for f in files:
+        replicas_len = f.replicas.count()
         if not replicas_len:
-            raise Exception("No available replicas for file %s" % file.guid)
+            raise Exception("No available replicas for file %s" % f.guid)
             return
-        replicas = file.replicas
+        replicas = f.replicas
         hasReplica = False
+        _logger.debug('prepareInputFiles: file.lfn={}'.format(f.lfn))
         for replica in replicas:
             if replica.se == se and replica.status == 'ready':
                 hasReplica = True
-
-        if hasReplica:
-            continue
-        tasks.append(cloneReplica.s(replicas[0].id, se))
+	    _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
+        if not hasReplica:
+            tasks.append(cloneReplica.s(replicas[0].id, se))
     s.close()
     return tasks

@@ -66,7 +66,8 @@ class NewJobForm(RedirectForm):
     ftpdir = StringField(u'FTP DIR')
     submitbtn = SubmitField(u'Send job')
     onebyone = BooleanField(u'One file one job', default=False)
-
+    tags = StringField(u'Tags')
+    
 class NewFileForm(RedirectForm):
     se = SelectField(u'SE', coerce=str)
     url = StringField(u'URL', validators=[Required(), Length(1, 64)])
@@ -77,5 +78,9 @@ class NewDistrForm(RedirectForm):
     name = StringField('Name', validators=[Required(), Length(1, 64)])
     version = StringField('Version', validators=[Required(), Length(1, 64)])
     release = IntegerField('Release')
+
+class NewContainerForm(RedirectForm):
+    ftpdir = StringField(u'FTP DIR', validators=[Length(1, 64)])
+    submitbtn = SubmitField(u'Upload')
 
 
