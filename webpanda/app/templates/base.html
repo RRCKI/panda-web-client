@@ -14,7 +14,7 @@
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="/static/app/css/navbar.css" rel="stylesheet">
-
+    
     {% block css_import %}{% endblock %}
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -97,8 +97,11 @@
     </nav>
 
     <div class='jumbotron'>
-        {% block content %}{% endblock %}
+        {% block jumbotron %}{% endblock %}
     </div>
+    
+    {% block content %}{% endblock %}
+    
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

@@ -4,6 +4,16 @@
     } );
 } );*/
 
+function updateTable(){
+    var tag = $("#tagFilter").val();
+    var status = $("#statusFilter").val();
+    var query_string = $.param({"status" : status, "tag" : tag})
+    var ajax_source = "/jobs/list?" + query_string
+    var table = $("#jobstable").DataTable(); // get api instance
+    // load data using api
+    table.ajax.url(ajax_source).load();
+};
+
 $(document).ready(function() {
     moment.locale('ru');
 
@@ -18,9 +28,7 @@ $(document).ready(function() {
             { "data": "distr.str" },
             { "data": "creation_time" },
             { "data": "modification_time" },
-            { "data": "status" },
-            { "data": "ifiles" },
-            { "data": "ofiles" }
+            { "data": "status" }
         ],
         // Add link - start
         "aoColumnDefs": [

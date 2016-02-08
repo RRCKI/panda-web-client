@@ -8,18 +8,21 @@
 <link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
 {% endblock %}
 
-{% block content %}
+{% block jumbotron %}
 <b>JOB:</b> {{job.id}} <br>
-<b>PANDAID:</b> {{job.pandaid}} <br>
 <b>OWNER:</b> {{job.owner.username}} <br>
+<b>PANDAID:</b> {{job.pandaid}} <br>
 <b>SW:</b> {{job.distr}}<br>
-<!--<b>CONTAINER:</b> {{job.container.guid}}<br>-->
+<b>TAGS:</b> {{job.tags}}<br>
+<b>CONTAINER:</b> {{job.container.guid}}<br>
 <b>STATUS:</b> {{job.status}}<br>
 <b>CREATION TIME:</b> {{job.creation_time}}<br>
 <b>MODIFICATION TIME:</b> {{job.modification_time}}<br>
 <b>INPUT FILES:</b> {{job.ninputfiles}}<br>
 <b>OUTPUT FILES:</b> {{job.noutputfiles}}<br>
-<b>FILES:</b><br>
+{% endblock %}
+
+{% block content %}
 <table id="filestable" class="display" cellspacing="0" width="100%">
 <thead>
     <tr>

@@ -156,6 +156,7 @@ def jobAPI():
     job.ninputfiles = nifiles
     job.noutputfiles = nofiles
     job.corecount = corecount
+    job.tags = data['tags'] if 'tags' in data.keys() else ""
     db.session.add(job)
     db.session.commit()
 
