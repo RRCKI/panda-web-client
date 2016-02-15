@@ -24,7 +24,7 @@ from webpanda.ui.JobMaster import send_job, prepareInputFiles
 from userinterface import Client
 
 HOURS_LIMIT = 96
-DISPLAY_LIMIT = 6000
+DISPLAY_LIMIT = 200
 
 _logger = NrckiLogger().getLogger("app.views")
 
@@ -400,7 +400,7 @@ def jobs_list():
     tags = request.args.get('tag', "")
 
     # show users jobs
-    jobs = Job.query.filter_by(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id).limit(display_limit)
+    jobs = Job.query.filter_by(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id.desc()).limit(display_limit)
 
     # prepare json
     jobs_o = []

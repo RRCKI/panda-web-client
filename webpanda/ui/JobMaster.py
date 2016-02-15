@@ -136,11 +136,14 @@ class JobMaster:
         o = self.submitJobs(self.jobList)
         x = o[0]
 
-        #update PandaID
-        PandaID = int(x[0])
-        job.pandaid = PandaID
-        job.ce = site.ce
-        s.add(job)
+	try:
+    	    #update PandaID
+    	    PandaID = int(x[0])
+    	    job.pandaid = PandaID
+    	    job.ce = site.ce
+    	except:
+    	    job.status = 'submit_error'
+    	s.add(job)
         s.commit()
         s.close()
 

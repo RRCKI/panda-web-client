@@ -11,9 +11,10 @@
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 {% endblock %}
 
-{% block content %}
+{% block jumbotron %}
 <div class="row">
 <div class="col-md-12">
+<h2>NEW JOB</h2>
 <form method="post" id="upload-form" action="{{ url_for('job') }}" enctype="multipart/form-data">
     {{form.hidden_tag()}}
     <div class="form-group">
@@ -170,8 +171,8 @@
     </div>
 
     <div class='form-group'>
-            <input type="reset" name="reset" value="Reset">
-            {{ form.submitbtn() }}
+            <input class="btn btn-default" type="reset" name="reset" value="Reset">
+            {{ form.submitbtn(class_='btn btn-success') }}
     </div>
 </form>
 </div>
