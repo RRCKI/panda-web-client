@@ -83,4 +83,9 @@ class NewContainerForm(RedirectForm):
     ftpdir = StringField(u'FTP DIR', validators=[Length(1, 64)])
     submitbtn = SubmitField(u'Upload')
 
+class JobResendForm(RedirectForm):
+    id_ = IntegerField('id_', default=1)
+
+class JobKillForm(RedirectForm):
+    id_ = IntegerField('id_', default=1)
 

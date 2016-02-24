@@ -16,10 +16,10 @@ from webpanda.ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_g
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
-from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm
+from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
 from webpanda.app.models import *
 from webpanda.ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta, async_uploadContainer
-from webpanda.ui.JobMaster import send_job, prepareInputFiles
+from webpanda.ui.JobMaster import kill_job, send_job, prepareInputFiles
 
 from userinterface import Client
 
@@ -260,7 +260,9 @@ def job():
 def job_info(id):
     job = Job.query.filter_by(id=id).one()
     container = job.container
-    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'])
+    resend_form = JobResendForm()
+    kill_form = JobKillForm()
+    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
 
 @app.route('/job/<id>/logs', methods=['GET'])
 @login_required
@@ -285,6 +287,32 @@ def jobLog(id):
     data['out'] = out
     data['err'] = err
     return make_response(jsonify({'data': data}), 200)
+
+@app.route('/job/resend', methods=['POST'])
+@login_required
+def job_resend():
+    form = JobResendForm()
+    if request.method == 'POST':
+	id_ = int(form.id_.data)
+	job = Job.query.filter_by(id=id_).one()
+	pandaid = job.pandaid
+	
+	return redirect(url_for('jobs'))
+    return make_response(jsonify({'status': 'Page not found'}), 404)
+
+@app.route('/job/kill', methods=['POST'])
+@login_required
+def job_kill():
+    form = JobKillForm()
+    if request.method == 'POST':
+	id_ = int(form.id_.data)
+	job = Job.query.filter_by(id=id_).one()
+	pandaid = job.pandaid
+	if pandaid is not None:
+	    out = kill_job(pandaid)
+	    return make_response(jsonify({'data': out}), 200)
+	return redirect(url_for('jobs'))
+    return make_response(jsonify({'status': 'Page not found'}), 404)
 
 @app.route("/upload", methods=['POST'])
 @login_required
@@ -419,6 +447,7 @@ def jobs_list():
         job_o['status'] = job.status
         job_o['ifiles'] = '[%s] ready' % job.ninputfiles
         job_o['ofiles'] = '[%s]' % job.noutputfiles
+        job_o['attemptnr'] = job.attemptnr
         jobs_o.append(job_o)
     data = {}
     data['data'] = jobs_o

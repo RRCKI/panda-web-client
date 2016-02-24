@@ -22,13 +22,23 @@ class JobMaster:
     def submitJobs(self, jobList):
         print 'Submit jobs'
         _logger.debug('Submit jobs')
-
+	_logger.debug(str(jobList))
         s,o = Client.submitJobs(jobList)
         _logger.debug("---------------------")
         _logger.debug(s)
 
         for x in o:
             _logger.debug("PandaID=%s" % x[0])
+        return o
+    
+    def killJobs(self, jobList):
+        print 'Kill jobs'
+        _logger.debug('Kill jobs')
+	_logger.debug(str(jobList))
+        s,o = Client.killJobs(jobList) # Code 3 eqs. aborted status
+        _logger.debug("---------------------")
+        _logger.debug(s)
+        _logger.debug(o)
         return o
 
     def send_job(self, jobid, siteid):
@@ -160,6 +170,16 @@ def send_job(*args, **kwargs):
     jm = JobMaster()
 
     return json.dumps(jm.send_job(jobid, siteid))
+
+
+@celery.task(serializer='json')
+def kill_job(pandaid):
+    if int(pandaid) == 0:
+        raise Exception('Illegal argument: jobid')
+    jm = JobMaster()
+
+    return json.dumps(jm.killJobs([pandaid]))
+
 
 def prepareInputFiles(cont_id, se):
     _logger.debug('prepareInputFiles')

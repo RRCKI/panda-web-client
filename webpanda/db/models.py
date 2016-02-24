@@ -99,7 +99,8 @@ class Job(Base):
     registation_time = Column(DateTime)
     ce = Column(String(40))
     corecount = Column(Integer, default=0)
-
+    attemptnr = Column(Integer, default=0)
+    
 catalog = Table('catalog', Base.metadata,
     Column('container_id', Integer, ForeignKey('containers.id')),
     Column('file_id', Integer, ForeignKey('files.id'))

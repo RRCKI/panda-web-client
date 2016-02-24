@@ -28,6 +28,7 @@ $(document).ready(function() {
             { "data": "distr.str" },
             { "data": "creation_time" },
             { "data": "modification_time" },
+            { "data": "attemptnr" },
             { "data": "status" }
         ],
         // Add link - start
@@ -56,11 +57,21 @@ $(document).ready(function() {
                 "aTargets":[4,5],
                 "mData": null,
                 "mRender": function( data, type, full) {
-                    return moment(data).format('D.MM.YYYY H:mm');
+                    return moment(data).format('DD.MM.YYYY H:mm');
+                }
+            },
+            { //Attemptnr
+                "aTargets":[6],
+                "mData": null,
+                "mRender": function( data, type, full) {
+                    if ( data != undefined ) {
+                        return '<td>'+data+'</td>';
+                    }
+                    return '<td></td>';
                 }
             },
             { //Status
-                "aTargets":[6],
+                "aTargets":[7],
                 "fnCreatedCell": function(nTd, sData, oData, iRow, iCol)
                 {
                     if ( sData == "finished" ) {
