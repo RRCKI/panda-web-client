@@ -1,15 +1,20 @@
-import os
-basedir = '/path/to/project'
+import site, os, sys
 
-activate_this = os.path.join(basedir, 'venv/bin/activate_this.py')
-execfile(activate_this, dict(__file__=activate_this))
-os.environ[]
-os.environ[]
+from werkzeug.serving import run_simple
+from werkzeug.wsgi import DispatcherMiddleware
 
-import sys
-sys.path.insert(0, os.path.join(basedir, 'webpanda'))
+from webpanda import app
+from webpanda import api
 
-from webpanda.app import app as application
+site.addsitedir('YOUR_LIBS')
+basedir = 'YOUR_BASEDIR'
+os.environ['PANDA_URL'] = 'YOUR_PANDA_SERVER_URL'
+os.environ['PANDA_URL_SSL'] = "YOUR_PANDA_SERVER_URL_SSL"
+
+application = DispatcherMiddleware(app.create_app(), {
+    '/api': api.create_app()
+})
+
 
 if __name__ == "__main__":
-    application.run()
+    run_simple('0.0.0.0', 5000, application, use_reloader=True, use_debugger=True)
