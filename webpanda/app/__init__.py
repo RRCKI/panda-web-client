@@ -9,6 +9,8 @@ from flask.ext.migrate import Migrate, MigrateCommand
 from flask_oauthlib.provider import OAuth2Provider
 from celery import Celery
 
+from webpanda.core import db
+
 
 app = Flask(__name__)
 app.config.from_object('webpanda.app.config')

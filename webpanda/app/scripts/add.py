@@ -3,6 +3,6 @@ from webpanda.app.scripts import updateJobStatus, transferOutputFiles, registerO
 if __name__ == '__main__':
     updateJobStatus()
     ids = registerOutputFiles()
-    transferOutputFiles(ids)
-    for i in ids:
-        extractLog(i)
+    #transferOutputFiles(ids)
+    #for i in ids:
+    #    extractLog(i)

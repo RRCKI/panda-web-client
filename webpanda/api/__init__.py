@@ -1,35 +1,80 @@
-import os
+# -*- coding: utf-8 -*-
+"""
+    webpanda.api
+    ~~~~~~~~~~~~~
+    webpanda api application package
+"""
 
-from flask import Flask
-from flask.ext.script import Manager
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask_oauthlib.provider import OAuth2Provider
-from celery import Celery
+from functools import wraps
+
+from flask import jsonify
+from flask.ext.login import login_required
+
+from webpanda.core import WebpandaError, WebpandaFormError
+from webpanda.helpers import JSONEncoder
+from webpanda import factory
 
 
-app = Flask(__name__)
-app.config.from_object('api.config')
-db = SQLAlchemy(app)
-manager = Manager(app)
-oauth = OAuth2Provider(app)
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery.conf.update(app.config)
+def create_app(settings_override=None, register_security_blueprint=False):
+    """Returns the Webpanda API application instance"""
 
-from webpanda.api import views
+    app = factory.create_app(__name__, __path__, settings_override,
+                             register_security_blueprint=register_security_blueprint)
 
-if not app.debug:
-    import logging
-    from logging.handlers import RotatingFileHandler
-    file_handler = RotatingFileHandler(os.path.join(app.config['BASE_DIR'], app.config['LOG_DIR'], 'webapi.log'), 'a', 1 * 1024 * 1024, 10)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-    app.logger.setLevel(logging.INFO)
-    file_handler.setLevel(logging.INFO)
-    app.logger.addHandler(file_handler)
+    # Set the default JSON encoder
+    app.json_encoder = JSONEncoder
 
-    from webpanda.common.NrckiLogger import NrckiLogger
-    oauth_log = NrckiLogger().getLogger('flask_oauthlib')
+    # Register custom error handlers
+    app.errorhandler(WebpandaError)(on_webpanda_error)
+    app.errorhandler(WebpandaFormError)(on_webpanda_form_error)
+    app.errorhandler(404)(on_404)
 
-    app.logger.info('api startup')
+    return app
 
-if __name__ == '__main__':
-    app.run()
+
+def route(bp, *args, **kwargs):
+    kwargs.setdefault('strict_slashes', False)
+
+    def decorator(f):
+        @bp.route(*args, **kwargs)
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            sc = 200
+            rv = f(*args, **kwargs)
+            if isinstance(rv, tuple):
+                sc = rv[1]
+                rv = rv[0]
+            return jsonify(dict(data=rv)), sc
+        return f
+
+    return decorator
+
+
+def route_s(bp, *args, **kwargs):
+    kwargs.setdefault('strict_slashes', False)
+
+    def decorator(f):
+        @bp.route(*args, **kwargs)
+        @login_required
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            sc = 200
+            rv = f(*args, **kwargs)
+            if isinstance(rv, tuple):
+                sc = rv[1]
+                rv = rv[0]
+            return jsonify(dict(data=rv)), sc
+        return f
+
+    return decorator
+
+def on_webpanda_error(e):
+    return jsonify(dict(error=e.msg)), 400
+
+
+def on_webpanda_form_error(e):
+    return jsonify(dict(errors=e.errors)), 400
+
+
+def on_404(e):
+    return jsonify(dict(error='Not found')), 404

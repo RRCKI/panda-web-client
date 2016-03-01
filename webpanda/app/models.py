@@ -119,6 +119,17 @@ class Job(db.Model):
     def __repr__(self):
         return '<Job id=%s>' % self.id
 
+class Task(db.Model):
+    extend_existing = True
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    tag = db.Column(db.String(256))
+    status = db.Column(db.String(64), default='defined')
+    percentage = db.Column(db.Integer, default=0)
+    def __repr__(self):
+        return '<Task id=%s tag=%s>' % (self.id, self.tag)
+
 catalog = db.Table('catalog',
     db.Column('container_id', db.Integer, db.ForeignKey('containers.id')),
     db.Column('file_id', db.Integer, db.ForeignKey('files.id'))
