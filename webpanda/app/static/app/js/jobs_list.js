@@ -89,4 +89,8 @@ $(document).ready(function() {
         ],
             // Add link  - end
     } );
+
+    setInterval( function () {
+        updateTable();
+    }, 60000);
 } );
