@@ -12,7 +12,7 @@ from flask.ext.login import login_user, logout_user, current_user, login_require
 
 from webpanda.app import app, db
 from webpanda.app.apis import makeReplicaAPI
-from webpanda.ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
@@ -582,7 +582,7 @@ def container():
 	# Create new container
 	container = Container()
 	container.guid = cguid
-	container.status = 'user'
+	container.status = 'open'
 	db.session.add(container)
 	db.session.commit()
     

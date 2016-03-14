@@ -8,7 +8,7 @@ import userinterface.Client as Client
 from webpanda.app import app, db
 from webpanda.common.utils import adler32, fsize
 from webpanda.common.utils import md5sum
-from webpanda.ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
 from webpanda.app.models import Container, Site, File, Replica, Job
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta

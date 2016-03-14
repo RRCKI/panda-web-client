@@ -2,7 +2,8 @@ import subprocess
 
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common import client_config
-from webpanda.ddm.DDM import SEPlugin, ddm_getlocalabspath
+from webpanda.ddm.DDM import SEPlugin
+from webpanda.ddm.scripts import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 

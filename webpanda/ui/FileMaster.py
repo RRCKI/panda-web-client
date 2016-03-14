@@ -10,7 +10,7 @@ from webpanda.common.utils import adler32, md5sum, fsize
 from webpanda.ui.Actions import movedata, linkdata
 from webpanda.mq.MQ import MQ
 from webpanda.db.models import *
-from webpanda.ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
 
 _logger = NrckiLogger().getLogger("FileMaster")
 

@@ -2,7 +2,7 @@ import os
 import ftplib
 
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ddm.DDM import ddm_getlocalabspath
+from webpanda.ddm.scripts import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 

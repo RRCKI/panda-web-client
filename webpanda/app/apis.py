@@ -11,7 +11,7 @@ from flask import jsonify, request, make_response, g, Response
 from flask_login import login_required
 
 from webpanda.app import app, db, lm, oauth
-from webpanda.ddm.DDM import ddm_getlocalabspath
+from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize, find

@@ -3,7 +3,8 @@ import os
 import shutil
 
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ddm.DDM import SEFactory, ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs, ddm_localrmtree
+from webpanda.ddm.DDM import SEFactory
+from webpanda.ddm.scripts import  ddm_getlocalfilemeta, ddm_localisdir, ddm_localmakedirs, ddm_localrmtree
 from webpanda.common import client_config
 
 DATA_DIR = client_config.TMP_DIR
@@ -12,6 +13,9 @@ _logger = NrckiLogger().getLogger("Actions")
 
 
 def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
+    print 'FROM_PLUGIN'
+    print from_plugin
+    print str(from_params)
     if len(fileList) == 0:
         _logger.debug('No files to move')
         return 0, 'No files to move'

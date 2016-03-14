@@ -3,7 +3,7 @@ import shutil
 import subprocess
 
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ddm.DDM import ddm_getlocalabspath, ddm_localmakedirs, ddm_localisdir
+from webpanda.ddm.scripts import ddm_getlocalabspath, ddm_localmakedirs, ddm_localisdir
 
 _logger = NrckiLogger().getLogger("DDM")
 
