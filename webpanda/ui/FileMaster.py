@@ -7,10 +7,11 @@ from webpanda.app import celery
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
+from webpanda.tasks import linkReplica, cloneReplica
 from webpanda.ui.Actions import movedata, linkdata
 from webpanda.mq.MQ import MQ
 from webpanda.db.models import *
-from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp
 
 _logger = NrckiLogger().getLogger("FileMaster")
 
@@ -84,73 +85,73 @@ class FileMaster:
         return 0
    
     def uploadContainer(self, ftp_dir, scope, cont_guid):
-	s = DB().getSession()
-	container = s.query(Container).filter(Container.guid == cont_guid).one()
-	old_status = container.status
-	
-	if old_status != 'open':
-	    raise Exception("Invalid container status (not open): {}".format(old_status))
-	
-	# Set uploading container status
-	container.status = 'uploading'
-	s.add(container)
-	s.commit()
-	
-	# Register ftp filesr
-	self.register_ftp_files(ftp_dir, scope, container.guid)
-	
-	# Set open container status
-	container.status = old_status
-	s.add(container)
-	s.commit()
-	s.close()
-	return 0
+        s = DB().getSession()
+        container = s.query(Container).filter(Container.guid == cont_guid).one()
+        old_status = container.status
+
+        if old_status != 'open':
+            raise Exception("Invalid container status (not open): {}".format(old_status))
+
+        # Set uploading container status
+        container.status = 'uploading'
+        s.add(container)
+        s.commit()
+
+        # Register ftp filesr
+        self.register_ftp_files(ftp_dir, scope, container.guid)
+
+        # Set open container status
+        container.status = old_status
+        s.add(container)
+        s.commit()
+        s.close()
+        return 0
 
     def registerLocalFile(self, arg, dirname, names, scope):
-    	"""Register files from local dir to container
-    	:param arg: Container guid
-    	:param dirname: Abs dir
-    	:param names: File name
-    	:param scope: Scope to upload files in
-    	:return:
-    	"""
-    	s = DB().getSession()
-    	site = s.query(Site).filter(Site.se == client_config.DEFAULT_SE).first()
-    	_logger.debug(str(arg))
-    	cont = s.query(Container).filter(Container.guid == arg).first()
-    	files = cont.files
+        """Register files from local dir to container
+        :param arg: Container guid
+        :param dirname: Abs dir
+        :param names: File name
+        :param scope: Scope to upload files in
+        :return:
+        """
+        s = DB().getSession()
+        site = s.query(Site).filter(Site.se == client_config.DEFAULT_SE).first()
+        _logger.debug(str(arg))
+        cont = s.query(Container).filter(Container.guid == arg).first()
+        files = cont.files
 
-    	for name in names:
+        for name in names:
             fpath = os.path.join(dirname, name)
 
             fobj = None
             # Check in container
             for file in files:
-            	if file.lfn == name:
+                if file.lfn == name:
                     fobj = file
 
             # Check in catalog
             if not fobj:
-            	destination = os.path.join(dirname, name)
-            	adler = adler32(destination)
-            	md5 = md5sum(destination)
-            	size = fsize(destination)
-            	file_id = ddm_checkifexists(name, size, adler, md5)
+                destination = os.path.join(dirname, name)
+                adler = adler32(destination)
+                md5 = md5sum(destination)
+                size = fsize(destination)
+                file_id = ddm_checkifexists(name, size, adler, md5)
 
-            	if file_id:
+                if file_id:
                     # If file exists
                     fobj = s.query(File).filter(File.id == file_id).one()
 
             if not fobj:
-            	fobj = File()
-            	fobj.scope = scope
-            	fobj.lfn = name
-            	fobj.guid = getGUID(fobj.scope, fobj.lfn)
-            	fobj.type = 'input'
-            	fobj.status = 'defined'
-            	s.add(fobj)
-            	s.commit()
-            	setFileMeta(fobj.id, fpath)
+                fobj = File()
+                fobj.scope = scope
+                fobj.lfn = name
+                fobj.guid = getGUID(fobj.scope, fobj.lfn)
+                fobj.type = 'input'
+                fobj.status = 'defined'
+                s.add(fobj)
+                s.commit()
+                setFileMeta(fobj.id, fpath)
 
             cont.files.append(fobj)
             s.add(cont)
@@ -159,67 +160,42 @@ class FileMaster:
             replicas = fobj.replicas
             replica = None
             for r in replicas:
-            	if r.se == site.se and r.status == 'ready':
+                if r.se == site.se and r.status == 'ready':
                     replica = r
             if not replica:
-            	ldir = '/' + os.path.join('system', fobj.scope, fobj.guid)
-            	ddm_localmakedirs(ldir)
-            	ddm_localcp(fpath[len(site.datadir):], ldir)
+                ldir = '/' + os.path.join('system', fobj.scope, fobj.guid)
+                ddm_localmakedirs(ldir)
+                ddm_localcp(fpath[len(site.datadir):], ldir)
 
-            	replica = Replica()
-            	replica.se = site.se
-            	replica.status = 'ready'
-            	replica.token = ''
-            	replica.lfn = os.path.join(ldir, fobj.lfn)
-            	replica.original = fobj
-            	s.add(replica)
-            	s.commit()
+                replica = Replica()
+                replica.se = site.se
+                replica.status = 'ready'
+                replica.token = ''
+                replica.lfn = os.path.join(ldir, fobj.lfn)
+                replica.original = fobj
+                s.add(replica)
+                s.commit()
         s.close()
 
     def register_ftp_files(self, ftp_dir, scope, guid):
-    	"""
-    	Walks through ftp dir and registers all files
-    	:param ftp_dir: Relative ftpdir path
-    	:param scope: Files' scope
-    	:param guid: Container's guid to register in
-    	:return:
-    	"""
-    	if ftp_dir == '':
+        """
+        Walks through ftp dir and registers all files
+        :param ftp_dir: Relative ftpdir path
+        :param scope: Files' scope
+        :param guid: Container's guid to register in
+        :return:
+        """
+        if ftp_dir == '':
             return []
 
-    	ftp_dir_full = os.path.join(client_config.UPLOAD_FOLDER, scope, ftp_dir)
+        ftp_dir_full = os.path.join(client_config.UPLOAD_FOLDER, scope, ftp_dir)
 
-    	ftp_walk = os.walk(ftp_dir_full)
-    	for item in ftp_walk:
+        ftp_walk = os.walk(ftp_dir_full)
+        for item in ftp_walk:
             # Calculate files' hash, size
             # Register it If db hasn't similar file
             self.registerLocalFile(guid, item[0], item[2], scope)
 
-
-@celery.task(serializer='json')
-def cloneReplica(replicaid, se):
-    fm = FileMaster()
-    return json.dumps(fm.cloneReplica(replicaid, se))
-
-@celery.task(serializer='json')
-def linkReplica(replicaid, dir):
-    fm = FileMaster()
-    return json.dumps(fm.linkReplica(replicaid, dir))
-
-@celery.task(serializer='json')
-def copyReplica(replicaid, se, path):
-    fm = FileMaster()
-    return json.dumps(fm.copyReplica(replicaid, se, path))
-
-@celery.task(serializer='json')
-def async_uploadContainer(ftp_dir, scope, cont_guid):
-    fm = FileMaster()
-    res = None
-#    try:
-    res = fm.uploadContainer(ftp_dir, scope, cont_guid)
-#    except Exception as e:
-#	raise async_uploadContainer.retry(countdown=60, exc=e, max_retries=5)
-    return json.dumps(res)
 
 def linkFile(fileid, se, dir):
     s = DB().getSession()

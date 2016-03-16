@@ -22,7 +22,7 @@ class JobMaster:
     def submitJobs(self, jobList):
         print 'Submit jobs'
         _logger.debug('Submit jobs')
-	_logger.debug(str(jobList))
+        _logger.debug(str(jobList))
         s,o = Client.submitJobs(jobList)
         _logger.debug("---------------------")
         _logger.debug(s)
@@ -34,7 +34,7 @@ class JobMaster:
     def killJobs(self, jobList):
         print 'Kill jobs'
         _logger.debug('Kill jobs')
-	_logger.debug(str(jobList))
+        _logger.debug(str(jobList))
         s,o = Client.killJobs(jobList) # Code 3 eqs. aborted status
         _logger.debug("---------------------")
         _logger.debug(s)
@@ -55,7 +55,7 @@ class JobMaster:
 
         scope = client_config.DEFAULT_SCOPE
         fscope = getScope(job.owner.username)
-	datasetName = '{}:{}'.format(fscope, cont.guid)
+        datasetName = '{}:{}'.format(fscope, cont.guid)
 
         distributive = job.distr.name
         release = job.distr.release
@@ -146,39 +146,18 @@ class JobMaster:
         o = self.submitJobs(self.jobList)
         x = o[0]
 
-	try:
-    	    #update PandaID
-    	    PandaID = int(x[0])
-    	    job.pandaid = PandaID
-    	    job.ce = site.ce
-    	except:
-    	    job.status = 'submit_error'
-    	s.add(job)
+        try:
+            #update PandaID
+            PandaID = int(x[0])
+            job.pandaid = PandaID
+            job.ce = site.ce
+        except:
+            job.status = 'submit_error'
+        s.add(job)
         s.commit()
         s.close()
 
         return 0
-
-@celery.task(serializer='json')
-def send_job(*args, **kwargs):
-    jobid = kwargs.get('jobid', 0L)
-    siteid = kwargs.get('siteid', 0L)
-    if int(jobid) == 0:
-        raise Exception('Illegal argument: jobid')
-    if int(siteid) == 0:
-        raise Exception('Illegal argument: siteid')
-    jm = JobMaster()
-
-    return json.dumps(jm.send_job(jobid, siteid))
-
-
-@celery.task(serializer='json')
-def kill_job(pandaid):
-    if int(pandaid) == 0:
-        raise Exception('Illegal argument: jobid')
-    jm = JobMaster()
-
-    return json.dumps(jm.killJobs([pandaid]))
 
 
 def prepareInputFiles(cont_id, se):
@@ -192,14 +171,13 @@ def prepareInputFiles(cont_id, se):
         replicas_len = f.replicas.count()
         if not replicas_len:
             raise Exception("No available replicas for file %s" % f.guid)
-            return
         replicas = f.replicas
         hasReplica = False
         _logger.debug('prepareInputFiles: file.lfn={}'.format(f.lfn))
         for replica in replicas:
             if replica.se == se and replica.status == 'ready':
                 hasReplica = True
-	    _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
+        _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
         if not hasReplica:
             tasks.append(cloneReplica.s(replicas[0].id, se))
     s.close()

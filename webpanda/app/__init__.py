@@ -4,10 +4,11 @@
     ~~~~~~~~~~~~~~~~~~
     launchpad frontend application package
 """
+from flask_login import login_required
 import os
 from functools import wraps
 
-from flask import Flask
+from flask import Flask, render_template
 from flask.ext.login import LoginManager
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.admin import Admin
@@ -83,13 +84,13 @@ def create_app(settings_override=None):
     lm.anonymous_user = AnonymousUser
     @lm.user_loader
     def load_user(id):
-	if id == 0:
-    	    return AnonymousUser()
-	return User.query.filter_by(id=id).first()
+        if id == 0:
+            return AnonymousUser()
+        return User.query.filter_by(id=id).first()
 
 
     if not app.debug:
-	import logging
+        import logging
         from logging.handlers import RotatingFileHandler
         file_handler = RotatingFileHandler(os.path.join(app.config['BASE_DIR'], app.config['LOG_DIR'], 'webclient.log'), 'a', 1 * 1024 * 1024, 10)
         file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))

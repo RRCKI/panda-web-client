@@ -1,12 +1,4 @@
-import os
-import shutil
-import tarfile
-
-from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.common.utils import adler32, fsize
-from webpanda.common.utils import md5sum
-from webpanda.db.models import DB, File, Replica
 from webpanda.ddm.LocalSEPlugin import LocalSEPlugin
 
 _logger = NrckiLogger().getLogger("DDM")
@@ -47,6 +39,7 @@ class SEFactory:
             _logger.error('Unable to get %s instance: %s' % (plugin, str(Exception.message)))
             return SEPlugin()
         return se
+
 
 class SEPlugin(object):
     def __init__(self, params=None):

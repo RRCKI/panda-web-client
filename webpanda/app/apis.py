@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
 import os
-import random
-import shutil
 import commands
-import json
 from datetime import datetime
 
 from celery import chord
 from flask import jsonify, request, make_response, g, Response
-from flask_login import login_required
 
-from webpanda.app import app, db, lm, oauth
+from webpanda.app import app, db, oauth
+from webpanda.tasks import send_job, copyReplica
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.common.utils import adler32, md5sum, fsize, find
+from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta, copyReplica
+from webpanda.ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta
 from webpanda.ui.FileMaster import getScope
-from webpanda.ui.JobMaster import send_job, prepareInputFiles
+from webpanda.ui.JobMaster import prepareInputFiles
 
 _logger = NrckiLogger().getLogger("app.api")
 
@@ -97,22 +94,22 @@ def jobAPI():
     
     # Process ftp files
     if 'ftp_dir' in data.keys():
-	ftp_dir = data['ftp_dir']
-	register_ftp_files(ftp_dir, scope, container.guid)
+        ftp_dir = data['ftp_dir']
+        register_ftp_files(ftp_dir, scope, container.guid)
 
     # Process guid list
     if 'guids' in data.keys():
-	guids = data['guids']
+        guids = data['guids']
         for f in guids:
-	    if f != '':
-		file_ = File.query.filter_by(guid=f).first()
-		if file_ is not None:
-		    # Add file to container
-		    container.files.append(file_)
-		    db.session.add(container)
-		    db.session.commit()
-		else:
-		    return make_response(jsonify({'error': 'GUID %s not found' % f}))
+            if f != '':
+                file_ = File.query.filter_by(guid=f).first()
+                if file_ is not None:
+                    # Add file to container
+                    container.files.append(file_)
+                    db.session.add(container)
+                    db.session.commit()
+                else:
+                    return make_response(jsonify({'error': 'GUID %s not found' % f}))
 
     ofiles = ['results.tgz']
 

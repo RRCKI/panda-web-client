@@ -1,13 +1,11 @@
 import os
 
 from flask import Flask
-#from flask_security import SQLAlchemyUserDatastore
+from celery import Celery
 
 from webpanda.core import db #, security
 from webpanda.helpers import register_blueprints
 from webpanda.middleware import HTTPMethodOverrideMiddleware
-#from chatfirst.users import User
-#from chatfirst.users.models import Role
 
 
 def create_app(package_name, package_path, settings_override=None,
@@ -38,3 +36,20 @@ def create_app(package_name, package_path, settings_override=None,
     app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 
     return app
+
+
+def create_celery_app(app=None):
+    app = app or create_app('webpanda', os.path.dirname(__file__))
+    celery = Celery(__name__, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
