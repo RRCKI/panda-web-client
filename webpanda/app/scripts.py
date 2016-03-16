@@ -11,7 +11,8 @@ from webpanda.common.utils import md5sum
 from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
 from webpanda.app.models import Container, Site, File, Replica, Job
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
+from webpanda.ui.FileMaster import getScope, getGUID, setFileMeta
+from webpanda.celery import cloneReplica
 
 
 _logger = NrckiLogger().getLogger('app.scripts')
@@ -123,18 +124,18 @@ def updateJobStatus():
             if job.pandaid in ids:
                 for obj in o:
                     if obj.PandaID == job.pandaid:
-                	# Update attemptNr if changed
-                	if job.attemptnr not in [obj.attemptNr]:
-                	    job.attemptnr = obj.attemptNr
-                	    db.session.add(job)
-                    	    db.session.commit()
-			
-			# Update status if changed
+                        # Update attemptNr if changed
+                        if job.attemptnr not in [obj.attemptNr]:
+                            job.attemptnr = obj.attemptNr
+                            db.session.add(job)
+                            db.session.commit()
+
+                        # Update status if changed
                         if job.status != obj.jobStatus:
                             job.status = obj.jobStatus
                             job.modification_time = datetime.utcnow()
-                    	    db.session.add(job)
-                    	    db.session.commit()
+                            db.session.add(job)
+                            db.session.commit()
 
     return localids
 

@@ -3,17 +3,17 @@ import os
 import commands
 from datetime import datetime
 
-from celery import chord
+from celery import chord, cloneReplica
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
-from webpanda.tasks import send_job, copyReplica
+from webpanda.celery import send_job, copyReplica
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.ui.FileMaster import cloneReplica, getGUID, getFtpLink, setFileMeta
+from webpanda.ui.FileMaster import getGUID, getFtpLink, setFileMeta
 from webpanda.ui.FileMaster import getScope
 from webpanda.ui.JobMaster import prepareInputFiles
 

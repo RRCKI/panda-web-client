@@ -3,7 +3,7 @@ import os
 from flask import Flask
 from celery import Celery
 
-from webpanda.core import db #, security
+from webpanda.core import db  # , security
 from webpanda.helpers import register_blueprints
 from webpanda.middleware import HTTPMethodOverrideMiddleware
 

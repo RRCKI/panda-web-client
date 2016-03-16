@@ -8,8 +8,8 @@ import userinterface.Client as Client
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.db.models import *
 from webpanda.common import client_config
-from webpanda.ui.FileMaster import cloneReplica, getFullPath, getGUID, linkFile, getScope
-from webpanda.app import celery
+from webpanda.ui.FileMaster import getFullPath, getGUID, getScope
+from webpanda.celery import cloneReplica
 
 _logger = NrckiLogger().getLogger("JobMaster")
 

@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
 import os
 import commands
-import glob
 import json
-from datetime import datetime
 
-from celery import chord
+from celery import chord, cloneReplica, async_uploadContainer, kill_job, send_job
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 
-from webpanda.app import app, db
-from webpanda.app.apis import makeReplicaAPI
+from webpanda.app import app
 from webpanda.ddm.scripts import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
-from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
+from webpanda.app.scripts import register_ftp_files, extractLog
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
 from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
 from webpanda.app.models import *
-from webpanda.ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta, async_uploadContainer
-from webpanda.ui.JobMaster import kill_job, send_job, prepareInputFiles
+from webpanda.ui.FileMaster import getScope, getGUID, getUrlInfo, setFileMeta
+from webpanda.ui.JobMaster import prepareInputFiles
+
 
 from userinterface import Client
 
@@ -140,31 +137,31 @@ def job():
         ftp_dir = form.ftpdir.data
         register_ftp_files(ftp_dir, scope, container.guid)
 
-	# Process guid list
-	for f in iguids:
-	    if f != '':
+        # Process guid list
+        for f in iguids:
+            if f != '':
                 file = File.query.filter_by(guid=f).first()
-	        if file is not None:
-                    # Add file to container
-                    container.files.append(file)
+                if file is not None:
+                        # Add file to container
+                        container.files.append(file)
+                        db.session.add(container)
+                        db.session.commit()
+                else:
+                    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
+
+        # Process containers
+        for c in iconts:
+            if c != '':
+                try:
+                    form_cont = Container.query.filter_by(guid=c).one()
+                except(Exception):
+                    _logger.error(Exception.message)
+                    return make_response(jsonify({'error': 'Container in form not found'}), 404)
+                for form_cont_file in form_cont.files:
+                    container.files.append(form_cont_file)
                     db.session.add(container)
                     db.session.commit()
-	        else:
-		    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
-	
-	# Process containers
-	for c in iconts:
-	    if c != '':
-		try:
-		    form_cont = Container.query.filter_by(guid=c).one()
-		except(Exception):
-		    _logger.error(Exception.message)
-		    return make_response(jsonify({'error': 'Container in form not found'}), 404)
-		for form_cont_file in form_cont.files:
-		    container.files.append(form_cont_file)
-		    db.session.add(container)
-		    db.session.commit()
-	
+
         # Processes urls
         for f in ifiles:
             if f != '':
@@ -243,7 +240,7 @@ def job():
         job.ninputfiles = nifiles
         job.noutputfiles = nofiles
         job.corecount = form.corecount.data
-	job.tags = form.tags.data if form.tags.data != "" else None
+        job.tags = form.tags.data if form.tags.data != "" else None
         db.session.add(job)
         db.session.commit()
 
@@ -254,6 +251,7 @@ def job():
 
     form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
     return render_template("pandaweb/jobs_new.html", form=form)
+
 
 @app.route("/job/<id>", methods=['GET'])
 @login_required
@@ -293,11 +291,11 @@ def jobLog(id):
 def job_resend():
     form = JobResendForm()
     if request.method == 'POST':
-	id_ = int(form.id_.data)
-	job = Job.query.filter_by(id=id_).one()
-	pandaid = job.pandaid
-	
-	return redirect(url_for('jobs'))
+        id_ = int(form.id_.data)
+        job = Job.query.filter_by(id=id_).one()
+        pandaid = job.pandaid
+
+        return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
 
 @app.route('/job/kill', methods=['POST'])
@@ -305,13 +303,13 @@ def job_resend():
 def job_kill():
     form = JobKillForm()
     if request.method == 'POST':
-	id_ = int(form.id_.data)
-	job = Job.query.filter_by(id=id_).one()
-	pandaid = job.pandaid
-	if pandaid is not None:
-	    out = kill_job(pandaid)
-	    return make_response(jsonify({'data': out}), 200)
-	return redirect(url_for('jobs'))
+        id_ = int(form.id_.data)
+        job = Job.query.filter_by(id=id_).one()
+        pandaid = job.pandaid
+        if pandaid is not None:
+            out = kill_job(pandaid)
+            return make_response(jsonify({'data': out}), 200)
+        return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
 
 @app.route("/upload", methods=['POST'])
@@ -571,24 +569,24 @@ def files_list():
 def container():
     form = NewContainerForm()
     if request.method == 'POST':
-	user = g.user
-	scope = getScope(user.username)
+        user = g.user
+        scope = getScope(user.username)
 
-	ftpdir = form.ftpdir.data
+        ftpdir = form.ftpdir.data
 
-	#Create a unique container quid for this particular batch of uploads.
-	cguid = 'job.' + commands.getoutput('uuidgen')
+        #Create a unique container quid for this particular batch of uploads.
+        cguid = 'job.' + commands.getoutput('uuidgen')
 
-	# Create new container
-	container = Container()
-	container.guid = cguid
-	container.status = 'open'
-	db.session.add(container)
-	db.session.commit()
-    
-	resp = async_uploadContainer.delay(ftpdir, scope, container.guid)
-	# resp = async_uploadContainer(ftpdir, scope, container.guid)
-	return redirect(url_for('cont_info', guid=container.guid))
+        # Create new container
+        container = Container()
+        container.guid = cguid
+        container.status = 'open'
+        db.session.add(container)
+        db.session.commit()
+
+        resp = async_uploadContainer.delay(ftpdir, scope, container.guid)
+        # resp = async_uploadContainer(ftpdir, scope, container.guid)
+        return redirect(url_for('cont_info', guid=container.guid))
 
     return render_template("pandaweb/cont_new.html", form=form)
 
