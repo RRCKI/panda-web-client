@@ -12,7 +12,7 @@ from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_local
 from webpanda.app.models import Container, Site, File, Replica, Job
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ui.FileMaster import getScope, getGUID, setFileMeta
-from webpanda.async import cloneReplica
+from webpanda.async import async_cloneReplica
 
 
 _logger = NrckiLogger().getLogger('app.scripts')
@@ -211,7 +211,7 @@ def transferOutputFiles(ids=[]):
                         if replica.status != 'ready':
                             raise Exception('Broken replica. File: %s' % file.guid)
                 if needReplica and not hasReplica:
-                    task = cloneReplica.delay(fromReplica, to_site.se)
+                    task = async_cloneReplica.delay(fromReplica, to_site.se)
 
     return 0
 

@@ -14,7 +14,7 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
 from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
 from webpanda.app.models import *
-from webpanda.async import cloneReplica, async_uploadContainer, kill_job, send_job
+from webpanda.async import cloneReplica, async_uploadContainer, async_kill_job, async_send_job
 
 
 from userinterface import Client
@@ -246,7 +246,7 @@ def job():
         db.session.commit()
 
         # Async sendjob
-        res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
+        res = chord(ftasks)(async_send_job.s(jobid=job.id, siteid=site.id))
 
         return redirect(url_for('jobs'))
 
@@ -308,7 +308,7 @@ def job_kill():
         job = Job.query.filter_by(id=id_).one()
         pandaid = job.pandaid
         if pandaid is not None:
-            out = kill_job(pandaid)
+            out = async_kill_job(pandaid)
             return make_response(jsonify({'data': out}), 200)
         return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)

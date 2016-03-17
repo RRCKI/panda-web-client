@@ -7,7 +7,7 @@ from celery import chord
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
-from webpanda.async import send_job, copyReplica
+from webpanda.async import async_send_job, async_copyReplica
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -159,7 +159,7 @@ def jobAPI():
     db.session.commit()
 
     # Async sendjob
-    res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
+    res = chord(ftasks)(async_send_job.s(jobid=job.id, siteid=site.id))
     return make_response(jsonify({'id': job.id, 'container_id': guid}), 201)
 
 @app.route('/api/job/<id>/info', methods=['GET'])
@@ -313,7 +313,7 @@ def stageinAPI(container_guid, lfn):
 
             for r in replicas:
                 if r.status == 'ready':
-                    task = copyReplica.delay(r.id, to_se, to_path)
+                    task = async_copyReplica.delay(r.id, to_se, to_path)
                     return make_response(jsonify({'task_id': task.id}), 200)
 
             return make_response(jsonify({'status': 'Error: no replicas available'}), 204)
