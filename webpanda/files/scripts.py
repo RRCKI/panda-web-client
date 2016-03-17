@@ -6,9 +6,12 @@ from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
 from webpanda.db.models import DB, Replica, Site, Container, File
-from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists
-from webpanda.ui.Actions import movedata, linkdata
+from webpanda.ddm.DDM import SEFactory
+from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists, ddm_localrmtree, \
+    ddm_getlocalfilemeta, ddm_localisdir
+from webpanda.async import async_cloneReplica
 
+DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
 
 
@@ -291,6 +294,63 @@ def prepareInputFiles(cont_id, se):
                 hasReplica = True
         _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
         if not hasReplica:
-            tasks.append(cloneReplica.s(replicas[0].id, se))
+            tasks.append(async_cloneReplica.s(replicas[0].id, se))
     s.close()
     return tasks
+
+
+def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
+    print 'FROM_PLUGIN'
+    print from_plugin
+    print str(from_params)
+    if len(fileList) == 0:
+        _logger.debug('No files to move')
+        return 0, 'No files to move'
+
+    tmpdir = commands.getoutput("uuidgen")
+
+    if 'dest' not in to_params.keys():
+        _logger.error('Attribute error: dest')
+        return 1, 'Attribute error: dest'
+    dest = to_params['dest']
+
+    sefactory = SEFactory()
+    fromSE = sefactory.getSE(from_plugin, from_params)
+    toSE = sefactory.getSE(to_plugin, to_params)
+
+    tmphome = "/%s/%s" % (DATA_DIR, tmpdir)
+
+    if not ddm_localisdir(tmphome):
+        ddm_localmakedirs(tmphome)
+
+    tmpout = []
+    tmpoutnames = []
+    filesinfo = {}
+    for f in fileList:
+        if '/' in f:
+            fname = f.split('/')[-1]
+        elif ':' in f:
+            fname = f.split(':')[-1]
+        else:
+            fname = f
+
+        tmpfile = os.path.join(tmphome, fname)
+        fromSE.get(f, tmphome)
+        tmpout.append(tmpfile)
+        tmpoutnames.append(fname)
+
+        # Collect file info
+        filesinfo[f] = ddm_getlocalfilemeta(tmpfile)
+
+    for f in tmpout:
+        #put file to SE
+        toSE.put(f, dest)
+
+    ddm_localrmtree(tmphome)
+    return 0, filesinfo
+
+
+def linkdata(setype, separams, lfn, dir):
+    sefactory = SEFactory()
+    se = sefactory.getSE(setype, separams)
+    se.link(lfn, dir)
