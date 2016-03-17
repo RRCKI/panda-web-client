@@ -3,7 +3,7 @@ import os
 import commands
 import json
 
-from celery import chord, cloneReplica, async_uploadContainer, kill_job, send_job
+from celery import chord\
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 
@@ -16,6 +16,7 @@ from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm,
 from webpanda.app.models import *
 from webpanda.ui.FileMaster import getScope, getGUID, getUrlInfo, setFileMeta
 from webpanda.ui.JobMaster import prepareInputFiles
+from webpanda.celery import cloneReplica, async_uploadContainer, kill_job, send_job
 
 
 from userinterface import Client
