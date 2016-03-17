@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-import os
-import commands
-import glob
-import json
-from datetime import datetime
-
-from celery import chord
-from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response, Blueprint
+from flask import g, jsonify, Blueprint
 from flask.ext.login import login_user, logout_user, current_user, login_required
 
-from webpanda.app import route, route_s
+from webpanda.app import route
 
 
 bp = Blueprint('dashboard', __name__, template_folder='templates')
@@ -21,6 +14,7 @@ def before_request():
     g.user = current_user
     g.user.last_seen = datetime.utcnow()
     g.user.save()
+
 
 @route(bp, '/help', methods=['GET'])
 def help():

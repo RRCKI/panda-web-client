@@ -7,16 +7,14 @@ from celery import chord
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
-from webpanda.celery import send_job, copyReplica
+from webpanda.async import send_job, copyReplica
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.ui.FileMaster import getGUID, getFtpLink, setFileMeta
-from webpanda.ui.FileMaster import getScope
-from webpanda.ui.JobMaster import prepareInputFiles
-from webpanda.celery import cloneReplica
+from webpanda.async import cloneReplica
+from webpanda.files.scripts import getScope, prepareInputFiles, getGUID, getFtpLink, setFileMeta
 
 _logger = NrckiLogger().getLogger("app.api")
 
@@ -24,8 +22,8 @@ _logger = NrckiLogger().getLogger("app.api")
 def before_requestAPI():
     _logger.debug(request.url)
 
-## CLAVIRE ZONE
 
+## CLAVIRE ZONE
 @app.route('/api/sw', methods=['GET'])
 @oauth.require_oauth('api')
 def swAPI():
@@ -41,6 +39,7 @@ def swAPI():
         a['version'] = d.version
         dlist.append(a)
     return make_response(jsonify({'data': dlist}), 200)
+
 
 @app.route('/api/container/<guid>/list', methods=['GET'])
 @oauth.require_oauth('api')
@@ -63,6 +62,7 @@ def contListAPI(guid):
         data['scope'] = file.scope
         datalist.append(data)
     return make_response(jsonify({'data': datalist}), 200)
+
 
 @app.route('/api/job', methods=['POST'])
 @oauth.require_oauth('api')

@@ -12,10 +12,11 @@ from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_local
 from webpanda.app.models import Container, Site, File, Replica, Job
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ui.FileMaster import getScope, getGUID, setFileMeta
-from webpanda.celery import cloneReplica
+from webpanda.async import cloneReplica
 
 
 _logger = NrckiLogger().getLogger('app.scripts')
+
 
 def registerLocalFile(arg, dirname, names):
     """Register files from local dir to container
@@ -84,6 +85,7 @@ def registerLocalFile(arg, dirname, names):
             db.session.add(replica)
             db.session.commit()
 
+
 def register_ftp_files(ftp_dir, scope, guid):
     """
     Walks through ftp dir and registers all files
@@ -102,6 +104,7 @@ def register_ftp_files(ftp_dir, scope, guid):
         # Calculate files' hash, size
         # Register it If db hasn't similar file
         registerLocalFile(guid, item[0], item[2])
+
 
 def updateJobStatus():
     # Method to sync PandaDB job status and local job status
@@ -138,6 +141,7 @@ def updateJobStatus():
                             db.session.commit()
 
     return localids
+
 
 def registerOutputFiles():
     jobs = Job.query.filter(Job.status.in_(['finished', 'failed', 'cancelled']))\
@@ -180,6 +184,7 @@ def registerOutputFiles():
 
     return ids
 
+
 def transferOutputFiles(ids=[]):
     if len(ids) == 0:
         return 0
@@ -210,6 +215,7 @@ def transferOutputFiles(ids=[]):
 
     return 0
 
+
 def extractLog(id):
     """
     Finds local log archive and extracts it
@@ -224,6 +230,7 @@ def extractLog(id):
             for r in replicas:
                 if r.se == app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.log.tgz'):
                     ddm_localextractfile(r.lfn)
+
 
 def extractOutputs(id):
     """

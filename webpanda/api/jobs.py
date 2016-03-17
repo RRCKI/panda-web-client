@@ -14,6 +14,7 @@ _logger = NrckiLogger().getLogger("api.jobs")
 def show(id_):
     return _jobs.get(id_)
 
+
 @route(bp, "/tag/<tag>", methods=['GET'])
 def bytag(tag):
     return _jobs.find(tags=tag).all()

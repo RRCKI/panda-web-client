@@ -14,13 +14,12 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
 from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
 from webpanda.app.models import *
-from webpanda.ui.FileMaster import getScope, getGUID, getUrlInfo, setFileMeta
-from webpanda.ui.JobMaster import prepareInputFiles
-from webpanda.celery import cloneReplica, async_uploadContainer, kill_job, send_job
+from webpanda.async import cloneReplica, async_uploadContainer, kill_job, send_job
 
 
 from userinterface import Client
 #comment
+from webpanda.files.scripts import getScope, getUrlInfo, getGUID, prepareInputFiles, setFileMeta
 
 HOURS_LIMIT = 96
 DISPLAY_LIMIT = 200

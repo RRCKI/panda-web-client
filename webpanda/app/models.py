@@ -4,9 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask.ext.login import UserMixin
 from webpanda.app import db
 
-
 ROLE_USER = 0
 ROLE_ADMIN = 1
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'

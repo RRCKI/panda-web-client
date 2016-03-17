@@ -4,7 +4,6 @@ from datetime import datetime
 
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
-from webpanda.celery import linkReplica, cloneReplica
 from webpanda.ui.Actions import movedata, linkdata
 from webpanda.db.models import *
 from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp

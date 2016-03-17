@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from flask import request, jsonify, session, g
 from flask import render_template
-from flask_login import current_user, login_required
+from flask_login import login_required
 from werkzeug.security import gen_salt
 from werkzeug.utils import redirect
 
