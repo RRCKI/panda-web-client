@@ -6,14 +6,14 @@
 # """
 import json
 #
-# from webpanda.factory import create_celery_app
-#
-#
-# celery = create_celery_app()
-from webpanda.app import celery
+from webpanda.factory import create_celery_app
+
+
+#from webpanda.app import celery
 from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer
 from webpanda.jobs.scripts import killJobs, send_job
 
+celery = create_celery_app()
 
 @celery.task
 def async_send_job(*args, **kwargs):
