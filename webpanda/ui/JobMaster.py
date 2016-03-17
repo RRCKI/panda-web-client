@@ -1,4 +1,3 @@
-import simplejson as json
 import time
 
 from taskbuffer.JobSpec import JobSpec

@@ -3,7 +3,7 @@ import os
 import commands
 from datetime import datetime
 
-from celery import chord, cloneReplica
+from celery import chord
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
@@ -16,6 +16,7 @@ from webpanda.app.models import Distributive, Container, File, Site, Replica, Ta
 from webpanda.ui.FileMaster import getGUID, getFtpLink, setFileMeta
 from webpanda.ui.FileMaster import getScope
 from webpanda.ui.JobMaster import prepareInputFiles
+from webpanda.celery import cloneReplica
 
 _logger = NrckiLogger().getLogger("app.api")
 

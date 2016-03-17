@@ -1,19 +1,16 @@
 import os
 import commands
 from datetime import datetime
-import simplejson as json
 
-from webpanda.app import celery
-from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
-from webpanda.tasks import linkReplica, cloneReplica
+from webpanda.celery import linkReplica, cloneReplica
 from webpanda.ui.Actions import movedata, linkdata
-from webpanda.mq.MQ import MQ
 from webpanda.db.models import *
 from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp
 
 _logger = NrckiLogger().getLogger("FileMaster")
+
 
 class FileMaster:
     def __init__(self):
@@ -68,7 +65,6 @@ class FileMaster:
             return r.id
         s.close()
         raise Exception('movedata return code: %s' % ec)
-        return ec
 
     def copyReplica(self, replicaid, se, path):
         id = cloneReplica(replicaid, se)
@@ -209,28 +205,21 @@ def linkFile(fileid, se, dir):
     s.close()
     return
 
-def mqCloneReplica(replicaid, se):
-    routing_key = client_config.MQ_FILEKEY + '.clone'
-    mq = MQ(host=client_config.MQ_HOST, exchange=client_config.MQ_EXCHANGE)
-    # Create MQ request
-    data = {}
-    data['replicaid'] = replicaid
-    data['se'] = se
-    message = json.dumps(data)
-    print '%s: %s %s' % ('mqCloneReplica', replicaid, se)
-    mq.sendMessage(message, routing_key)
 
 def getScope(username):
     return 'web.' + username
+
 
 def getGUID(scope, lfn):
     guid = commands.getoutput('uuidgen')
     return scope + '_' + guid
 
+
 def getFullPath(scope, dataset, lfn):
     if ':' in dataset:
         return '/' + '/'.join([dataset.split(':')[0], '.sys', dataset.split(':')[1], lfn])
     return '/' + '/'.join([scope, '.sys', dataset, lfn])
+
 
 def getUrlInfo(url):
     # https://www.dropbox.com/get?file=15:dropbox_token=112345AZ
@@ -254,10 +243,12 @@ def getUrlInfo(url):
     path = path[1:]
     return se, path, token
 
+
 def getFtpLink(lfn):
     header = client_config.FTP
     result = ''
     return result
+
 
 def setFileMeta(fileid, lfn):
     s = DB().getSession()
@@ -272,6 +263,7 @@ def setFileMeta(fileid, lfn):
     s.add(file)
     s.commit()
     s.close()
+
 
 def getLinkLFN(scope, url):
     fname = url.split('/')[-1]

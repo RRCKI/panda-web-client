@@ -3,7 +3,7 @@ import os
 import commands
 import json
 
-from celery import chord\
+from celery import chord
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 

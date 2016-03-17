@@ -6,13 +6,6 @@ class UserIF:
     def __init__(self):
         pass
 
-    def sendJob(req, data):
-        from mq.MQ import MQ
-        routing_key = 'method.sendjob'
-
-        mq = MQ(host='localhost', exchange='lsm')
-        mq.sendMessage(data, routing_key)
-
     def getJobStatus(self, ids):
         import userinterface.Client as Client
         s,o = Client.getJobStatus(ids)
@@ -55,8 +48,6 @@ class UserIF:
 userIF = UserIF()
 del UserIF
 
-def senbJob(req, data):
-    userIF.sendjob(data)
 
 def getJobStatus(req, ids):
     userIF.getJobStatus(ids)
