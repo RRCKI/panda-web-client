@@ -7,13 +7,12 @@ from celery import chord
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
-from webpanda.async import async_send_job, async_copyReplica
+from webpanda.async import async_send_job, async_copyReplica, async_cloneReplica
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.async import cloneReplica
 from webpanda.files.scripts import getScope, prepareInputFiles, getGUID, getFtpLink, setFileMeta
 
 _logger = NrckiLogger().getLogger("app.api")
@@ -288,7 +287,7 @@ def makeReplicaAPI(container_guid, lfn, se):
             if ready_replica is None:
                 ready_replica = replicas[0]
 
-            task = cloneReplica.delay(ready_replica.id, se)
+            task = async_cloneReplica.delay(ready_replica.id, se)
             return make_response(jsonify({'task_id': task.id}), 200)
     return make_response(jsonify({'error': 'File not found'}), 400)
 

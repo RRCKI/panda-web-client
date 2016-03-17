@@ -14,7 +14,7 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize, md5sum, find
 from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
 from webpanda.app.models import *
-from webpanda.async import cloneReplica, async_uploadContainer, async_kill_job, async_send_job
+from webpanda.async import async_cloneReplica, async_uploadContainer, async_kill_job, async_send_job
 
 
 from userinterface import Client
@@ -486,7 +486,7 @@ def file():
         db.session.add(replica)
         db.session.commit()
 
-        resp = cloneReplica.delay(replica.id, se)
+        resp = async_cloneReplica.delay(replica.id, se)
         return redirect(url_for('file_info', guid=file.guid))
 
     form.se.choices = [("%s" % site.se, "%s" % site.se) for site in Site.query.filter_by(active=1)]
