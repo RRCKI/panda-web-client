@@ -125,12 +125,12 @@ def job():
             _logger.error(Exception.message)
             return make_response(jsonify({'error': 'Container not found'}), 404)
 
+        jparams = form.params.data
+
         ifiles = request.form.getlist('ifiles[]')
         iguids = request.form.getlist('iguids[]')
         iconts = request.form.getlist('iconts[]')
-        _logger.debug("Form content:")
-        _logger.debug(str(iguids))
-        ofiles = ['results.tgz']
+        ofiles = ['{guid}.out.tgz'.format(guid=container.guid)]
 
         scope = getScope(g.user.username)
         
@@ -233,7 +233,7 @@ def job():
         job.pandaid = None
         job.status = 'pending'
         job.owner = g.user
-        job.params = form.params.data
+        job.params = jparams
         job.distr = distr
         job.container = container
         job.creation_time = datetime.utcnow()
