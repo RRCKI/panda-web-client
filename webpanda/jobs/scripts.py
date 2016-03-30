@@ -107,6 +107,7 @@ def send_job(jobid, siteid):
             s.add(replica)
             s.commit()
 
+    # Prepare lof file
     fileOL = FileSpec()
     fileOL.lfn = "%s.log.tgz" % pandajob.jobName
     fileOL.destinationDBlock = pandajob.destinationDBlock
