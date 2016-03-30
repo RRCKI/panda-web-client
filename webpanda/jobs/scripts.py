@@ -70,7 +70,7 @@ def send_job(jobid, siteid):
     pandajob.prodDBlock = "%s:%s" % (fscope, pandajob.jobName)
     pandajob.coreCount = job.corecount
 
-    pandajob.jobParameters = '%s %s "%s"' % (release, distributive, parameters)
+    pandajob.jobParameters = '%s %s %s "%s"' % (cont.guid, release, distributive, parameters)
 
     rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
 
