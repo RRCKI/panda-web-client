@@ -139,7 +139,7 @@ class Catalog(db.Model):
     __tablename__ = 'catalog'
     container_id = db.Column(db.Integer, db.ForeignKey('containers.id'), primary_key=True)
     file_id = db.Column(db.Integer, db.ForeignKey('files.id'), primary_key=True)
-    extra_data = db.Column(db.String(50))
+    type = db.Column(db.String(50))
     file = db.relationship("File", back_populates="containers")
     cont = db.relationship("Container", back_populates="files")
 
