@@ -7,13 +7,13 @@ from celery import chord
 from flask import jsonify, request, make_response, g, Response
 
 from webpanda.app import app, db, oauth
-from webpanda.async import async_send_job, async_copyReplica, async_cloneReplica
+from webpanda.async import async_send_job, async_copyReplica, async_cloneReplica, prepareInputFiles
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_files
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.files.scripts import getScope, prepareInputFiles, getGUID, getFtpLink, setFileMeta
+from webpanda.files.scripts import getScope, getGUID, getFtpLink, setFileMeta
 
 _logger = NrckiLogger().getLogger("app.api")
 

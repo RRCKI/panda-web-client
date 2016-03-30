@@ -9,7 +9,6 @@ from webpanda.db.models import DB, Replica, Site, Container, File
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists, ddm_localrmtree, \
     ddm_getlocalfilemeta, ddm_localisdir
-from webpanda.async import async_cloneReplica
 
 DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
@@ -273,30 +272,6 @@ def getLinkLFN(scope, url):
     fname = url.split('/')[-1]
     guid = getGUID(scope, fname)
     return '/system/%s/%s/%s' % (scope, guid, fname)
-
-
-def prepareInputFiles(cont_id, se):
-    _logger.debug('prepareInputFiles')
-    # Initialize db
-    s = DB().getSession()
-    container = s.query(Container).filter(Container.id == cont_id).one()
-    files = container.files
-    tasks = []
-    for f in files:
-        replicas_len = f.replicas.count()
-        if not replicas_len:
-            raise Exception("No available replicas for file %s" % f.guid)
-        replicas = f.replicas
-        hasReplica = False
-        _logger.debug('prepareInputFiles: file.lfn={}'.format(f.lfn))
-        for replica in replicas:
-            if replica.se == se and replica.status == 'ready':
-                hasReplica = True
-        _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
-        if not hasReplica:
-            tasks.append(async_cloneReplica.s(replicas[0].id, se))
-    s.close()
-    return tasks
 
 
 def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
