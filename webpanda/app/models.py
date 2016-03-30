@@ -130,18 +130,18 @@ class Task(db.Model):
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
 
-#catalog = db.Table('catalog',
-#    db.Column('container_id', db.Integer, db.ForeignKey('containers.id')),
-#    db.Column('file_id', db.Integer, db.ForeignKey('files.id'))
-#)
+catalog = db.Table('catalog',
+    db.Column('container_id', db.Integer, db.ForeignKey('containers.id')),
+    db.Column('file_id', db.Integer, db.ForeignKey('files.id'))
+)
 
-class Catalog(db.Model):
-    __tablename__ = 'catalog'
-    container_id = db.Column(db.Integer, db.ForeignKey('containers.id'), primary_key=True)
-    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), primary_key=True)
-    type = db.Column(db.String(50))
-    file = db.relationship("File", back_populates="containers")
-    cont = db.relationship("Container", back_populates="files")
+#class Catalog(db.Model):
+#    __tablename__ = 'catalog'
+#    container_id = db.Column(db.Integer, db.ForeignKey('containers.id'), primary_key=True)
+#    file_id = db.Column(db.Integer, db.ForeignKey('files.id'), primary_key=True)
+#    type = db.Column(db.String(50))
+#    file = db.relationship("File", back_populates="containers")
+#    cont = db.relationship("Container", back_populates="files")
 
 class Container(db.Model):
     __tablename__ = 'containers'
@@ -150,9 +150,9 @@ class Container(db.Model):
     status = db.Column(db.String(20))
     jobs = db.relationship('Job',
         backref=db.backref('container', lazy='joined'), lazy='dynamic')
-#    files = db.relationship('File', secondary=catalog,
-#        backref=db.backref('containers', lazy='joined'), lazy='dynamic')
-    files = db.relationship("Catalog", back_populates="cont")
+    files = db.relationship('File', secondary=catalog,
+        backref=db.backref('containers', lazy='joined'), lazy='dynamic')
+#    files = db.relationship("Catalog", back_populates="cont")
 
     def __repr__(self):
         return '<Container id=%s>' % self.id
@@ -174,7 +174,7 @@ class File(db.Model):
     downloaded = db.Column(db.Integer, default=0)
     replicas = db.relationship('Replica',
         backref=db.backref('original', lazy='joined'), lazy='dynamic')
-    containers = db.relationship("Catalog", back_populates="file")
+#    containers = db.relationship("Catalog", back_populates="file")
 
     def __repr__(self):
         return '<File id=%s>' % self.id
