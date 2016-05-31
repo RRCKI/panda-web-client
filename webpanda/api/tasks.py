@@ -11,6 +11,11 @@ bp = Blueprint('tasks', __name__, url_prefix="/tasks")
 _logger = NrckiLogger().getLogger("api.tasks")
 
 
+@route(bp, "/", methods=['GET'])
+def list_all():
+    return _tasks.all()
+
+
 @route(bp, "/<tag>", methods=['GET'])
 def show(tag):
     return _tasks.first(tag=tag)

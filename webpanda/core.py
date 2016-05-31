@@ -1,3 +1,4 @@
+from flask_login import LoginManager
 import os
 
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +9,8 @@ from flask import jsonify
 db = SQLAlchemy()
 #: Flask-Security extension instance
 #security = Security()
+
+lm = LoginManager()
 
 
 class Service(object):

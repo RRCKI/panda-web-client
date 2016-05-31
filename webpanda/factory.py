@@ -1,11 +1,15 @@
+from datetime import datetime
 import os
 
-from flask import Flask
+from flask import Flask, g
 from celery import Celery
+from flask_login import current_user
+from webpanda.auth.models import AnonymousUser
 
-from webpanda.core import db  # , security
+from webpanda.core import db, lm  # , security
 from webpanda.helpers import register_blueprints
 from webpanda.middleware import HTTPMethodOverrideMiddleware
+from webpanda.services import users
 
 
 def create_app(package_name, package_path, settings_override=None,
@@ -22,6 +26,7 @@ def create_app(package_name, package_path, settings_override=None,
     app = Flask(package_name, instance_relative_config=True)
 
     app.config.from_object('webpanda.settings')
+    app.config.from_object('webpanda.config')
     app.config.from_pyfile('settings.cfg', silent=True)
     app.config.from_object(settings_override)
     if 'DATABASE_URL' in os.environ.keys():
@@ -34,6 +39,22 @@ def create_app(package_name, package_path, settings_override=None,
     register_blueprints(app, package_name, package_path)
 
     app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
+
+    lm.init_app(app)
+    lm.login_view = 'auth.login'
+
+    lm.anonymous_user = AnonymousUser
+    @lm.user_loader
+    def load_user(id):
+        if id == 0:
+            return AnonymousUser()
+        return users.get(id=id)
+
+    @app.before_request
+    def before_request():
+        g.user = current_user
+        g.user.last_seen = datetime.utcnow()
+        g.user.save()
 
     return app
 

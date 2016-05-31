@@ -565,6 +565,7 @@ def files_list():
 
     return make_response(jsonify(data), 200)
 
+
 @app.route("/cont", methods=['GET', 'POST'])
 @login_required
 def container():
@@ -591,6 +592,7 @@ def container():
 
     return render_template("pandaweb/cont_new.html", form=form)
 
+
 @app.route("/cont/<guid>", methods=['GET'])
 @login_required
 def cont_info(guid):
@@ -600,7 +602,6 @@ def cont_info(guid):
         _logger.error(Exception.message)
         return make_response(jsonify({'message': 'Container not found'}), 404)
     return render_template("pandaweb/cont.html", cont=container, files=container.files)
-
 
 
 @app.route("/containers", methods=['GET'])

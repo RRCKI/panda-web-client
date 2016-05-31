@@ -11,7 +11,7 @@ from webpanda.common.utils import md5sum
 from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
 from webpanda.app.models import Container, Site, File, Replica, Job
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ui.FileMaster import getScope, getGUID, setFileMeta
+from webpanda.files.scripts import getScope, getGUID, setFileMeta
 from webpanda.async import async_cloneReplica
 
 
