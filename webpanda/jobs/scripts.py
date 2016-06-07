@@ -1,8 +1,8 @@
 import time
 
-from taskbuffer.JobSpec import JobSpec
-from taskbuffer.FileSpec import FileSpec
-import userinterface.Client as Client
+from pandaserver.taskbuffer.JobSpec import JobSpec
+from pandaserver.taskbuffer.FileSpec import FileSpec
+import pandaserver.userinterface.Client as Client
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger

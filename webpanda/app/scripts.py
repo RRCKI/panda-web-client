@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 
 from flask import g
-import userinterface.Client as Client
+import pandaserver.userinterface.Client as Client
 
 from webpanda.app import app, db
 from webpanda.common.utils import adler32, fsize

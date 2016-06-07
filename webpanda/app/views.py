@@ -17,7 +17,7 @@ from webpanda.app.models import *
 from webpanda.async import async_cloneReplica, async_uploadContainer, async_kill_job, async_send_job, prepareInputFiles
 
 
-from userinterface import Client
+from pandaserver.userinterface import Client
 #comment
 from webpanda.files.scripts import getScope, getUrlInfo, getGUID, setFileMeta
 
@@ -133,7 +133,7 @@ def job():
         ofiles = ['{guid}.out.tgz'.format(guid=container.guid)]
 
         scope = getScope(g.user.username)
-        
+
         # Process ftp files
         ftp_dir = form.ftpdir.data
         register_ftp_files(ftp_dir, scope, container.guid)

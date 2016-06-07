@@ -24,6 +24,8 @@ class TaskType(TaskTypeJsonSerializer, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     method = db.Column(db.String(256))
     trf_template = db.Column(db.String(1024))
+    ifiles_template = db.Column(db.String(1024))
+    ofiles_template = db.Column(db.String(1024))
 
     def __repr__(self):
         return '<TaskType id=%s>' % self.id
