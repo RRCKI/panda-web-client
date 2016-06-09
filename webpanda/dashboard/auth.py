@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, url_for, flash, g
 from webpanda.app.forms import LoginForm, RegisterForm
 from webpanda.auth.models import User
 from webpanda.dashboard import route, route_s
-from webpanda.services import users
+from webpanda.services import users_
 from werkzeug.utils import redirect
 from webpanda.common.NrckiLogger import NrckiLogger
 
@@ -21,7 +21,7 @@ def login():
         return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = users.first(username=form.username.data)
+        user = users_.first(username=form.username.data)
         if user is None or not user.verify_password(form.password.data):
             flash('Invalid username or password.')
             return redirect(url_for('auth.login'))
@@ -45,7 +45,7 @@ def register():
         username = form.username.data
         password = form.password.data
         password_again = form.password_again.data
-        user = users.first(username=username)
+        user = users_.first(username=username)
         if user is not None:
             flash('Попробуйте другой login.')
             return redirect(url_for('auth.register'))
@@ -57,7 +57,7 @@ def register():
         user.password = password
         user.active = 0
         user.role = 0
-        users.save(user)
+        users_.save(user)
         return redirect(url_for('auth.login'))
 
     return render_template('register.html', form=form)

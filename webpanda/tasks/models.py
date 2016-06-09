@@ -65,6 +65,9 @@ class Task(TaskJsonSerializer, db.Model):
     modification_time = db.Column(db.DateTime)
     status = db.Column(db.String(64), default='defined')
     jobs = db.relationship('Job', secondary=tasks_jobs)
+    trf = db.Column(db.String(1024))
+    ifiles = db.Column(db.String(1024))
+    ofiles = db.Column(db.String(1024))
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
 

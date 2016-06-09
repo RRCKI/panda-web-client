@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Job info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block jumbotron %}
+<b>JOB:</b> {{job.id}} <br>
+<b>OWNER:</b> {{job.owner.username}} <br>
+<b>PANDAID:</b> {{job.pandaid}} <br>
+<b>SW:</b> {{job.distr}}<br>
+<b>TAGS:</b> {{job.tags}}<br>
+<b>CONTAINER:</b> {{job.container.guid}}<br>
+<b>STATUS:</b> {{job.status}}<br>
+<b>CREATION TIME:</b> {{job.creation_time}}<br>
+<b>MODIFICATION TIME:</b> {{job.modification_time}}<br>
+<b>INPUT FILES:</b> {{job.ninputfiles}}<br>
+<b>OUTPUT FILES:</b> {{job.noutputfiles}}<br>
+<form method="post" id="resend_form" action="{{ url_for('job_resend') }}">
+{{ resend_form.id_(class_="hidden", value=job.id) }}
+<input class="btn btn-warning" name='resend' value="Resend" type='submit'>
+</form>
+<form method="post" id="kill_form" action="{{ url_for('job_kill') }}">
+{{ kill_form.id_(class_="hidden", value=job.id) }}
+<input class="btn btn-danger" name='kill' value="Kill" type='submit'>
+</form>
+{% endblock %}
+
+{% block content %}
+<table id="filestable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>GUID</th>
+        <th>TYPE</th>
+        <th>LFN</th>
+        <th>LINK</th>
+    </tr>
+</thead>
+<tbody>
+{% for f in files %}
+    <tr>
+        <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
+        <th>{{f.type}}</th>
+        <th>{{f.lfn}}</th>
+        <th>
+            {% if f.type == 'input' %}
+            [<a href="/file/{{f.guid}}/download">http</a>]
+            {% endif %}
+            {% if f.type == 'log' and job.status in ['finished', 'failed', 'cancelled'] %}
+            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
+            {% endif %}
+            {% if f.type == 'output' and job.status == 'finished' %}
+            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
+            {% endif %}
+        </th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="/static/app/js/job.js"></script>
+{% endblock %}

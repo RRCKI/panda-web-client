@@ -9,7 +9,7 @@ from webpanda.auth.models import AnonymousUser
 from webpanda.core import db, lm  # , security
 from webpanda.helpers import register_blueprints
 from webpanda.middleware import HTTPMethodOverrideMiddleware
-from webpanda.services import users
+from webpanda.services import users_
 
 
 def create_app(package_name, package_path, settings_override=None,
@@ -48,7 +48,7 @@ def create_app(package_name, package_path, settings_override=None,
     def load_user(id):
         if id == 0:
             return AnonymousUser()
-        return users.get(id=id)
+        return users_.get(id=id)
 
     @app.before_request
     def before_request():

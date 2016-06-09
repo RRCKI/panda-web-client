@@ -2,7 +2,7 @@
 from flask import render_template, jsonify, Blueprint
 
 from webpanda.api import route
-from webpanda.services import jobs as _jobs
+from webpanda.services import jobs_
 from webpanda.common.NrckiLogger import NrckiLogger
 
 
@@ -12,9 +12,9 @@ _logger = NrckiLogger().getLogger("api.jobs")
 
 @route(bp, "/<id_>", methods=['GET'])
 def show(id_):
-    return _jobs.get(id_)
+    return jobs_.get(id_)
 
 
 @route(bp, "/tag/<tag>", methods=['GET'])
 def bytag(tag):
-    return _jobs.find(tags=tag).all()
+    return jobs_.find(tags=tag).all()

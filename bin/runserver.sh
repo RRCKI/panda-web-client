@@ -1,5 +1,6 @@
 #!/bin/bash
 source /Users/it/sources/1_BIO/panda-web-client/.venv/bin/activate
+source ./setup.sh
 PYTHONPATH=/Users/it/sources/1_BIO/panda-web-client:$PYTHONPATH
 PYTHONPATH=/Users/it/sources/1_BIO/panda-server/pandaserver:$PYTHONPATH
 echo $PYTHONPATH

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - New pipeline</title>
+{% endblock %}
+
+{% block css_import %}
+{% endblock %}
+
+{% block jumbotron %}
+{% from "_formhelpers.html" import render_field %}
+<form method="post" action="">
+<h2>New pipeline</h2>
+<dl>
+  {{ render_field(form.ifiles) }}
+</dl>
+<p><input type=submit value=Submit class="btn btn-lg btn-primary btn-block">
+</form>
+{% endblock %}
+
+{% block js_import %}
+{% endblock %}
