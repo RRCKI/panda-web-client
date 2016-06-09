@@ -20,7 +20,6 @@ Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1
 Flask-WhooshAlchemy==0.56
 Flask-WTF==0.12
-flup==1.0.3.dev20110405
 guess-language==0.2
 gunicorn==0.17.2
 itsdangerous==0.24
