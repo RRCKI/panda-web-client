@@ -80,7 +80,7 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     __tablename__ = 'pipelines'
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    type = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'))
+    type_id = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'))
     name = db.Column(db.String(256))
     tag = db.Column(db.String(256))
     current_state = db.Column(db.String(256))

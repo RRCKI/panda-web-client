@@ -20,6 +20,7 @@ from webpanda.helpers import JSONEncoder
 from webpanda import factory
 from webpanda.jobs import Job
 from webpanda.jobs.models import Site, Distributive
+from webpanda.tasks import Pipeline, Task
 
 
 def create_app(settings_override=None, register_security_blueprint=False):
@@ -52,6 +53,8 @@ def create_app(settings_override=None, register_security_blueprint=False):
     adm.add_view(MyModelView(Replica, db.session))
     adm.add_view(MyModelView(TaskMeta, db.session))
     adm.add_view(MyModelView(TaskSetMeta, db.session))
+    adm.add_view(MyModelView(Pipeline, db.session))
+    adm.add_view(MyModelView(Task, db.session))
 
     return app
 
