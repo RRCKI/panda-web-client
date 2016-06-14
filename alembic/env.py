@@ -28,6 +28,21 @@ fileConfig(config.config_file_name)
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+def exclude_tables_from_config(config_):
+    tables_ = config_.get("tables", None)
+    if tables_ is not None:
+        tables = tables_.split(",")
+    return tables
+
+exclude_tables = exclude_tables_from_config(config.get_section('alembic:exclude'))
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if type_ == "table" and name in exclude_tables:
+        return False
+    else:
+        return True
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -62,7 +77,8 @@ def run_migrations_online():
     connection = engine.connect()
     context.configure(
                 connection=connection,
-                target_metadata=db.metadata
+                target_metadata=db.metadata,
+                include_object=include_object
                 )
 
     try:

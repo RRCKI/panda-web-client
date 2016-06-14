@@ -66,8 +66,8 @@ class Task(TaskJsonSerializer, db.Model):
     status = db.Column(db.String(64), default='defined')
     jobs = db.relationship('Job', secondary=tasks_jobs)
     trf = db.Column(db.String(1024))
-    ifiles = db.Column(db.String(1024))
-    ofiles = db.Column(db.String(1024))
+    input = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
+    output = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
 

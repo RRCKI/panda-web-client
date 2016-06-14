@@ -1,3 +1,4 @@
+from flask_apscheduler import APScheduler
 from flask_login import LoginManager
 import os
 
@@ -10,7 +11,11 @@ db = SQLAlchemy()
 #: Flask-Security extension instance
 #security = Security()
 
+#: Login Manager instance
 lm = LoginManager()
+
+# APScheduler
+scheduler = APScheduler()
 
 
 class Service(object):

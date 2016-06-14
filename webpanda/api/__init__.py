@@ -10,7 +10,7 @@ from functools import wraps
 from flask import jsonify
 from flask.ext.login import login_required
 
-from webpanda.core import WebpandaError, WebpandaFormError
+from webpanda.core import WebpandaError, WebpandaFormError, scheduler
 from webpanda.helpers import JSONEncoder
 from webpanda import factory
 

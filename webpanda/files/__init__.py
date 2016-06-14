@@ -5,7 +5,7 @@
     webpanda files package
 """
 from webpanda.core import Service
-from webpanda.files.models import File, Container, Replica
+from webpanda.files.models import File, Container, Replica, Catalog
 
 
 class FileService(Service):
@@ -18,3 +18,7 @@ class ContService(Service):
 
 class ReplicaService(Service):
     __model__ = Replica
+
+
+class CatalogService(Service):
+    __model__ = Catalog

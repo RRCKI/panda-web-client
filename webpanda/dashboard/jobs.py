@@ -165,7 +165,7 @@ def job_info(id):
     container = job.container
     resend_form = JobResendForm()
     kill_form = JobKillForm()
-    return render_template("dashboard/jobs/info.html", job=job, files=container.files, ftp=current_app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
+    return render_template("dashboard/jobs/job.html", job=job, files=container.files, ftp=current_app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
 
 
 @route_s(bp, '/<id>/logs', methods=['GET'])

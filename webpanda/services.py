@@ -5,8 +5,8 @@
     services module
 """
 from webpanda.auth import UserService
-from webpanda.files import FileService, ContService, ReplicaService
-from webpanda.tasks import TaskService, PipelineService
+from webpanda.files import FileService, ContService, ReplicaService, CatalogService
+from webpanda.tasks import TaskService, PipelineService, PipelineTypeService
 from webpanda.jobs import JobService, SiteService, DistrService
 
 # Auth
@@ -15,6 +15,7 @@ users_ = UserService()
 # Tasks
 tasks_ = TaskService()
 pipelines_ = PipelineService()
+pipeline_types_ = PipelineTypeService()
 
 # Jobs
 jobs_ = JobService()
@@ -25,5 +26,6 @@ sites_ = SiteService()
 files_ = FileService()
 conts_ = ContService()
 replicas_ = ReplicaService()
+catalog_ = CatalogService()
 
 # Async
