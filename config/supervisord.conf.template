@@ -30,7 +30,7 @@ nodaemon=false               ; (start in foreground if true;default false)
 minfds=1024                  ; (min. avail startup file descriptors;default 1024)
 minprocs=200                 ; (min. avail process descriptors;default 200)
 ;umask=022                   ; (process file creation umask;default 022)
-;user=it                    ; (default is current user, required if root)
+;user=apf                    ; (default is current user, required if root)
 ;identifier=supervisor       ; (supervisord identifier, default is 'supervisor')
 ;directory=/tmp              ; (default is not to cd during start)
 ;nocleanup=true              ; (don't clean up tempfiles at start;default false)
@@ -142,11 +142,11 @@ serverurl=unix:///tmp/supervisor.sock ; use a unix:// URL  for a unix socket
 
 
 [program:celeryd]
-;command=celery worker -A webpanda.app.celery -l info
+;command=celery worker -A webpanda.async.celery -l info
 command=sh ../bin/celery.sh
 stdout_logfile=../log/celeryd_out.log
 stderr_logfile=../log/celeryd_err.log
-user=it
+user=apf
 numprocs=1
 autostart=true
 autorestart=true

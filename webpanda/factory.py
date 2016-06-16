@@ -6,10 +6,9 @@ from celery import Celery
 from flask_login import current_user
 from webpanda.auth.models import AnonymousUser
 
-from webpanda.core import db, lm, scheduler  # , security
+from webpanda.core import db, lm
 from webpanda.helpers import register_blueprints
 from webpanda.middleware import HTTPMethodOverrideMiddleware
-from webpanda.pipelines.scripts import paleomix_main
 from webpanda.services import users_
 
 
@@ -57,29 +56,7 @@ def create_app(package_name, package_path, settings_override=None,
         g.user.last_seen = datetime.utcnow()
         g.user.save()
 
-    # Prepare scheduler
-    # scheduler.init_app(app)
-    # scheduler.start()
-    # scheduler.add_job("paleomix_main", paleomix_main.run)
-
     return app
-
-
-def create_scheduler_app(app=None):
-    app = app or create_app('webpanda', os.path.dirname(__file__))
-    celery = Celery(__name__, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
 
 
 def create_celery_app(app=None):

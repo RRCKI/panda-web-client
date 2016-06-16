@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-# """
-#     webpanda.tasks
-#     ~~~~~~~~~~~~~~
-#     webpanda tasks module
-# """
 import json
 
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -12,10 +7,12 @@ from webpanda.db.models import DB
 from webpanda.factory import create_celery_app
 from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer
 from webpanda.jobs.scripts import killJobs, send_job
+from webpanda.pipelines.scripts import paleomix_main, paleomix_test
 
-celery = create_celery_app()
 
 _logger = NrckiLogger().getLogger("async")
+
+celery = create_celery_app()
 
 
 @celery.task
@@ -61,6 +58,16 @@ def async_uploadContainer(ftp_dir, scope, cont_guid):
     #except Exception as e:
     #raise async_uploadContainer.retry(countdown=60, exc=e, max_retries=5)
     return json.dumps(res)
+
+
+@celery.task
+def cron_paleomix_main():
+    return json.dumps(paleomix_main.run())
+
+
+@celery.task
+def cron_paleomix_test():
+    return json.dumps(paleomix_test.run())
 
 
 def prepareInputFiles(cont_id, se):

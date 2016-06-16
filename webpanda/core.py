@@ -1,21 +1,15 @@
-from flask_apscheduler import APScheduler
 from flask_login import LoginManager
-import os
-
 from flask_sqlalchemy import SQLAlchemy
-from flask import jsonify
 
 
 #: Flask-SQLAlchemy extension instance
 db = SQLAlchemy()
+
 #: Flask-Security extension instance
 #security = Security()
 
 #: Login Manager instance
 lm = LoginManager()
-
-# APScheduler
-scheduler = APScheduler()
 
 
 class Service(object):

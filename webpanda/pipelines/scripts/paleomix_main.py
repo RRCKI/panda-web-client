@@ -8,5 +8,8 @@ def run():
     for pipeline in pipelines_init:
         task = pipeline.init_task
         if task.status == 'defined':
-            task.status = 'pending'
+            task.status = 'started'
             tasks_.save(task)
+            # Run task
+        if task.status == 'finished':
+            pass
