@@ -64,6 +64,14 @@ def async_uploadContainer(ftp_dir, scope, cont_guid):
 def cron_paleomix_main():
     return json.dumps(paleomix_main.run())
 
+@celery.task
+def cron_paleomix_main_check_next_task():
+    return json.dumps(paleomix_main.check_next_task())
+
+@celery.task
+def cron_paleomix_main_check_running_tasks():
+    return json.dumps(paleomix_main.check_running_tasks())
+
 
 @celery.task
 def cron_paleomix_test():

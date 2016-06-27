@@ -26,6 +26,7 @@ class TaskType(TaskTypeJsonSerializer, db.Model):
     trf_template = db.Column(db.String(1024))
     ifiles_template = db.Column(db.String(1024))
     ofiles_template = db.Column(db.String(1024))
+    tasks = db.relationship("Task", back_populates="task_type")
 
     def __repr__(self):
         return '<TaskType id=%s>' % self.id
@@ -46,6 +47,7 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
     merge_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
     post_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
     finish_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
+    pipelines = db.relationship("Pipeline", back_populates="pipeline_type")
 
     def __repr__(self):
         return '<PipelineType id=%s>' % self.id
@@ -60,6 +62,7 @@ class Task(TaskJsonSerializer, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'))
+    task_type = db.relationship("TaskType", back_populates="tasks")
     tag = db.Column(db.String(256))
     creation_time = db.Column(db.DateTime)
     modification_time = db.Column(db.DateTime)
@@ -68,6 +71,8 @@ class Task(TaskJsonSerializer, db.Model):
     trf = db.Column(db.String(1024))
     input = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
     output = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
+    tag = db.Column(db.String(1024))
+
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
 
@@ -81,19 +86,87 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'))
+    pipeline_type = db.relationship("PipelineType", back_populates="pipelines")
     name = db.Column(db.String(256))
     tag = db.Column(db.String(256))
     current_state = db.Column(db.String(256))
-    init_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    pre_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    split_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    prun_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    merge_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    post_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    finish_task = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+
+    init_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    pre_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    split_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    prun_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    merge_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    post_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
+    finish_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
 
     def __repr__(self):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
+
+    def next_task_type(self):
+        if self.current_state == "init_task":
+            if self.pipeline_type.pre_tasktype_id is not None:
+                return self.pipeline_type.pre_tasktype_id
+            elif self.pipeline_type.split_tasktype_id is not None:
+                return self.pipeline_type.split_tasktype_id
+            elif self.pipeline_type.prun_tasktype_id is not None:
+                return self.pipeline_type.prun_tasktype_id
+            elif self.pipeline_type.merge_tasktype_id is not None:
+                return self.pipeline_type.merge_tasktype_id
+            elif self.pipeline_type.post_tasktype_id is not None:
+                return self.pipeline_type.post_tasktype_id
+            elif self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "pre_task":
+            if self.pipeline_type.split_tasktype_id is not None:
+                return self.pipeline_type.split_tasktype_id
+            elif self.pipeline_type.prun_tasktype_id is not None:
+                return self.pipeline_type.prun_tasktype_id
+            elif self.pipeline_type.merge_tasktype_id is not None:
+                return self.pipeline_type.merge_tasktype_id
+            elif self.pipeline_type.post_tasktype_id is not None:
+                return self.pipeline_type.post_tasktype_id
+            elif self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "split_task":
+            if self.pipeline_type.prun_tasktype_id is not None:
+                return self.pipeline_type.prun_tasktype_id
+            elif self.pipeline_type.merge_tasktype_id is not None:
+                return self.pipeline_type.merge_tasktype_id
+            elif self.pipeline_type.post_tasktype_id is not None:
+                return self.pipeline_type.post_tasktype_id
+            elif self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "prun_task":
+            if self.pipeline_type.merge_tasktype_id is not None:
+                return self.pipeline_type.merge_tasktype_id
+            elif self.pipeline_type.post_tasktype_id is not None:
+                return self.pipeline_type.post_tasktype_id
+            elif self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "merge_task":
+            if self.pipeline_type.post_tasktype_id is not None:
+                return self.pipeline_type.post_tasktype_id
+            elif self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "post_task":
+            if self.pipeline_type.finish_tasktype_id is not None:
+                return self.pipeline_type.finish_tasktype_id
+            else:
+                return None
+        if self.current_state == "finish_task":
+            return None
+
+
 
 
 

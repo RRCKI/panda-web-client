@@ -8,10 +8,19 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Cron jobs
 CELERYBEAT_SCHEDULE = {
-    # Executes every Monday morning at 7:30 A.M
     'paleomix_main_cron': {
-        'task': 'webpanda.async.scripts.cron_paleomix_test',
-        'schedule': timedelta(seconds=5),
+        'task': 'webpanda.async.scripts.cron_paleomix_main',
+        'schedule': timedelta(seconds=60),
         #'schedule': crontab()
     },
+    'paleomix_main_cron2': {
+        'task': 'webpanda.async.scripts.cron_paleomix_main_check_next_task',
+        'schedule': timedelta(seconds=60),
+        #'schedule': crontab()
+    },
+    'paleomix_main_cron3': {
+        'task': 'webpanda.async.scripts.cron_paleomix_main_check_running_tasks',
+        'schedule': timedelta(seconds=60),
+        #'schedule': crontab()
+    }
 }

@@ -39,7 +39,7 @@ def new_pipeline():
 
         # Prepare pipeline
         pp = Pipeline()
-        pp.current_state = 'init'
+        pp.current_state = 'init_task'
         pp.type_id = pipeline_types_.get(1).id
         pp.owner_id = current_user.id
 
