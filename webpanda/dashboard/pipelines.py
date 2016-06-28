@@ -39,6 +39,7 @@ def new_pipeline():
 
         # Prepare pipeline
         pp = Pipeline()
+        pp.status = 'running'
         pp.current_state = 'init_task'
         pp.type_id = pipeline_types_.get(1).id
         pp.owner_id = current_user.id
@@ -47,6 +48,7 @@ def new_pipeline():
         pp_cont = Container()
         pp_cont.guid = 'pipeline.' + commands.getoutput('uuidgen')
         conts_.save(pp_cont)
+
         # Add guids to container
         for item in ifiles.split(';'):
             f = files_.first(guid=item)
@@ -66,7 +68,6 @@ def new_pipeline():
         task = Task()
         task.owner_id = current_user.id
         task.task_type_id = 2
-        task.tag = "paleomix"
         task.creation_time = datetime.utcnow()
         task.modification_time = datetime.utcnow()
         task.status = 'defined'
@@ -74,7 +75,7 @@ def new_pipeline():
         task.output = pp_cont.id
         tasks_.save(task)
 
-        pp.init_task = task.id
+        pp.init_task_id = task.id
         pipelines_.save(pp)
 
         return redirect(url_for('pipelines.list_all'))

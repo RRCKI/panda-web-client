@@ -90,6 +90,7 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     name = db.Column(db.String(256))
     tag = db.Column(db.String(256))
     current_state = db.Column(db.String(256))
+    status = db.Column(db.String(256))
 
     init_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
     pre_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)

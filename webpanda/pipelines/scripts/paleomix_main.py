@@ -1,28 +1,44 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from flask_login import current_user
-from webpanda.core import WebpandaError
-from webpanda.pipelines.scripts import paleomix_init
+from webpanda.pipelines.scripts import paleomix_init, paleomix_split
 from webpanda.services import pipelines_, tasks_, jobs_, task_types_
 from webpanda.tasks import Task
 
 
 def run():
+    """
+    Starts current defined task
+    :return:
+    """
     print "main started"
 
     # Fetch pipelines (init state)
     pipelines = pipelines_.all()
     for pipeline in pipelines:
+        # Check if finished
+        if pipeline.status in ['finished', 'failed', 'cancelled']:
+            continue
+
+        # By default set init_task current state
+        if pipeline.status == 'starting':
+            pipeline.status = 'running'
+            pipeline.current_state = 'init_task'
+            pipelines_.save(pipeline)
 
         # Fetch task object
-        current_task_id = getattr(pipeline, pipeline.current_task + "_id")
+        current_task_id = getattr(pipeline, pipeline.current_state + "_id")
         current_task = tasks_.get(current_task_id)
 
         if current_task.status == 'defined':
+            # Run task if defined
+            current_task.status = 'sent'
+            tasks_.save(current_task)
 
             #TODO: Run async regime
             if current_task.task_type.method == 'init_task':
                 paleomix_init.run(current_task)
+            elif current_task.task_type.method == 'split_task':
+                paleomix_split.run(current_task)
 
 
 def check_running_tasks():
@@ -66,7 +82,7 @@ def check_next_task():
     for task in tasks:
         # Get pipeline of task
         type_name = task.task_type.method
-        pipeline = pipelines_.first({type_name + '_id': task.id})
+        pipeline = pipelines_.first(**{type_name + '_id': task.id})
 
         # If pipeline not found
         if pipeline is None:
@@ -78,6 +94,7 @@ def check_next_task():
 
         # Check if last task
         if next_task_type_id is None:
+            pipeline.current_state = None
             pipeline.status = 'finished'
             pipelines_.save(pipeline)
             return True
@@ -87,7 +104,7 @@ def check_next_task():
 
         # If next task exists
         next_task = Task()
-        next_task.owner_id = current_user.id
+        next_task.owner_id = pipeline.owner_id
         next_task.task_type_id = next_task_type_id
         next_task.creation_time = datetime.utcnow()
         next_task.modification_time = datetime.utcnow()

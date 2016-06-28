@@ -5,7 +5,7 @@ from webpanda.services import tasks_
 
 def run(task):
     try:
-        if task.status != 'defined':
+        if task.status != 'sent':
             raise WebpandaError('Illegal task status to start')
 
         # Change task state to 'running'
