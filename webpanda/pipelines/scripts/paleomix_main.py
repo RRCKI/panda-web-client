@@ -121,4 +121,10 @@ def check_next_task():
             pipeline.current_state = next_task_type.method
             setattr(pipeline, next_task_type.method + "_id", next_task.id)
             pipelines_.save(pipeline)
+        elif current_task.status == 'failed':
+            #TODO: What to do if failed?
+            pass
+        elif current_task.status == 'cancelled':
+            #TODO: What to do if cancelled?
+            pass
 

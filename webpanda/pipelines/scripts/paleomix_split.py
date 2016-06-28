@@ -14,8 +14,8 @@ def run(task):
         task.modification_time = datetime.utcnow()
         tasks_.save(task)
 
-        # Do all job
-        # Start PanDA jobs
+        # Custom payload
+        payload(task)
 
         # Change task state to 'finished'
         task.status = 'running'
@@ -30,3 +30,9 @@ def run(task):
         task.comment = e.msg
         tasks_.save(task)
         return False
+
+
+def payload(task):
+    # Do all job
+    # Start PanDA jobs
+    return True
