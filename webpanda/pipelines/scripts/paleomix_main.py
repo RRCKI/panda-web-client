@@ -19,7 +19,7 @@ def run():
         if pipeline.status in ['finished', 'failed', 'cancelled']:
             continue
 
-        # By default set init_task current state
+        # By default set init_task state
         if pipeline.status == 'starting':
             pipeline.status = 'running'
             pipeline.current_state = 'init_task'
