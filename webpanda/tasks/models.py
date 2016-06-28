@@ -5,7 +5,7 @@
     Task models
 """
 
-from webpanda.core import db
+from webpanda.core import db, WebpandaError
 from webpanda.helpers import JsonSerializer
 
 
@@ -51,6 +51,31 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
 
     def __repr__(self):
         return '<PipelineType id=%s>' % self.id
+
+    def get_next_task_type_id(self, current_state):
+        """
+        Returns Type ID of next task or None if pipeline finished
+        :return: int or None
+        """
+        # Set list of all states
+        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
+
+        # Check input param
+        if current_state not in states:
+            raise WebpandaError("Illegal current_state param")
+
+        # Remove all state before current state (including)
+        for state in states:
+            states.remove(state)
+            if state == current_state:
+                break
+
+        # Find next not None state
+        for state in states:
+            if getattr(self, state + 'type_id') is not None:
+                return getattr(self, state + 'type_id')
+
+        return None
 
 
 class TaskJsonSerializer(JsonSerializer):
@@ -103,69 +128,17 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     def __repr__(self):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
 
-    def next_task_type(self):
-        if self.current_state == "init_task":
-            if self.pipeline_type.pre_tasktype_id is not None:
-                return self.pipeline_type.pre_tasktype_id
-            elif self.pipeline_type.split_tasktype_id is not None:
-                return self.pipeline_type.split_tasktype_id
-            elif self.pipeline_type.prun_tasktype_id is not None:
-                return self.pipeline_type.prun_tasktype_id
-            elif self.pipeline_type.merge_tasktype_id is not None:
-                return self.pipeline_type.merge_tasktype_id
-            elif self.pipeline_type.post_tasktype_id is not None:
-                return self.pipeline_type.post_tasktype_id
-            elif self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "pre_task":
-            if self.pipeline_type.split_tasktype_id is not None:
-                return self.pipeline_type.split_tasktype_id
-            elif self.pipeline_type.prun_tasktype_id is not None:
-                return self.pipeline_type.prun_tasktype_id
-            elif self.pipeline_type.merge_tasktype_id is not None:
-                return self.pipeline_type.merge_tasktype_id
-            elif self.pipeline_type.post_tasktype_id is not None:
-                return self.pipeline_type.post_tasktype_id
-            elif self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "split_task":
-            if self.pipeline_type.prun_tasktype_id is not None:
-                return self.pipeline_type.prun_tasktype_id
-            elif self.pipeline_type.merge_tasktype_id is not None:
-                return self.pipeline_type.merge_tasktype_id
-            elif self.pipeline_type.post_tasktype_id is not None:
-                return self.pipeline_type.post_tasktype_id
-            elif self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "prun_task":
-            if self.pipeline_type.merge_tasktype_id is not None:
-                return self.pipeline_type.merge_tasktype_id
-            elif self.pipeline_type.post_tasktype_id is not None:
-                return self.pipeline_type.post_tasktype_id
-            elif self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "merge_task":
-            if self.pipeline_type.post_tasktype_id is not None:
-                return self.pipeline_type.post_tasktype_id
-            elif self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "post_task":
-            if self.pipeline_type.finish_tasktype_id is not None:
-                return self.pipeline_type.finish_tasktype_id
-            else:
-                return None
-        if self.current_state == "finish_task":
-            return None
+    def get_current_task_id(self):
+        """
+        Returns current task id
+        :return: int
+        """
+        try:
+            current_task_id = getattr(self, self.current_state + "_id")
+        except:
+            raise WebpandaError("Unable to get current task ID")
+        return current_task_id
+
 
 
 

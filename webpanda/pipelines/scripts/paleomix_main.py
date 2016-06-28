@@ -26,8 +26,7 @@ def run():
             pipelines_.save(pipeline)
 
         # Fetch task object
-        current_task_id = getattr(pipeline, pipeline.current_state + "_id")
-        current_task = tasks_.get(current_task_id)
+        current_task = tasks_.get(pipeline.get_current_task_id())
 
         if current_task.status == 'defined':
             # Run task if defined
@@ -42,8 +41,10 @@ def run():
 
 
 def check_running_tasks():
-    print "check tasks started"
-
+    """
+    Checks PanDA jobs statuses for all running tasks
+    :return:
+    """
     # Get tasks in running state
     tasks = tasks_.find(status='running')
     for task in tasks:
@@ -53,12 +54,14 @@ def check_running_tasks():
             jobs = jobs_.find(tags=task.tag, status='failed')
             if jobs.count > 0:
                 task.status = 'failed'
+                task.modification_time = datetime.utcnow()
                 tasks_.save(task)
 
             # Check failed Panda jobs
             jobs = jobs_.find(tags=task.tag, status='canceled')
             if jobs.count > 0:
                 task.status = 'canceled'
+                task.modification_time = datetime.utcnow()
                 tasks_.save(task)
 
             # Check finished Panda jobs
@@ -66,55 +69,56 @@ def check_running_tasks():
             jobs_all = jobs_.find(tags=task.tag)
             if jobs.count == jobs_all.count:
                 task.status = 'finished'
+                task.modification_time = datetime.utcnow()
                 tasks_.save(task)
         else:
             # If tag is not defined
             task.status = 'finished'
+            task.modification_time = datetime.utcnow()
             tasks_.save(task)
+    return True
 
 
 def check_next_task():
-    print "check_next_task started"
+    """
+    Checks finished task and starts next one
+    :return:
+    """
 
-    # Get tasks in finished state
-    tasks = tasks_.find(status='finished')
+    # Get all pipelines
+    pipelines = pipelines_.find(status='running')
+    for pipeline in pipelines:
+        current_task = tasks_.get(pipeline.get_current_task_id())
 
-    for task in tasks:
-        # Get pipeline of task
-        type_name = task.task_type.method
-        pipeline = pipelines_.first(**{type_name + '_id': task.id})
+        if current_task.status == 'finished':
+            pipeline_type = pipeline.pipeline_type
 
-        # If pipeline not found
-        if pipeline is None:
-            task.status = 'finished_no_pipeline'
-            tasks_.save(task)
+            # Get next task type id
+            next_task_type_id = pipeline_type.get_next_task_type_id(current_task.task_type.method)
 
-        # Get next task type id
-        next_task_type_id = pipeline.next_task_type()
+            # Check if last task
+            if next_task_type_id is None:
+                pipeline.current_state = None
+                pipeline.status = 'finished'
+                pipelines_.save(pipeline)
+                continue
 
-        # Check if last task
-        if next_task_type_id is None:
-            pipeline.current_state = None
-            pipeline.status = 'finished'
+            # Get next task type
+            next_task_type = task_types_.get(next_task_type_id)
+
+            # If next task exists
+            next_task = Task()
+            next_task.owner_id = pipeline.owner_id
+            next_task.task_type_id = next_task_type_id
+            next_task.creation_time = datetime.utcnow()
+            next_task.modification_time = datetime.utcnow()
+            next_task.status = 'defined'
+            next_task.input = current_task.input
+            next_task.output = current_task.output
+            tasks_.save(next_task)
+
+            # Set task/pipeline relation
+            pipeline.current_state = next_task_type.method
+            setattr(pipeline, next_task_type.method + "_id", next_task.id)
             pipelines_.save(pipeline)
-            return True
-
-        # Get next task type
-        next_task_type = task_types_.get(next_task_type_id)
-
-        # If next task exists
-        next_task = Task()
-        next_task.owner_id = pipeline.owner_id
-        next_task.task_type_id = next_task_type_id
-        next_task.creation_time = datetime.utcnow()
-        next_task.modification_time = datetime.utcnow()
-        next_task.status = 'defined'
-        next_task.input = task.input
-        next_task.output = task.output
-        tasks_.save(next_task)
-
-        # Set task/pipeline relation
-        pipeline.current_state = next_task_type.method
-        setattr(pipeline, next_task_type.method + "_id", next_task.id)
-        pipelines_.save(pipeline)
 
