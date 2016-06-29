@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from webpanda.core import WebpandaError
-from webpanda.services import tasks_
+from webpanda.services import tasks_, conts_
 
 
 def run(task):
@@ -33,6 +33,29 @@ def run(task):
 
 
 def payload(task):
-    # Do all job
-    # Start PanDA jobs
+    """
+    Split input *.1.fastq and *.2.fastq into N pieces
+    Register results into output_cont
+    :param task:
+    :return:
+    """
+    N = 100
+
+    # Get containers
+    input_cont = conts_.get(task.input)
+    output_cont = conts_.get(task.output)
+
+    for item in input_cont.files:
+        f = item.file
+
+        # Find *.1.fastq file
+        if ".1.fastq" in f.lfn:
+            # Split file
+            pass
+
+        # Find *.2.fastq file
+        if ".2.fastq" in f.lfn:
+            # Split file
+            pass
+
     return True

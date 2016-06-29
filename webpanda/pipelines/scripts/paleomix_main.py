@@ -123,8 +123,14 @@ def check_next_task():
             pipelines_.save(pipeline)
         elif current_task.status == 'failed':
             #TODO: What to do if failed?
-            pass
+            pipeline.current_state = None
+            pipeline.status = 'failed'
+            pipelines_.save(pipeline)
+            return True
         elif current_task.status == 'cancelled':
             #TODO: What to do if cancelled?
-            pass
+            pipeline.current_state = None
+            pipeline.status = 'cancelled'
+            pipelines_.save(pipeline)
+            return True
 
