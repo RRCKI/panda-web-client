@@ -143,6 +143,7 @@ def check_next_task():
             return True
         elif current_task.status == 'cancelled':
             #TODO: What to do if cancelled?
+            #TODO: Who or by whom? If by system - resubmit, if by user -nothing?
             pipeline.current_state = None
             pipeline.status = 'cancelled'
             pipelines_.save(pipeline)
