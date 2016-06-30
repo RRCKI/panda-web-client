@@ -8,6 +8,7 @@ from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.db.models import DB, Site, Job, Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID
+from webpanda.services import sites_, jobs_, replicas_, files_
 
 _logger = NrckiLogger().getLogger("files.scripts")
 
@@ -24,6 +25,7 @@ def submitJobs(jobList):
         _logger.debug("PandaID=%s" % x[0])
     return o
 
+
 def killJobs(jobList):
     print 'Kill jobs'
     _logger.debug('Kill jobs')
@@ -34,21 +36,18 @@ def killJobs(jobList):
     _logger.debug(o)
     return o
 
+
 def send_job(jobid, siteid):
     _logger.debug('Jobid: ' + str(jobid))
 
     jobList = []
 
-    # Initialize db
-    s = DB().getSession()
+    site = sites_.get(siteid)
 
-    site = s.query(Site).filter(Site.id == siteid).one()
-
-    job = s.query(Job).filter(Job.id == int(jobid)).one()
+    job = jobs_.get(int(jobid))
     cont = job.container
-    files = cont.files
+    files_catalog = cont.files
 
-    scope = client_config.DEFAULT_SCOPE
     fscope = getScope(job.owner.username)
     datasetName = '{}:{}'.format(fscope, cont.guid)
 
@@ -74,11 +73,12 @@ def send_job(jobid, siteid):
 
     rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
 
-    for file in files:
-        if file.type == 'input':
-            guid = file.guid
+    for fc in files_catalog:
+        if fc.type == 'input':
+            f = fc.file
+            guid = f.guid
             fileIT = FileSpec()
-            fileIT.lfn = file.lfn
+            fileIT.lfn = f.lfn
             fileIT.dataset = pandajob.prodDBlock
             fileIT.prodDBlock = pandajob.prodDBlock
             fileIT.type = 'input'
@@ -87,25 +87,25 @@ def send_job(jobid, siteid):
             fileIT.GUID = guid
             pandajob.addFile(fileIT)
             #linkFile(file.id, site.se, rlinkdir)
-        if file.type == 'output':
+        if fc.type == 'output':
+            f = fc.file
             fileOT = FileSpec()
-            fileOT.lfn = file.lfn
+            fileOT.lfn = f.lfn
             fileOT.destinationDBlock = pandajob.prodDBlock
             fileOT.destinationSE = pandajob.destinationSE
             fileOT.dataset = pandajob.prodDBlock
             fileOT.type = 'output'
             fileOT.scope = fscope
-            fileOT.GUID = file.guid
+            fileOT.GUID = f.guid
             pandajob.addFile(fileOT)
 
             # Save replica meta
             replica = Replica()
             replica.se = site.se
             replica.status = 'defined'
-            replica.lfn = getFullPath(file.scope, pandajob.jobName, file.lfn)
-            replica.original = file
-            s.add(replica)
-            s.commit()
+            replica.lfn = getFullPath(f.scope, pandajob.jobName, f.lfn)
+            replica.original = f
+            replicas_.save(replica)
 
     # Prepare lof file
     fileOL = FileSpec()
@@ -125,16 +125,14 @@ def send_job(jobid, siteid):
     log.type = 'log'
     log.status = 'defined'
     log.containers.append(cont)
-    s.add(log)
-    s.commit()
+    files_.save(log)
 
     replica = Replica()
     replica.se = pandajob.destinationSE
     replica.status = 'defined'
     replica.lfn = getFullPath(log.scope, pandajob.jobName, log.lfn)
     replica.original = log
-    s.add(replica)
-    s.commit()
+    replicas_.save(replica)
 
     jobList.append(pandajob)
 
@@ -149,8 +147,6 @@ def send_job(jobid, siteid):
         job.ce = site.ce
     except:
         job.status = 'submit_error'
-    s.add(job)
-    s.commit()
-    s.close()
+    jobs_.save(job)
 
     return 0

@@ -4,8 +4,12 @@ from webpanda.core import WebpandaError
 from webpanda.services import tasks_, conts_
 
 
-def run(task):
+def run(task_id):
     try:
+        task = tasks_.get(task_id)
+        if task is None:
+            return WebpandaError('Illegal task ID')
+
         if task.status != 'sent':
             raise WebpandaError('Illegal task status to start')
 

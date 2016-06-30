@@ -263,6 +263,7 @@ def job_info(id):
     kill_form = JobKillForm()
     return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
 
+
 @app.route('/job/<id>/logs', methods=['GET'])
 @login_required
 def jobLog(id):
@@ -287,6 +288,7 @@ def jobLog(id):
     data['err'] = err
     return make_response(jsonify({'data': data}), 200)
 
+
 @app.route('/job/resend', methods=['POST'])
 @login_required
 def job_resend():
@@ -298,6 +300,7 @@ def job_resend():
 
         return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
+
 
 @app.route('/job/kill', methods=['POST'])
 @login_required
@@ -312,6 +315,7 @@ def job_kill():
             return make_response(jsonify({'data': out}), 200)
         return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
+
 
 @app.route("/upload", methods=['POST'])
 @login_required
@@ -400,12 +404,14 @@ def upload():
     else:
         return redirect(url_for("upload_success"))
 
+
 def ajax_response(status, msg):
     status_code = "ok" if status else "error"
     return json.dumps(dict(
         status=status_code,
         msg=msg,
     ))
+
 
 @app.route("/jobs", methods=['GET'])
 @login_required
@@ -415,6 +421,7 @@ def jobs():
     session['hours_limit'] = hours_limit
     session['display_limit'] = display_limit
     return render_template("pandaweb/jobs_list.html")
+
 
 @app.route("/jobs/list", methods=['GET'])
 @login_required
@@ -452,6 +459,7 @@ def jobs_list():
     data['data'] = jobs_o
 
     return make_response(jsonify(data), 200)
+
 
 @app.route("/file", methods=['GET', 'POST'])
 @login_required
@@ -492,6 +500,7 @@ def file():
     form.se.choices = [("%s" % site.se, "%s" % site.se) for site in Site.query.filter_by(active=1)]
     return render_template("pandaweb/file_new.html", form=form)
 
+
 @app.route("/file/<guid>", methods=['GET'])
 @login_required
 def file_info(guid):
@@ -501,6 +510,7 @@ def file_info(guid):
         _logger.error(Exception.message)
         return 'File not found'
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
+
 
 @app.route("/file/<guid>/download", methods=['GET'])
 @login_required
@@ -528,7 +538,6 @@ def file_download(guid):
     return make_response(jsonify({'error': 'No ready replica'}), 404)
 
 
-
 @app.route("/files", methods=['GET'])
 @login_required
 def files():
@@ -537,6 +546,7 @@ def files():
     session['hours_limit'] = hours_limit
     session['display_limit'] = display_limit
     return render_template("pandaweb/file_list.html")
+
 
 @app.route("/file/list", methods=['GET'])
 @login_required

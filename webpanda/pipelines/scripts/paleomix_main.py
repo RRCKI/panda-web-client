@@ -35,9 +35,9 @@ def run():
 
             #TODO: Run async regime
             if current_task.task_type.method == 'init_task':
-                paleomix_init.run(current_task)
+                paleomix_init.run(current_task.id)
             elif current_task.task_type.method == 'split_task':
-                paleomix_split.run(current_task)
+                paleomix_split.run(current_task.id)
 
 
 def check_running_tasks():
