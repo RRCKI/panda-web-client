@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from webpanda.files import Catalog
 from webpanda.pipelines.scripts import paleomix_init, paleomix_split
-from webpanda.services import pipelines_, tasks_, jobs_, task_types_
+from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_, catalog_
 from webpanda.tasks import Task
 
 
@@ -68,6 +69,19 @@ def check_running_tasks():
             jobs = jobs_.find(tags=task.tag, status='finished')
             jobs_all = jobs_.find(tags=task.tag)
             if jobs.count == jobs_all.count:
+                # Register files from jobs into task container
+                cont = conts_.get(task.input)
+                for job in jobs:
+                    files_catalog = job.container.files
+                    for f in files_catalog:
+                        if f.type == 'output':
+                            c = Catalog()
+                            c.file = f.file
+                            c.cont = cont
+                            c.type = 'intermediate'
+                            catalog_.save(c)
+
+                # Change task status
                 task.status = 'finished'
                 task.modification_time = datetime.utcnow()
                 tasks_.save(task)
