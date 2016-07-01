@@ -79,6 +79,8 @@ def payload(task):
 
     # Get default ComputingElement
     site = sites_.first(ce=current_app.config['DEFAULT_CE'])
+    if site is None:
+        raise WebpandaError("ComputingElement not found")
 
     # Get distributive
     distr = distrs_.get(1)
