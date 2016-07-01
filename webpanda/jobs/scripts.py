@@ -7,8 +7,9 @@ import pandaserver.userinterface.Client as Client
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.db.models import DB, Site, Job, Replica, File
+from webpanda.files import Catalog
 from webpanda.files.scripts import getScope, getFullPath, getGUID
-from webpanda.services import sites_, jobs_, replicas_, files_
+from webpanda.services import sites_, jobs_, replicas_, files_, catalog_
 
 _logger = NrckiLogger().getLogger("files.scripts")
 
@@ -124,8 +125,13 @@ def send_job(jobid, siteid):
     log.guid = getGUID(log.scope, log.lfn)
     log.type = 'log'
     log.status = 'defined'
-    log.containers.append(cont)
     files_.save(log)
+
+    c = Catalog()
+    c.cont = cont
+    c.file = log
+    c.type = 'log'
+    catalog_.save(c)
 
     replica = Replica()
     replica.se = pandajob.destinationSE

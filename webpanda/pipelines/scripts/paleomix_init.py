@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from base64 import b64encode
 import re
 import commands
 from datetime import datetime
@@ -105,12 +106,14 @@ def payload(task):
                     c.type = 'input'
                     catalog_.save(c)
 
+        script = "echo 123"
+
         # Define jobs
         job = Job()
         job.pandaid = None
         job.status = 'pending'
         job.owner = users_.get(task.owner_id)
-        job.params = "echo 123"
+        job.params = b64encode(script)
         job.distr = distr
         job.container = container
         job.creation_time = datetime.utcnow()
@@ -122,6 +125,6 @@ def payload(task):
         jobs_.save(job)
 
         # Async sendjob
-        async_send_job.s(jobid=job.id, siteid=site.id)
+        async_send_job.delay(jobid=job.id, siteid=site.id)
 
     return True
