@@ -96,7 +96,7 @@ class Task(TaskJsonSerializer, db.Model):
     trf = db.Column(db.String(1024))
     input = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
     output = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
-    tag = db.Column(db.String(1024))
+    comment = db.Column(db.String(1024))
 
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
