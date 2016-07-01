@@ -6,8 +6,7 @@ import pandaserver.userinterface.Client as Client
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.db.models import DB, Site, Job, Replica, File
-from webpanda.files import Catalog
+from webpanda.files import Catalog, Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID
 from webpanda.services import sites_, jobs_, replicas_, files_, catalog_
 
