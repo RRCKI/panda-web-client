@@ -7,7 +7,7 @@ from flask import current_app
 from webpanda.core import WebpandaError
 from webpanda.files import Container, Catalog
 from webpanda.jobs import Job
-from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, catalog_
+from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, catalog_, users_
 from webpanda.async import async_send_job
 
 
@@ -107,7 +107,7 @@ def payload(task):
         job = Job()
         job.pandaid = None
         job.status = 'pending'
-        job.owner = task.owner_id
+        job.owner = users_.get(task.owner_id)
         job.params = "echo 123"
         job.distr = distr
         job.container = container
