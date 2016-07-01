@@ -66,9 +66,12 @@ def payload(task):
         f = item.file
 
         for file_template in files_template_list:
+
             m = re.match(file_template, f.lfn)
-            if m is None:
-                raise WebpandaError("Input files not found in input container")
+            if m is not None:
+                files_template_list.remove(file_template)
+        if len(files_template_list) > 0:
+            raise WebpandaError("Input files not found in input container")
 
     #### Send PanDA jobs
     task.tag = "task." + commands.getoutput('uuidgen')
@@ -104,7 +107,7 @@ def payload(task):
         job = Job()
         job.pandaid = None
         job.status = 'pending'
-        job.owner = g.user
+        job.owner = task.owner_id
         job.params = "echo 123"
         job.distr = distr
         job.container = container
