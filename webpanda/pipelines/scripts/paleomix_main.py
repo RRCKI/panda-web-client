@@ -57,13 +57,15 @@ def check_running_tasks():
                 task.status = 'failed'
                 task.modification_time = datetime.utcnow()
                 tasks_.save(task)
+                return False
 
             # Check failed Panda jobs
             jobs = jobs_.find(tags=task.tag, status='canceled')
             if jobs.count > 0:
-                task.status = 'canceled'
+                task.status = 'cancelled'
                 task.modification_time = datetime.utcnow()
                 tasks_.save(task)
+                return False
 
             # Check finished Panda jobs
             jobs = jobs_.find(tags=task.tag, status='finished')
@@ -85,6 +87,7 @@ def check_running_tasks():
                 task.status = 'finished'
                 task.modification_time = datetime.utcnow()
                 tasks_.save(task)
+                return True
         else:
             # If tag is not defined
             task.status = 'finished'

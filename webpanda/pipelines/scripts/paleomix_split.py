@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
+from base64 import b64encode
+import re
+import commands
 from datetime import datetime
+from flask import current_app
+
 from webpanda.core import WebpandaError
-from webpanda.services import tasks_, conts_
+from webpanda.files import Container, Catalog
+from webpanda.jobs import Job
+from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, catalog_, users_
+from webpanda.async import async_send_job
 
 
 def run(task_id):
@@ -36,70 +44,12 @@ def run(task_id):
         return False
 
 
-def send_job_(task, input_cont, myexec):
-    #### Send PanDA jobs
-    task.tag = "task." + commands.getoutput('uuidgen')
-    tasks_.save(task)
-
-    # Get default ComputingElement
-    site = sites_.first(ce=current_app.config['DEFAULT_CE'])
-
-    # Get distributive
-    #distr = distrs_.get(1)
-    distr=myexec
-
-    for i in xrange(2):
-        # Get container
-        container = Container()
-        container.guid = task.tag + "." + str(i)
-        conts_.save(container)
-
-        # Add input files to container
-        for item in input_cont.files:
-            f = item.file
-
-            for file_template in files_template_list:
-                # TODO: Change file template here
-                m = re.match(file_template, f.lfn)
-                if m is not None:
-                    c = Catalog()
-                    c.cont = container
-                    c.file = f
-                    c.type = 'input'
-                    catalog_.save(c)
-
-        # Define jobs
-        job = Job()
-        job.pandaid = None
-        job.status = 'pending'
-        job.owner = g.user
-        job.params = "echo 123"
-        job.distr = distr
-        job.container = container
-        job.creation_time = datetime.utcnow()
-        job.modification_time = datetime.utcnow()
-        job.ninputfiles = 0
-        job.noutputfiles = 0
-        job.corecount = 1
-        job.tags = task.tag
-        jobs_.save(job)
-
-        # Async sendjob
-        async_send_job.s(jobid=job.id, siteid=site.id)
-
-
-
 def payload(task):
     """
-    Split input *.1.fastq and *.2.fastq into N pieces=
-    get split_schema + reg_outfiles_schema
-    run panda /bin/bash job
-    -Register results into output_cont
+    Checks if necessary files in input container
     :param task:
     :return:
     """
-    N = 100
-
     #### Prepare
     # Check type of task
     task_type = task.task_type
@@ -117,30 +67,63 @@ def payload(task):
         f = item.file
 
         for file_template in files_template_list:
-            m = re.match(file_template, f.lfn)
-            if m is None:
-                raise WebpandaError("Input files not found in input container")
-            #TODO: Are we receive that err in this file? What code must check this before run_task??
 
-    #Make exec
-    split_scheme="#!/bin/bash "
-    mex=split_scheme+" ; tar xzf *.bz2"
-    #mex+= params to register in container?
-    #TODO: How get from bz2 input_file_size num_of_files=num_of_output_files to reg?
-    # 500000 enough to single job, yet split not less then 1?
+            m = re.match(file_template, f.lfn)
+            if m is not None:
+                files_template_list.remove(file_template)
+    if len(files_template_list) > 0:
+        raise WebpandaError("Input files not found in input container")
+
+    #### Send PanDA jobs
+    task.tag = "task." + commands.getoutput('uuidgen')
+    tasks_.save(task)
+
+    # Get default ComputingElement
+    site = sites_.first(ce=current_app.config['DEFAULT_CE'])
+    if site is None:
+        raise WebpandaError("ComputingElement not found")
+
+    # Get distributive
+    distr = distrs_.get(1)
+
+    # Get container
+    container = Container()
+    container.guid = task.tag + ".0"
+    conts_.save(container)
+
+    # Add input files to container
     for item in input_cont.files:
         f = item.file
 
-        # Find *.1.fastq file
-        if ".1.fastq" in f.lfn:
-            # Split file
-            pass
+        for file_template in files_template_list:
+            # TODO: Change file template here
+            m = re.match(file_template, f.lfn)
+            if m is not None:
+                c = Catalog()
+                c.cont = container
+                c.file = f
+                c.type = 'input'
+                catalog_.save(c)
 
-        # Find *.2.fastq file
-        if ".2.fastq" in f.lfn:
-            # Split file
-            pass
+    script = "echo 123"
 
-    send_job_(task, input_cont,mex)
+    # Define jobs
+    job = Job()
+    job.pandaid = None
+    job.status = 'pending'
+    job.owner = users_.get(task.owner_id)
+    job.params = b64encode(script)
+    job.distr = distr
+    job.container = container
+    job.creation_time = datetime.utcnow()
+    job.modification_time = datetime.utcnow()
+    job.ninputfiles = 0
+    job.noutputfiles = 0
+    job.corecount = 1
+    job.tags = task.tag
+    jobs_.save(job)
+
+    # Async sendjob
+    async_send_job.delay(jobid=job.id, siteid=site.id)
 
     return True

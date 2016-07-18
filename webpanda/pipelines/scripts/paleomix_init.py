@@ -74,57 +74,57 @@ def payload(task):
     if len(files_template_list) > 0:
         raise WebpandaError("Input files not found in input container")
 
-    #### Send PanDA jobs
-    task.tag = "task." + commands.getoutput('uuidgen')
-    tasks_.save(task)
-
-    # Get default ComputingElement
-    site = sites_.first(ce=current_app.config['DEFAULT_CE'])
-    if site is None:
-        raise WebpandaError("ComputingElement not found")
-
-    # Get distributive
-    distr = distrs_.get(1)
-
-    for i in xrange(2):
-        # Get container
-        container = Container()
-        container.guid = task.tag + "." + str(i)
-        conts_.save(container)
-
-        # Add input files to container
-        for item in input_cont.files:
-            f = item.file
-
-            for file_template in files_template_list:
-                # TODO: Change file template here
-                m = re.match(file_template, f.lfn)
-                if m is not None:
-                    c = Catalog()
-                    c.cont = container
-                    c.file = f
-                    c.type = 'input'
-                    catalog_.save(c)
-
-        script = "echo 123"
-
-        # Define jobs
-        job = Job()
-        job.pandaid = None
-        job.status = 'pending'
-        job.owner = users_.get(task.owner_id)
-        job.params = b64encode(script)
-        job.distr = distr
-        job.container = container
-        job.creation_time = datetime.utcnow()
-        job.modification_time = datetime.utcnow()
-        job.ninputfiles = 0
-        job.noutputfiles = 0
-        job.corecount = 1
-        job.tags = task.tag
-        jobs_.save(job)
-
-        # Async sendjob
-        async_send_job.delay(jobid=job.id, siteid=site.id)
+    # #### Send PanDA jobs
+    # task.tag = "task." + commands.getoutput('uuidgen')
+    # tasks_.save(task)
+    #
+    # # Get default ComputingElement
+    # site = sites_.first(ce=current_app.config['DEFAULT_CE'])
+    # if site is None:
+    #     raise WebpandaError("ComputingElement not found")
+    #
+    # # Get distributive
+    # distr = distrs_.get(1)
+    #
+    # for i in xrange(2):
+    #     # Get container
+    #     container = Container()
+    #     container.guid = task.tag + "." + str(i)
+    #     conts_.save(container)
+    #
+    #     # Add input files to container
+    #     for item in input_cont.files:
+    #         f = item.file
+    #
+    #         for file_template in files_template_list:
+    #             # TODO: Change file template here
+    #             m = re.match(file_template, f.lfn)
+    #             if m is not None:
+    #                 c = Catalog()
+    #                 c.cont = container
+    #                 c.file = f
+    #                 c.type = 'input'
+    #                 catalog_.save(c)
+    #
+    #     script = "echo 123"
+    #
+    #     # Define jobs
+    #     job = Job()
+    #     job.pandaid = None
+    #     job.status = 'pending'
+    #     job.owner = users_.get(task.owner_id)
+    #     job.params = b64encode(script)
+    #     job.distr = distr
+    #     job.container = container
+    #     job.creation_time = datetime.utcnow()
+    #     job.modification_time = datetime.utcnow()
+    #     job.ninputfiles = 0
+    #     job.noutputfiles = 0
+    #     job.corecount = 1
+    #     job.tags = task.tag
+    #     jobs_.save(job)
+    #
+    #     # Async sendjob
+    #     async_send_job.delay(jobid=job.id, siteid=site.id)
 
     return True
