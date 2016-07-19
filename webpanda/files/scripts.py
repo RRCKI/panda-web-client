@@ -210,6 +210,11 @@ def linkFile(fileid, se, dir):
 
 
 def getScope(username):
+    """
+    Get default user's scope
+    :param username:
+    :return: str
+    """
     return 'web.' + username
 
 
@@ -230,7 +235,6 @@ def getUrlInfo(url):
     se = parts[0]
     if len(parts) > 3:
         raise Exception('Incorrect url')
-        return
 
     if '?' in parts[1]:
         path = parts[1].split('?')[0]

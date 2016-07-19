@@ -9,8 +9,7 @@
 
 {% block jumbotron %}
 <h2>New File</h2>
-<form method="post" id="file-form" action="{{ url_for('file') }}" enctype="multipart/form-data">
-    {{form.hidden_tag()}}
+<form method="post" id="file-form" action="{{ url_for('files.index') }}" enctype="multipart/form-data">
     <div class='form-group' title="SE">
             <label for='se'>Select SE: </label>
             {{ form.se() }}

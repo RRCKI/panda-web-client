@@ -7,6 +7,7 @@
 from webpanda.forms import RedirectForm
 from wtforms import IntegerField, StringField, BooleanField, SubmitField, HiddenField, TextAreaField, SelectField
 from wtforms import validators
+from wtforms.validators import Length, Required
 
 
 class NewJobForm(RedirectForm):
@@ -28,3 +29,9 @@ class JobResendForm(RedirectForm):
 
 class JobKillForm(RedirectForm):
     id_ = IntegerField('id_', default=1)
+
+
+class NewDistrForm(RedirectForm):
+    name = StringField('Name', validators=[Required(), Length(1, 64)])
+    version = StringField('Version', validators=[Required(), Length(1, 64)])
+    release = IntegerField('Release')

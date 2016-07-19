@@ -4,7 +4,7 @@ $(document).ready(function() {
     $('#filestable').dataTable( {
         "order": [[ 0, "desc" ]],
         "processing": true,
-        "ajax": "/file/list",
+        "ajax": "/files/list",
         "columns": [
             { "data": "id"},
             { "data": "scope" },
@@ -20,7 +20,7 @@ $(document).ready(function() {
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {
-                        return '<td><a href="/file/'+data+'" class="monlink">'+data+'</a></td>';
+                        return '<td><a href="/files/'+data+'" class="monlink">'+data+'</a></td>';
                     }
                     return '<td></td>';
                 }

@@ -4,13 +4,16 @@
     ~~~~~~~~~~~~~~~~~
     services module
 """
-from webpanda.auth import UserService
-from webpanda.files import FileService, ContService, ReplicaService, CatalogService
+from webpanda.auth import UserService, GrantService, ClientService, TokenService
+from webpanda.files import FileService, ContService, ReplicaService, CatalogService, TransferTaskService, TaskMetaService, TaskSetMetaService
 from webpanda.tasks import TaskService, PipelineService, PipelineTypeService, TaskTypeService
 from webpanda.jobs import JobService, SiteService, DistrService
 
 # Auth
 users_ = UserService()
+clients_ = ClientService()
+grants_ = GrantService()
+tokens_ = TokenService()
 
 # Tasks
 tasks_ = TaskService()
@@ -30,3 +33,6 @@ replicas_ = ReplicaService()
 catalog_ = CatalogService()
 
 # Async
+transfers_ = TransferTaskService()
+transfers_meta_ = TaskMetaService()
+transfers_set_meta_ = TaskSetMetaService()

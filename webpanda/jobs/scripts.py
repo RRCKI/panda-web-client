@@ -3,9 +3,11 @@ import time
 from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
 import userinterface.Client as Client
+from flask import current_app
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Catalog, Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID
 from webpanda.services import sites_, jobs_, replicas_, files_, catalog_
@@ -155,3 +157,36 @@ def send_job(jobid, siteid):
     jobs_.save(job)
 
     return 0
+
+
+
+def extractLog(id):
+    """
+    Finds local log archive and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = jobs_.get(id)
+    files = job.container.files
+    for f in files:
+        if f.type == 'log':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == current_app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.log.tgz'):
+                    ddm_localextractfile(r.lfn)
+
+
+def extractOutputs(id):
+    """
+    Finds local output archives and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = jobs_.get(id)
+    files = job.container.files
+    for f in files:
+        if f.type == 'output':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == current_app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.tgz'):
+                    ddm_localextractfile(r.lfn)

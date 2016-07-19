@@ -1,4 +1,5 @@
 from flask_login import LoginManager
+from flask_oauthlib.provider import OAuth2Provider
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -10,6 +11,8 @@ db = SQLAlchemy()
 
 #: Login Manager instance
 lm = LoginManager()
+
+oauth = OAuth2Provider()
 
 
 class Service(object):

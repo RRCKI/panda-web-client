@@ -9,8 +9,7 @@
 
 {% block jumbotron %}
 <h2>New Container</h2>
-<form method="post" id="file-form" action="{{ url_for('container') }}" enctype="multipart/form-data">
-    {{form.hidden_tag()}}
+<form method="post" id="file-form" action="{{ url_for('conts.container') }}" enctype="multipart/form-data">
     <div class='form-group' title="ftpdir">
             <label for="ftpdir">FTP DIR:</label>
             {{ form.ftpdir() }}

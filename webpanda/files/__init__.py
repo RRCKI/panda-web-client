@@ -5,7 +5,7 @@
     webpanda files package
 """
 from webpanda.core import Service
-from webpanda.files.models import File, Container, Replica, Catalog
+from webpanda.files.models import File, Container, Replica, Catalog, TransferTask, TaskMeta, TaskSetMeta
 
 
 class FileService(Service):
@@ -22,3 +22,15 @@ class ReplicaService(Service):
 
 class CatalogService(Service):
     __model__ = Catalog
+
+
+class TransferTaskService(Service):
+    __model__ = TransferTask
+
+
+class TaskMetaService(Service):
+    __model__ = TaskMeta
+
+
+class TaskSetMetaService(Service):
+    __model__ = TaskSetMeta

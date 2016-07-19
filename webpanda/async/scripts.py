@@ -3,10 +3,12 @@ import json
 
 from webpanda.async import celery
 from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.core import WebpandaError
 from webpanda.db.models import Container
 from webpanda.db.models import DB
 from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer
 from webpanda.jobs.scripts import killJobs, send_job
+from webpanda.services import conts_
 
 
 _logger = NrckiLogger().getLogger("async")
@@ -59,15 +61,14 @@ def async_uploadContainer(ftp_dir, scope, cont_guid):
 
 def prepareInputFiles(cont_id, se):
     _logger.debug('prepareInputFiles')
-    # Initialize db
-    s = DB().getSession()
-    container = s.query(Container).filter(Container.id == cont_id).one()
-    files = container.files
+    container = conts_.get(cont_id)
+    cc = container.files
     tasks = []
-    for f in files:
+    for c in cc:
+        f = c.file
         replicas_len = f.replicas.count()
         if not replicas_len:
-            raise Exception("No available replicas for file %s" % f.guid)
+            raise WebpandaError("No available replicas for file %s" % f.guid)
         replicas = f.replicas
         hasReplica = False
         _logger.debug('prepareInputFiles: file.lfn={}'.format(f.lfn))
@@ -77,5 +78,4 @@ def prepareInputFiles(cont_id, se):
         _logger.debug('prepareInputFiles: replica.se={} replica.status={} hasReplica={}'.format(replica.se, replica.status, hasReplica))
         if not hasReplica:
             tasks.append(async_cloneReplica.s(replicas[0].id, se))
-    s.close()
     return tasks

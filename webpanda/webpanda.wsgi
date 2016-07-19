@@ -5,7 +5,7 @@ from werkzeug.wsgi import DispatcherMiddleware
 
 #from webpanda.app import app as oldapp
 #from webpanda import app as newapp
-from webpanda import api, dashboard
+from webpanda import api, dashboard, pilot
 
 site.addsitedir('/srv/test/panda-web-client/venv/lib/python2.7/site-packages')
 basedir = '/srv/test/panda-web-client'
@@ -22,7 +22,8 @@ os.environ['PANRA_URL_SSL'] = 'https://vcloud29.grid.kiae.ru:25443/server/panda'
 #})
 
 application = DispatcherMiddleware(dashboard.create_app(), {
-    '/api': api.create_app()
+    '/api': api.create_app(),
+    '/pilot': pilot.create_app()
 })
 
 if __name__ == "__main__":

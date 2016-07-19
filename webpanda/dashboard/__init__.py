@@ -4,18 +4,18 @@
     ~~~~~~~~~~~~~
     webpanda dashboard application package
 """
+from datetime import datetime
 
 from functools import wraps
+
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import login_required, current_user
+from flask import jsonify, g
 
-from flask import jsonify
-from webpanda.async.models import TaskSetMeta, TaskMeta
 from webpanda.auth.models import ROLE_ADMIN, User
-
 from webpanda.core import WebpandaError, WebpandaFormError, db
-from webpanda.files.models import Replica, File, Container
+from webpanda.files.models import Replica, File, Container, TaskSetMeta, TaskMeta
 from webpanda.helpers import JSONEncoder
 from webpanda import factory
 from webpanda.jobs import Job
@@ -55,6 +55,13 @@ def create_app(settings_override=None, register_security_blueprint=False):
     adm.add_view(MyModelView(TaskSetMeta, db.session))
     adm.add_view(MyModelView(Pipeline, db.session))
     adm.add_view(MyModelView(Task, db.session))
+
+    @app.before_request
+    def before_request():
+        g.user = current_user
+        g.user.last_seen = datetime.utcnow()
+        g.user.save()
+
 
     return app
 

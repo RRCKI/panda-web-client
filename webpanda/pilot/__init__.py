@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-    webpanda.api
+    webpanda.pilot
     ~~~~~~~~~~~~~
-    webpanda api application package
+    webpanda pilot application package
 """
 
 from functools import wraps
 
-from flask import jsonify
+from flask import jsonify, Response
+from flask_login import login_required
 
-from webpanda.core import WebpandaError, WebpandaFormError, oauth
+from webpanda.core import WebpandaError, WebpandaFormError
 from webpanda.helpers import JSONEncoder
 from webpanda import factory
 
 
 def create_app(settings_override=None, register_security_blueprint=False):
-    """Returns the Webpanda API application instance"""
+    """Returns the Webpanda PILOT application instance"""
 
     app = factory.create_app(__name__, __path__, settings_override,
                              register_security_blueprint=register_security_blueprint)
 
-    oauth.init_app(app)
-    app.debug = True
-
     # Set the default JSON encoder
     app.json_encoder = JSONEncoder
+
+    app.debug = True
 
     # Register custom error handlers
     app.errorhandler(WebpandaError)(on_webpanda_error)
@@ -46,6 +46,8 @@ def route(bp, *args, **kwargs):
             if isinstance(rv, tuple):
                 sc = rv[1]
                 rv = rv[0]
+            if isinstance(rv, Response):
+                return rv, sc
             return jsonify(dict(data=rv)), sc
         return f
 
@@ -57,7 +59,7 @@ def route_s(bp, *args, **kwargs):
 
     def decorator(f):
         @bp.route(*args, **kwargs)
-        @oauth.require_oauth('api')
+        @login_required
         @wraps(f)
         def wrapper(*args, **kwargs):
             sc = 200
@@ -65,6 +67,8 @@ def route_s(bp, *args, **kwargs):
             if isinstance(rv, tuple):
                 sc = rv[1]
                 rv = rv[0]
+            if isinstance(rv, Response):
+                return rv, sc
             return jsonify(dict(data=rv)), sc
         return f
 

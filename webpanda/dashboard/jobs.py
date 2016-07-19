@@ -5,7 +5,7 @@ from celery import chord
 from flask import Blueprint, jsonify, request, render_template, url_for, make_response, g, current_app, session
 from werkzeug.utils import redirect
 
-from webpanda.app.scripts import extractLog
+from webpanda.jobs.scripts import extractLog
 from webpanda.async import prepareInputFiles, async_kill_job, async_send_job
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find

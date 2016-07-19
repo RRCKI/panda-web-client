@@ -105,7 +105,8 @@ def payload(task):
                 c.type = 'input'
                 catalog_.save(c)
 
-    script = "echo 123"
+    # Prepare trf script
+    script = task.task_type.trf_template
 
     # Define jobs
     job = Job()
@@ -117,8 +118,6 @@ def payload(task):
     job.container = container
     job.creation_time = datetime.utcnow()
     job.modification_time = datetime.utcnow()
-    job.ninputfiles = 0
-    job.noutputfiles = 0
     job.corecount = 1
     job.tags = task.tag
     jobs_.save(job)
