@@ -111,7 +111,7 @@ def index():
         replicas_.save(replica)
 
         resp = async_cloneReplica.delay(replica.id, se)
-        return redirect(url_for('file_info', guid=file.guid))
+        return redirect(url_for('files.file_info', guid=file.guid))
 
     form.se.choices = [("%s" % site.se, "%s" % site.se) for site in sites_.find(active=1)]
     return render_template("dashboard/files/file_new.html", form=form)

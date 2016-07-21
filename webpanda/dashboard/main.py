@@ -107,7 +107,7 @@ def upload():
     if is_ajax:
         return ajax_response(True, cguid)
     else:
-        return redirect(url_for("upload_success"))
+        return redirect(url_for("jobs.jobs"))
 
 
 def ajax_response(status, msg):

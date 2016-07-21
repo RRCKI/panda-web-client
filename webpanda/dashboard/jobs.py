@@ -224,7 +224,7 @@ def job():
         # Async sendjob
         res = chord(ftasks)(async_send_job.s(jobid=job.id, siteid=site.id))
 
-        return redirect(url_for('jobs'))
+        return redirect(url_for('jobs.jobs'))
 
     form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in distrs_.find().order_by('name').order_by('version')]
     return render_template("dashboard/jobs/new.html", form=form)
@@ -270,7 +270,7 @@ def job_resend():
         job = jobs_.get(id_)
         pandaid = job.pandaid
 
-        return redirect(url_for('jobs'))
+        return redirect(url_for('jobs.jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
 
 
@@ -288,6 +288,6 @@ def job_kill():
         if pandaid is not None:
             out = async_kill_job(pandaid)
             return make_response(jsonify({'data': out}), 200)
-        return redirect(url_for('jobs'))
+        return redirect(url_for('jobs.jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
 

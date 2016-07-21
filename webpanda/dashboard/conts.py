@@ -94,7 +94,7 @@ def container():
 
         resp = async_uploadContainer.delay(ftpdir, scope, container.guid)
         # resp = async_uploadContainer(ftpdir, scope, container.guid)
-        return redirect(url_for('cont_info', guid=container.guid))
+        return redirect(url_for('cont.cont_info', guid=container.guid))
 
     return render_template("dashboard/cont/cont_new.html", form=form)
 
