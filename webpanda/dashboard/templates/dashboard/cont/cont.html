@@ -38,5 +38,5 @@
 
 {% block js_import %}
 <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-<script src="/static/app/js/job.js"></script>
+<script src="{{ url_for('static', filename='app/js/job.js') }}"></script>
 {% endblock %}

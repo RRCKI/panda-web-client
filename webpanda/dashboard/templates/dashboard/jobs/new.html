@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block css_import %}
-<link href="static/app/css/upload_files.css" rel="stylesheet">
-<link href="static/app/css/jobs_new.css" rel="stylesheet">
-<link rel="stylesheet" href="static/app/css/bootstrap-tagsinput.css">
+<link href="{{ url_for('static', filename='app/css/upload_files.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='app/css/jobs_new.css') }}" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='app/css/bootstrap-tagsinput.css') }}">
 <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 {% endblock %}
 
@@ -179,8 +179,8 @@
 {% endblock %}
 
 {% block js_import %}
-<script type="text/javascript" src="static/app/js/uploadr.js"></script>
-<script type="text/javascript" src="static/app/js/bootstrap-tagsinput.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='app/js/uploadr.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='app/js/bootstrap-tagsinput.js') }}"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 {% endblock %}
 

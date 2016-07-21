@@ -11,6 +11,7 @@ from webpanda.tasks.forms import NewPipelineForm
 from werkzeug.utils import redirect
 from webpanda.fc.Client import Client as fc
 
+
 bp = Blueprint('pipelines', __name__, url_prefix="/pipelines")
 _logger = NrckiLogger().getLogger("dashboard.pipelines")
 
