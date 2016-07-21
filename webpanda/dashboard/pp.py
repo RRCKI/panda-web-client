@@ -9,7 +9,7 @@ from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files
 from webpanda.tasks import Pipeline, Task
 from webpanda.tasks.forms import NewPipelineForm
 from werkzeug.utils import redirect
-from webpanda.core import fc
+from webpanda.fc.Client import Client as fc
 
 bp = Blueprint('pipelines', __name__, url_prefix="/pipelines")
 _logger = NrckiLogger().getLogger("dashboard.pipelines")

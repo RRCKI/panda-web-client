@@ -8,13 +8,14 @@ from webpanda.api import route_s
 from webpanda.app.scripts import extractLog
 from webpanda.async import prepareInputFiles, async_send_job
 from webpanda.common.utils import find
-from webpanda.core import WebpandaError, fc
+from webpanda.core import WebpandaError
 from webpanda.ddm.scripts import ddm_getlocalabspath
 from webpanda.files import Container, File
 from webpanda.files.scripts import getScope, getGUID, register_ftp_files
 from webpanda.jobs import Job
 from webpanda.services import jobs_, distrs_, conts_, sites_, files_
 from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.fc.Client import Client as fc
 
 
 bp = Blueprint('main', __name__)

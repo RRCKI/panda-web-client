@@ -10,7 +10,7 @@ from webpanda.async.scripts import async_cloneReplica
 from webpanda.dashboard import route_s
 from webpanda.files.scripts import getScope, getUrlInfo, getGUID
 from webpanda.services import conts_, files_, replicas_, sites_
-from webpanda.core import fc
+from webpanda.fc.Client import Client as fc
 
 
 bp = Blueprint('files', __name__, url_prefix="/files")

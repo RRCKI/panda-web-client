@@ -11,7 +11,7 @@ from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID
 from webpanda.services import sites_, jobs_, replicas_, files_
-from webpanda.core import fc
+from webpanda.fc.Client import Client as fc
 
 _logger = NrckiLogger().getLogger("files.scripts")
 

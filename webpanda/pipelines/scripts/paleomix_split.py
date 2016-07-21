@@ -5,11 +5,12 @@ import commands
 from datetime import datetime
 from flask import current_app
 
-from webpanda.core import WebpandaError, fc
+from webpanda.core import WebpandaError
 from webpanda.files import Container
 from webpanda.jobs import Job
 from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, users_
 from webpanda.async import async_send_job
+from webpanda.fc.Client import Client as fc
 
 
 def run(task_id):

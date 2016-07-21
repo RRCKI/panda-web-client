@@ -1,4 +1,3 @@
-from webpanda.core import WebpandaError
 from webpanda.files import File, Catalog
 from webpanda.services import catalog_
 
@@ -17,13 +16,13 @@ class Client:
         :return: True/False
         """
         if not isinstance(f, File):
-            raise WebpandaError("Illegal file class")
+            raise Exception("Illegal file class")
         if not isinstance(c, Catalog):
-            raise WebpandaError("Illegal catalog class")
+            raise Exception("Illegal catalog class")
         if not isinstance(t, str):
-            raise WebpandaError("Illegal type class")
+            raise Exception("Illegal type class")
         if t not in ['input', 'output', 'log', 'intermediate']:
-            raise WebpandaError("Illegal type value: " + t)
+            raise Exception("Illegal type value: " + t)
 
         catalog_item = Catalog()
         catalog_item.file = f

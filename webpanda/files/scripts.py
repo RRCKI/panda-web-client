@@ -10,7 +10,7 @@ from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexis
     ddm_getlocalfilemeta, ddm_localisdir
 from webpanda.files import File, Replica
 from webpanda.services import files_, conts_, sites_, replicas_
-from webpanda.core import fc
+from webpanda.fc.Client import Client as fc
 
 DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
