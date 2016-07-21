@@ -22,9 +22,80 @@ bp = Blueprint('jobs', __name__, url_prefix="/jobs")
 _logger = NrckiLogger().getLogger("dashboard.jobs")
 
 
+@route_s(bp, "/", methods=['GET'])
+def jobs():
+    """
+    List of user's jobs view
+    :return: Response obj
+    """
+    hours_limit = request.args.get('hours', current_app.config['HOURS_LIMIT'], type=int)
+    display_limit = request.args.get('display_limit', current_app.config['DISPLAY_LIMIT'], type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("dashboard/jobs/list.html")
+
+
+@route_s(bp, "/list", methods=['GET'])
+def jobs_list():
+    """
+    Get list of jobs method for ajax
+    :return: List of Job obj
+    """
+    user = g.user
+
+    hours_limit = session.get('hours_limit', current_app.config['HOURS_LIMIT'])
+    display_limit = session.get('display_limit', current_app.config['DISPLAY_LIMIT'])
+    status = request.args.get('status', "")
+    tags = request.args.get('tag', "")
+
+    # show users jobs
+    jobs = jobs_.find(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id.desc()).limit(display_limit)
+
+    # prepare json
+    jobs_o = []
+    for job in jobs:
+        job_o = {}
+        job_o['id'] = job.id
+        job_o['owner'] = {'id': job.owner.id,
+                            'username': job.owner.username}
+        job_o['pandaid'] = job.pandaid
+        job_o['distr'] = {'id': job.distr.id,
+                          'name': job.distr.name,
+                          'version': job.distr.version,
+                          'str': str(job.distr)}
+        job_o['creation_time'] = str(job.creation_time)
+        job_o['modification_time'] = str(job.modification_time)
+        job_o['status'] = job.status
+        job_o['ifiles'] = '[%s] ready' % job.ninputfiles
+        job_o['ofiles'] = '[%s]' % job.noutputfiles
+        job_o['attemptnr'] = job.attemptnr
+        jobs_o.append(job_o)
+    data = {}
+    data['data'] = jobs_o
+
+    return make_response(jsonify(data), 200)
+
+
+@route_s(bp, "/<id>", methods=['GET'])
+def job_info(id):
+    """
+    Job info view
+    :param guid: guid of job
+    :return: Response obj
+    """
+    job = jobs_.get(id)
+    container = job.container
+    resend_form = JobResendForm()
+    kill_form = JobKillForm()
+    return render_template("dashboard/jobs/job.html", job=job, files=container.files, ftp=current_app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
+
+
 @route_s(bp, "/new", methods=['GET', 'POST'])
 def job():
-    """Handle the definition of a job."""
+    """
+    New job form view
+    :return: Response obj
+    """
     form = NewJobForm(request.form)
     if request.method == 'POST':
         site = sites_.first(ce=current_app.config['DEFAULT_CE'])
@@ -159,18 +230,13 @@ def job():
     return render_template("dashboard/jobs/new.html", form=form)
 
 
-@route_s(bp, "/<id>", methods=['GET'])
-def job_info(id):
-    job = jobs_.get(id)
-    container = job.container
-    resend_form = JobResendForm()
-    kill_form = JobKillForm()
-    return render_template("dashboard/jobs/job.html", job=job, files=container.files, ftp=current_app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
-
-
 @route_s(bp, '/<id>/logs', methods=['GET'])
 def jobLog(id):
-    """Returns job stdout & stderr"""
+    """
+    Returns job stdout & stderr
+    :param id: Job id
+    :return: json data
+    """
     job = jobs_.get(id=id)
     extractLog(id)
     locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
@@ -194,6 +260,10 @@ def jobLog(id):
 
 @route_s(bp, '/resend', methods=['POST'])
 def job_resend():
+    """
+    Initiate job resend
+    :return: Response obj
+    """
     form = JobResendForm()
     if request.method == 'POST':
         id_ = int(form.id_.data)
@@ -206,6 +276,10 @@ def job_resend():
 
 @route_s(bp, '/kill', methods=['POST'])
 def job_kill():
+    """
+    Initiate job kill
+    :return: Response obj
+    """
     form = JobKillForm()
     if request.method == 'POST':
         id_ = int(form.id_.data)
@@ -217,48 +291,3 @@ def job_kill():
         return redirect(url_for('jobs'))
     return make_response(jsonify({'status': 'Page not found'}), 404)
 
-
-@route_s(bp, "/", methods=['GET'])
-def jobs():
-    hours_limit = request.args.get('hours', current_app.config['HOURS_LIMIT'], type=int)
-    display_limit = request.args.get('display_limit', current_app.config['DISPLAY_LIMIT'], type=int)
-    session['hours_limit'] = hours_limit
-    session['display_limit'] = display_limit
-    return render_template("dashboard/jobs/list.html")
-
-
-@route_s(bp, "/list", methods=['GET'])
-def jobs_list():
-    user = g.user
-
-    hours_limit = session.get('hours_limit', current_app.config['HOURS_LIMIT'])
-    display_limit = session.get('display_limit', current_app.config['DISPLAY_LIMIT'])
-    status = request.args.get('status', "")
-    tags = request.args.get('tag', "")
-
-    # show users jobs
-    jobs = jobs_.find(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id.desc()).limit(display_limit)
-
-    # prepare json
-    jobs_o = []
-    for job in jobs:
-        job_o = {}
-        job_o['id'] = job.id
-        job_o['owner'] = {'id': job.owner.id,
-                            'username': job.owner.username}
-        job_o['pandaid'] = job.pandaid
-        job_o['distr'] = {'id': job.distr.id,
-                          'name': job.distr.name,
-                          'version': job.distr.version,
-                          'str': str(job.distr)}
-        job_o['creation_time'] = str(job.creation_time)
-        job_o['modification_time'] = str(job.modification_time)
-        job_o['status'] = job.status
-        job_o['ifiles'] = '[%s] ready' % job.ninputfiles
-        job_o['ofiles'] = '[%s]' % job.noutputfiles
-        job_o['attemptnr'] = job.attemptnr
-        jobs_o.append(job_o)
-    data = {}
-    data['data'] = jobs_o
-
-    return make_response(jsonify(data), 200)

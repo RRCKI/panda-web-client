@@ -5,18 +5,19 @@ from datetime import datetime
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
-from webpanda.db.models import DB, Replica, Site, Container, File
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists, ddm_localrmtree, \
     ddm_getlocalfilemeta, ddm_localisdir
+from webpanda.files import File, Replica
+from webpanda.services import files_, conts_, sites_, replicas_
+from webpanda.core import fc
 
 DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
 
 
 def cloneReplica(replicaid, se):
-    s = DB().getSession()
-    replica = s.query(Replica).filter(Replica.id == replicaid).one()
+    replica = replicas_.get(replicaid)
     file = replica.original
     replicas = file.replicas
     for r in replicas:
@@ -26,7 +27,7 @@ def cloneReplica(replicaid, se):
             return r.id
 
     # Define base replica
-    from_se = s.query(Site).filter(Site.se == replica.se).first()
+    from_se = sites_.first(se=replica.se)
     fromParams = {}
     if replica.status == 'link':
         lfn = getLinkLFN(file.scope, replica.lfn)
@@ -34,7 +35,7 @@ def cloneReplica(replicaid, se):
         lfn = replica.lfn
 
     # Define result replica params
-    to_se = s.query(Site).filter(Site.se == se).first()
+    to_se = sites_.first(se=se)
     dest = '/'.join(lfn.split('/')[:-1])
     toParams = {'dest': dest}
 
@@ -50,18 +51,15 @@ def cloneReplica(replicaid, se):
         r.se = se
         r.status = 'ready'
         r.lfn = lfn
-        s.add(r)
-        s.commit()
+        replicas_.save(r)
         file.modification_time = datetime.utcnow()
         file.replicas.append(r)
-        s.add(file)
-        s.commit()
+        files_.save(file)
 
         for cont in file.containers:
             linkReplica(r.id, '/%s/%s' % (client_config.DEFAULT_SCOPE, cont.guid))
 
         return r.id
-    s.close()
     raise Exception('movedata return code: %s' % ec)
 
 
@@ -72,18 +70,15 @@ def copyReplica(replicaid, se, path):
 
 
 def linkReplica(replicaid, dir):
-    s = DB().getSession()
-    replica = s.query(Replica).filter(Replica.id == replicaid).one()
-    site = s.query(Site).filter(Site.se == replica.se).first()
+    replica = replicas_.get(replicaid)
+    site = sites_.first(se=replica.se)
     lfn = replica.lfn
     linkdata(site.plugin, {}, lfn, dir)
-    s.close()
     return 0
 
 
 def uploadContainer(ftp_dir, scope, cont_guid):
-    s = DB().getSession()
-    container = s.query(Container).filter(Container.guid == cont_guid).one()
+    container = conts_.first(guid=cont_guid)
     old_status = container.status
 
     if old_status != 'open':
@@ -91,17 +86,14 @@ def uploadContainer(ftp_dir, scope, cont_guid):
 
     # Set uploading container status
     container.status = 'uploading'
-    s.add(container)
-    s.commit()
+    conts_.save(container)
 
     # Register ftp filesr
     register_ftp_files(ftp_dir, scope, container.guid)
 
     # Set open container status
     container.status = old_status
-    s.add(container)
-    s.commit()
-    s.close()
+    conts_.save(container)
     return 0
 
 
@@ -113,10 +105,9 @@ def registerLocalFile(arg, dirname, names, scope):
     :param scope: Scope to upload files in
     :return:
     """
-    s = DB().getSession()
-    site = s.query(Site).filter(Site.se == client_config.DEFAULT_SE).first()
+    site = sites_.first(se=client_config.DEFAULT_SE)
     _logger.debug(str(arg))
-    cont = s.query(Container).filter(Container.guid == arg).first()
+    cont = conts_.first(guid=arg)
     files = cont.files
 
     for name in names:
@@ -138,7 +129,7 @@ def registerLocalFile(arg, dirname, names, scope):
 
             if file_id:
                 # If file exists
-                fobj = s.query(File).filter(File.id == file_id).one()
+                fobj = files_.get(file_id)
 
         if not fobj:
             fobj = File()
@@ -147,13 +138,11 @@ def registerLocalFile(arg, dirname, names, scope):
             fobj.guid = getGUID(fobj.scope, fobj.lfn)
             fobj.type = 'input'
             fobj.status = 'defined'
-            s.add(fobj)
-            s.commit()
+            files_.save(fobj)
             setFileMeta(fobj.id, fpath)
 
-        cont.files.append(fobj)
-        s.add(cont)
-        s.commit()
+        # Register file in catalog
+        fc.reg_file_in_cont(fobj, cont, "input")
 
         replicas = fobj.replicas
         replica = None
@@ -171,9 +160,7 @@ def registerLocalFile(arg, dirname, names, scope):
             replica.token = ''
             replica.lfn = os.path.join(ldir, fobj.lfn)
             replica.original = fobj
-            s.add(replica)
-            s.commit()
-    s.close()
+            replicas_.save(replica)
 
 
 def register_ftp_files(ftp_dir, scope, guid):
@@ -197,16 +184,13 @@ def register_ftp_files(ftp_dir, scope, guid):
 
 
 def linkFile(fileid, se, dir):
-    s = DB().getSession()
-    file = s.query(File).filter(File.id == fileid).one()
-    replicas = file.replicas
+    f = files_.get(fileid)
+    replicas = f.replicas
     for replica in replicas:
         if replica.se == se:
             linkReplica(replica.id, dir)
             return
-    raise Exception('No replica to link file:%s on SE:%s' % (file.guid, se))
-    s.close()
-    return
+    raise Exception('No replica to link file:%s on SE:%s' % (f.guid, se))
 
 
 def getScope(username):
@@ -258,18 +242,15 @@ def getFtpLink(lfn):
 
 
 def setFileMeta(fileid, lfn):
-    s = DB().getSession()
-    file = s.query(File).filter(File.id == fileid).one()
-    if file.fsize == None:
-        file.fsize = fsize(lfn)
-    if file.md5sum == None:
-        file.md5sum = md5sum(lfn)
-    if file.checksum == None:
-        file.checksum = adler32(lfn)
-    file.modification_time = datetime.utcnow()
-    s.add(file)
-    s.commit()
-    s.close()
+    f = files_.get(fileid)
+    if f.fsize == None:
+        f.fsize = fsize(lfn)
+    if f.md5sum == None:
+        f.md5sum = md5sum(lfn)
+    if f.checksum == None:
+        f.checksum = adler32(lfn)
+    f.modification_time = datetime.utcnow()
+    files_.save(f)
 
 
 def getLinkLFN(scope, url):

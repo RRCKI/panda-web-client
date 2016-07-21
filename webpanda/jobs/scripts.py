@@ -8,9 +8,10 @@ from flask import current_app
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ddm.scripts import ddm_localextractfile
-from webpanda.files import Catalog, Replica, File
+from webpanda.files import Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID
-from webpanda.services import sites_, jobs_, replicas_, files_, catalog_
+from webpanda.services import sites_, jobs_, replicas_, files_
+from webpanda.core import fc
 
 _logger = NrckiLogger().getLogger("files.scripts")
 
@@ -75,9 +76,9 @@ def send_job(jobid, siteid):
 
     rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
 
-    for fc in files_catalog:
-        if fc.type == 'input':
-            f = fc.file
+    for fcc in files_catalog:
+        if fcc.type == 'input':
+            f = fcc.file
             guid = f.guid
             fileIT = FileSpec()
             fileIT.lfn = f.lfn
@@ -89,8 +90,8 @@ def send_job(jobid, siteid):
             fileIT.GUID = guid
             pandajob.addFile(fileIT)
             #linkFile(file.id, site.se, rlinkdir)
-        if fc.type == 'output':
-            f = fc.file
+        if fcc.type == 'output':
+            f = fcc.file
             fileOT = FileSpec()
             fileOT.lfn = f.lfn
             fileOT.destinationDBlock = pandajob.prodDBlock
@@ -128,11 +129,8 @@ def send_job(jobid, siteid):
     log.status = 'defined'
     files_.save(log)
 
-    c = Catalog()
-    c.cont = cont
-    c.file = log
-    c.type = 'log'
-    catalog_.save(c)
+    # Register file in container
+    fc.reg_file_in_cont(log, cont, 'log')
 
     replica = Replica()
     replica.se = pandajob.destinationSE

@@ -5,10 +5,10 @@ import commands
 from datetime import datetime
 from flask import current_app
 
-from webpanda.core import WebpandaError
-from webpanda.files import Container, Catalog
+from webpanda.core import WebpandaError, fc
+from webpanda.files import Container
 from webpanda.jobs import Job
-from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, catalog_, users_
+from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, users_
 from webpanda.async import async_send_job
 
 
@@ -99,11 +99,8 @@ def payload(task):
             # TODO: Change file template here
             m = re.match(file_template, f.lfn)
             if m is not None:
-                c = Catalog()
-                c.cont = container
-                c.file = f
-                c.type = 'input'
-                catalog_.save(c)
+                # Register file in container
+                fc.reg_file_in_cont(f, container, 'input')
 
     # Prepare trf script
     script = task.task_type.trf_template

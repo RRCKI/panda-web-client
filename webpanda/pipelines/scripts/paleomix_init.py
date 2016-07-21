@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-from base64 import b64encode
 import re
-import commands
 from datetime import datetime
-from flask import current_app
 
 from webpanda.core import WebpandaError
-from webpanda.files import Container, Catalog
-from webpanda.jobs import Job
-from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, catalog_, users_
-from webpanda.async import async_send_job
+from webpanda.services import tasks_, conts_
 
 
 def run(task_id):

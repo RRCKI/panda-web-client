@@ -2,18 +2,18 @@
 import commands
 from datetime import datetime
 from celery import chord
-from flask import render_template, jsonify, Blueprint, request, g, current_app
+from flask import Blueprint, request, g, current_app
 
 from webpanda.api import route_s
 from webpanda.app.scripts import extractLog
 from webpanda.async import prepareInputFiles, async_send_job
 from webpanda.common.utils import find
-from webpanda.core import WebpandaError
+from webpanda.core import WebpandaError, fc
 from webpanda.ddm.scripts import ddm_getlocalabspath
-from webpanda.files import Container, File, Catalog
+from webpanda.files import Container, File
 from webpanda.files.scripts import getScope, getGUID, register_ftp_files
 from webpanda.jobs import Job
-from webpanda.services import jobs_, distrs_, conts_, sites_, files_, catalog_
+from webpanda.services import jobs_, distrs_, conts_, sites_, files_
 from webpanda.common.NrckiLogger import NrckiLogger
 
 
@@ -94,12 +94,8 @@ def new_job():
             if f != '':
                 file_ = files_.first(guid=f)
                 if file_ is not None:
-                    # Add file to container
-                    c = Catalog()
-                    c.cont = container
-                    c.file = file_
-                    c.type = 'input'
-                    catalog_.save(c)
+                    # Register file in catalog
+                    fc.reg_file_in_cont(file_, container, 'input')
                 else:
                     raise WebpandaError('File with guid %s not found' % f)
 
@@ -117,11 +113,8 @@ def new_job():
         file.status = 'defined'
         files_.save(file)
 
-        c = Catalog()
-        c.cont = container
-        c.file = file
-        c.type = "output"
-        catalog_.save(c)
+        # Register file in catalog
+        fc.reg_file_in_cont(file, container, 'output')
 
     # Counts files
     allfiles = container.files

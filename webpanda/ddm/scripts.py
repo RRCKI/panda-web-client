@@ -6,15 +6,17 @@ from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, fsize
 from webpanda.common.utils import md5sum
-from webpanda.db.models import DB, File, Replica
+from webpanda.services import files_, replicas_
 
 _logger = NrckiLogger().getLogger("DDM")
+
 
 def ddm_getlocalabspath(path):
     localdir = client_config.DATA_PATH
     if path.startswith('/'):
         return localdir + path
     return os.path.join(localdir, path)
+
 
 def ddm_getlocalfilemeta(path):
     """
@@ -29,6 +31,7 @@ def ddm_getlocalfilemeta(path):
     data['fsize'] = fsize(abspath)
     return data
 
+
 def ddm_localisdir(ldir):
     """
     os.path.isdir for ddm dir
@@ -37,6 +40,7 @@ def ddm_localisdir(ldir):
     """
     absdir = ddm_getlocalabspath(ldir)
     return os.path.isdir(absdir)
+
 
 def ddm_localmakedirs(ldir):
     """
@@ -47,6 +51,7 @@ def ddm_localmakedirs(ldir):
     absdir = ddm_getlocalabspath(ldir)
     return os.makedirs(absdir)
 
+
 def ddm_localrmtree(ldir):
     """
     shutil.rmtree for ddm dir
@@ -56,35 +61,31 @@ def ddm_localrmtree(ldir):
     absdir = ddm_getlocalabspath(ldir)
     return shutil.rmtree(absdir)
 
+
 def ddm_checkifexists(name, size, adler, md5):
     """
     Checks if file with size and sums exixts in catalog
     :return:
     """
-    s = DB().getSession()
-    n = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).count()
+    n = files_.find(checksum=adler, md5sum=md5, fsize=size).count()
     if n == 0:
-        s.close()
         return 0
-    file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).first()
-    #file = s.query(File).filter(File.checksum == adler).filter(File.md5sum == md5).filter(File.fsize == size).one()
-    s.close()
-    return file.id
+    f = files_.first(checksum=adler, md5sum=md5, fsize=size)
+    return f.id
+
 
 def ddm_checkexternalifexists(storage, lfn):
     """
     Checks if external file exixts in catalog
     :return:
     """
-    s = DB().getSession()
-    n = s.query(Replica).filter(Replica.status == 'link').filter(Replica.lfn == lfn).count()
+    n = replicas_.find(status='link', lfn=lfn).count()
     if n == 0:
-        s.close()
         return 0
-    replica = s.query(Replica).filter(Replica.status == 'link').filter(Replica.lfn == lfn).first()
+    replica = replicas_.first(status='link', lfn=lfn)
     file = replica.original
-    s.close()
     return file.id
+
 
 def ddm_localcp(src, dest):
     """
@@ -96,6 +97,7 @@ def ddm_localcp(src, dest):
     asrc = ddm_getlocalabspath(src)
     adest = ddm_getlocalabspath(dest)
     return shutil.copy2(asrc, adest)
+
 
 def ddm_localextractfile(f):
     """

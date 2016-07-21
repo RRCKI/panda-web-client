@@ -24,11 +24,11 @@
 <tbody>
 {% for f in files %}
     <tr>
-        <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
+        <th><a href="{{ url_for('files.file_info', guid=f.file.guid) }}">{{f.file.guid}}</a></th>
         <th>{{f.type}}</th>
-        <th>{{f.lfn}}</th>
+        <th>{{f.file.lfn}}</th>
         <th>
-            [<a href="/file/{{f.guid}}/download">http</a>]
+            [<a href="{{ url_for('files.file_download', guid=f.file.guid) }}">http</a>]
         </th>
     </tr>
 {% endfor %}

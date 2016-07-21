@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from webpanda.files import Catalog
 from webpanda.pipelines.scripts import paleomix_init, paleomix_split
-from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_, catalog_
+from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_
 from webpanda.tasks import Task
+from webpanda.core import fc
 
 
 def run():
@@ -77,11 +77,8 @@ def check_running_tasks():
                     files_catalog = job.container.files
                     for f in files_catalog:
                         if f.type == 'output':
-                            c = Catalog()
-                            c.file = f.file
-                            c.cont = cont
-                            c.type = 'intermediate'
-                            catalog_.save(c)
+                            # Register file in container
+                            fc.reg_file_in_cont(f.file, cont, 'intermediate')
 
                 # Change task status
                 task.status = 'finished'

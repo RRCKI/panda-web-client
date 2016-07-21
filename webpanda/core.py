@@ -2,6 +2,7 @@ from flask_login import LoginManager
 from flask_oauthlib.provider import OAuth2Provider
 from flask_sqlalchemy import SQLAlchemy
 
+from webpanda.fc.Client import Client as FC
 
 #: Flask-SQLAlchemy extension instance
 db = SQLAlchemy()
@@ -13,6 +14,8 @@ db = SQLAlchemy()
 lm = LoginManager()
 
 oauth = OAuth2Provider()
+
+fc = FC()
 
 
 class Service(object):

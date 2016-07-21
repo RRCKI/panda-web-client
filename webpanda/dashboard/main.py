@@ -18,14 +18,14 @@ _logger = NrckiLogger().getLogger("dashboard.main")
 @route_s(bp, '/')
 def index():
     user = g.user
-    return render_template("index.html",
+    return render_template("dashboard/main/index.html",
         title = 'Home',
         user = user)
 
 
 @route_s(bp, '/help')
 def help():
-    return render_template("pandaweb/help.html")
+    return render_template("dashboard/main/help.html")
 
 @route_s(bp, "/upload", methods=['POST'])
 def upload():

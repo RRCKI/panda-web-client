@@ -4,8 +4,6 @@ import json
 from webpanda.async import celery
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
-from webpanda.db.models import Container
-from webpanda.db.models import DB
 from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer
 from webpanda.jobs.scripts import killJobs, send_job
 from webpanda.services import conts_

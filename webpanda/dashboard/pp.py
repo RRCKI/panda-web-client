@@ -1,30 +1,27 @@
 # -*- coding: utf-8 -*-
 import commands
 from datetime import datetime
-from flask import Blueprint, jsonify, request, render_template, url_for, g, make_response
+from flask import Blueprint, jsonify, request, render_template, url_for, g, make_response, current_app, session
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.dashboard import route, route_s
+from webpanda.dashboard import route_s
 from webpanda.files import Container
-from webpanda.files.models import Catalog
-from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files_, catalog_
+from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files_
 from webpanda.tasks import Pipeline, Task
 from webpanda.tasks.forms import NewPipelineForm
 from werkzeug.utils import redirect
+from webpanda.core import fc
 
 bp = Blueprint('pipelines', __name__, url_prefix="/pipelines")
 _logger = NrckiLogger().getLogger("dashboard.pipelines")
 
 
-@route_s(bp, "/start", methods=['GET'])
-def start():
-    # Add your code here
-    return jsonify(status='success'), 200
-
-
 @route_s(bp, "/", methods=['GET'])
 def list_all():
-    # Add your code here
-    return jsonify(status='success'), 200
+    hours_limit = request.args.get('hours', current_app.config['HOURS_LIMIT'], type=int)
+    display_limit = request.args.get('display_limit', current_app.config['DISPLAY_LIMIT'], type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("dashboard/pp/list.html")
 
 
 @route_s(bp, "/new", methods=['GET', 'POST'])
@@ -53,12 +50,8 @@ def new_pipeline():
         for item in ifiles.split(';'):
             f = files_.first(guid=item)
             if f is not None:
-                    # Add file to container
-                    cc = Catalog()
-                    cc.file = f
-                    cc.cont = pp_cont
-                    cc.type = 'input'
-                    catalog_.save(cc)
+                    # Register file in catalog
+                    fc.reg_file_in_cont(f, pp_cont, 'input')
             else:
                 pp_cont.status = 'broken'
                 conts_.save(pp_cont)
