@@ -3,16 +3,16 @@ import site, os, sys
 from werkzeug.serving import run_simple
 from werkzeug.wsgi import DispatcherMiddleware
 
-from webpanda import app
-from webpanda import api
+from webpanda import api, dashboard, pilot
 
 site.addsitedir('YOUR_LIBS')
 basedir = 'YOUR_BASEDIR'
 os.environ['PANDA_URL'] = 'YOUR_PANDA_SERVER_URL'
 os.environ['PANDA_URL_SSL'] = "YOUR_PANDA_SERVER_URL_SSL"
 
-application = DispatcherMiddleware(app.create_app(), {
-    '/api': api.create_app()
+application = DispatcherMiddleware(dashboard.create_app(), {
+    '/api': api.create_app(),
+    '/pilot': pilot.create_app()
 })
 
 
