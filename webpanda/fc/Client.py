@@ -1,4 +1,4 @@
-from webpanda.files import File, Catalog
+from webpanda.files import File, Container, Catalog
 from webpanda.services import catalog_
 
 
@@ -17,7 +17,7 @@ class Client:
         """
         if not isinstance(f, File):
             raise Exception("Illegal file class")
-        if not isinstance(c, Catalog):
+        if not isinstance(c, Container):
             raise Exception("Illegal catalog class")
         if not isinstance(t, str):
             raise Exception("Illegal type class")
