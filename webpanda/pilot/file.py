@@ -9,6 +9,7 @@ from webpanda.files.scripts import getFtpLink, getScope, getGUID, setFileMeta
 from webpanda.pilot import route
 from webpanda.services import sites_, conts_, files_, replicas_
 from webpanda.async.scripts import async_cloneReplica, async_copyReplica
+from webpanda.fc.Client import Client as fc
 
 
 bp = Blueprint('file', __name__, url_prefix="/file")
@@ -140,8 +141,10 @@ def file_save(container_guid, lfn):
         file.lfn = lfn
         file.guid = getGUID(file.scope, file.lfn)
         file.status = 'defined'
-        file.containers.append(container)
         files_.save(file)
+
+        # Register file in container
+        fc.reg_file_in_cont(file, container, 'input')
 
     path = os.path.join(site.datadir, getScope(g.user.username), container.guid)
     replfn = '/' + os.path.join(getScope(g.user.username), container.guid, file.lfn)

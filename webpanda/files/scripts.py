@@ -57,7 +57,7 @@ def cloneReplica(replicaid, se):
         files_.save(file)
 
         for cont in file.containers:
-            linkReplica(r.id, '/%s/%s' % (client_config.DEFAULT_SCOPE, cont.guid))
+            linkReplica(r.id, '/%s/%s' % (client_config.DEFAULT_SCOPE, cont.cont.guid))
 
         return r.id
     raise Exception('movedata return code: %s' % ec)
