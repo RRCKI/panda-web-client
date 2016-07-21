@@ -17,6 +17,7 @@ from webpanda.jobs import Job
 from webpanda.jobs.forms import NewJobForm, JobResendForm, JobKillForm
 from webpanda.services import distrs_, jobs_, conts_, files_, replicas_
 from webpanda.services import sites_
+from webpanda.fc.Client import Client as fc
 
 bp = Blueprint('jobs', __name__, url_prefix="/jobs")
 _logger = NrckiLogger().getLogger("dashboard.jobs")
@@ -127,9 +128,8 @@ def job():
             if f != '':
                 file = files_.first(guid=f)
                 if file is not None:
-                        # Add file to container
-                        container.files.append(file)
-                        conts_.save(container)
+                    # Register files in container
+                    fc.reg_file_in_cont(file, container, 'input')
                 else:
                     return make_response(jsonify({'error': "GUID {} not found".format(f)}))
 
@@ -141,9 +141,9 @@ def job():
                 except(Exception):
                     _logger.error(Exception.message)
                     return make_response(jsonify({'error': 'Container in form not found'}), 404)
-                for form_cont_file in form_cont.files:
-                    container.files.append(form_cont_file)
-                    conts_.save(container)
+                for f in form_cont.files:
+                    # Register file in catalog
+                    fc.reg_file_in_cont(f.file, container, 'input')
 
         # Processes urls
         for f in ifiles:
@@ -176,9 +176,8 @@ def job():
                     replica.original = file
                     replicas_.save(replica)
 
-                # Add file to container
-                container.files.append(file)
-                conts_.save(container)
+                # Register file in container
+                fc.reg_file_in_cont(file, container, 'input')
 
         # Starts cloneReplica tasks
         ftasks = prepareInputFiles(container.id, site.se)
@@ -192,8 +191,9 @@ def job():
             file.lfn = lfn
             file.status = 'defined'
             files_.save(file)
-            container.files.append(file)
-            conts_.save(container)
+
+            # Register file in container
+            fc.reg_file_in_cont(file, container, 'output')
 
         # Counts files
         allfiles = container.files

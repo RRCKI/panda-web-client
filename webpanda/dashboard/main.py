@@ -11,6 +11,7 @@ from webpanda.files.scripts import getScope, setFileMeta
 from webpanda.files.scripts import getGUID
 from webpanda.services import sites_, conts_, files_, replicas_
 from werkzeug.utils import redirect
+from webpanda.fc.Client import Client as fc
 
 bp = Blueprint('main', __name__)
 _logger = NrckiLogger().getLogger("dashboard.main")
@@ -97,9 +98,8 @@ def upload():
                 replica.original = file
                 replicas_.save(replica)
 
-            # Add file to container
-            container.files.append(file)
-            conts_.save(container)
+            # Register file in container
+            fc.reg_file_in_cont(file, container, 'input')
 
         else:
             return ajax_response(False, "Couldn't save file: %s" % target)
