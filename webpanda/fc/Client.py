@@ -22,7 +22,7 @@ class Client:
             raise WebpandaError("Illegal catalog class")
         if not isinstance(t, str):
             raise WebpandaError("Illegal type class")
-        if t not in ['input', 'output', 'log']:
+        if t not in ['input', 'output', 'log', 'intermediate']:
             raise WebpandaError("Illegal type value: " + t)
 
         catalog_item = Catalog()
