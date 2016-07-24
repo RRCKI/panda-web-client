@@ -20,11 +20,11 @@
 <b>MODIFICATION TIME:</b> {{job.modification_time}}<br>
 <b>INPUT FILES:</b> {{job.ninputfiles}}<br>
 <b>OUTPUT FILES:</b> {{job.noutputfiles}}<br>
-<form method="post" id="resend_form" action="{{ url_for('job_resend') }}">
+<form method="post" id="resend_form" action="{{ url_for('jobs.job_resend') }}">
 {{ resend_form.id_(class_="hidden", value=job.id) }}
 <input class="btn btn-warning" name='resend' value="Resend" type='submit'>
 </form>
-<form method="post" id="kill_form" action="{{ url_for('job_kill') }}">
+<form method="post" id="kill_form" action="{{ url_for('jobs.job_kill') }}">
 {{ kill_form.id_(class_="hidden", value=job.id) }}
 <input class="btn btn-danger" name='kill' value="Kill" type='submit'>
 </form>
