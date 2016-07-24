@@ -5,6 +5,7 @@ from flask import Flask, g
 from celery import Celery
 from flask_login import current_user
 from webpanda.auth.models import AnonymousUser
+from webpanda.common.NrckiLogger import NrckiLogger
 
 from webpanda.core import db, lm
 from webpanda.helpers import register_blueprints
@@ -39,6 +40,8 @@ def create_app(package_name, package_path, settings_override=None,
     register_blueprints(app, package_name, package_path)
 
     app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
+
+    app.error_logger = NrckiLogger().getLogger("errors")
 
     lm.init_app(app)
     lm.login_view = 'auth.login'

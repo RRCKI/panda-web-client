@@ -7,7 +7,7 @@
 
 from functools import wraps
 
-from flask import jsonify, Response
+from flask import jsonify, Response, current_app
 from flask_login import login_required
 
 from webpanda.core import WebpandaError, WebpandaFormError
@@ -74,7 +74,9 @@ def route_s(bp, *args, **kwargs):
 
     return decorator
 
+
 def on_webpanda_error(e):
+    current_app.error_logger.error(e.msg)
     return jsonify(dict(error=e.msg)), 400
 
 
