@@ -43,18 +43,18 @@
 <tbody>
 {% for f in files %}
     <tr>
-        <th><a href="/file/{{f.guid}}">{{f.guid}}</a></th>
+        <th><a href="/file/{{f.file.guid}}">{{f.file.guid}}</a></th>
         <th>{{f.type}}</th>
-        <th>{{f.lfn}}</th>
+        <th>{{f.file.lfn}}</th>
         <th>
             {% if f.type == 'input' %}
-            [<a href="/file/{{f.guid}}/download">http</a>]
+            [<a href="/file/{{f.file.guid}}/download">http</a>]
             {% endif %}
             {% if f.type == 'log' and job.status in ['finished', 'failed', 'cancelled'] %}
-            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
+            [<a href="/file/{{f.file.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.file.lfn}}">ftp</a>]
             {% endif %}
             {% if f.type == 'output' and job.status == 'finished' %}
-            [<a href="/file/{{f.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.lfn}}">ftp</a>]
+            [<a href="/file/{{f.file.guid}}/download">http</a>] [<a href="{{ftp}}/.sys/{{job.container.guid}}/{{f.file.lfn}}">ftp</a>]
             {% endif %}
         </th>
     </tr>
