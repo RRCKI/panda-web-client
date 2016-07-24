@@ -26,11 +26,12 @@ def new_replica(container_guid, lfn, se):
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
-            rep_num = file.replicas.count()
-            replicas = file.replicas
+    cc = container.files
+    for c in cc:
+        f = c.file
+        if f.lfn == lfn:
+            rep_num = f.replicas.count()
+            replicas = f.replicas
             if rep_num == 0:
                 raise WebpandaError('No replicas available')
 
@@ -62,10 +63,11 @@ def stage_in(container_guid, lfn):
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
-            replicas = file.replicas
+    cc = container.files
+    for c in cc:
+        f = c.file
+        if f.lfn == lfn:
+            replicas = f.replicas
 
             for r in replicas:
                 if r.status == 'ready':
@@ -82,16 +84,17 @@ def file_info(container_guid, lfn):
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
+    cc = container.files
+    for c in cc:
+        f = c.file
+        if f.lfn == lfn:
             data = {}
-            data['lfn'] = file.lfn
-            data['guid'] = file.guid
-            data['modification_time'] = str(file.modification_time)
-            data['fsize'] = int(file.fsize)
-            data['adler32'] = file.checksum
-            data['md5sum'] = file.md5sum
+            data['lfn'] = f.lfn
+            data['guid'] = f.guid
+            data['modification_time'] = str(f.modification_time)
+            data['fsize'] = int(f.fsize)
+            data['adler32'] = f.checksum
+            data['md5sum'] = f.md5sum
             return make_response(jsonify(data), 200)
     raise WebpandaError('File not found')
 
@@ -104,15 +107,16 @@ def link_file(container_guid, lfn):
     container = conts_.first(guid=container_guid)
     site = sites_.first(se=current_app.config['DEFAULT_SE'])
 
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
-            replicas = file.replicas
+    cc = container.files
+    for c in cc:
+        f = c.file
+        if f.lfn == lfn:
+            replicas = f.replicas
             for r in replicas:
                 if r.se == site.se and r.status == 'ready':
                     data = {}
-                    data['lfn'] = file.lfn
-                    data['guid'] = file.guid
+                    data['lfn'] = f.lfn
+                    data['guid'] = f.guid
                     data['ftp'] = getFtpLink(r.lfn)
                     return make_response(jsonify(data), 200)
     raise WebpandaError('File not found')
@@ -128,29 +132,29 @@ def file_save(container_guid, lfn):
     container = conts_.first(guid=container_guid)
     if container.status != 'open':
         raise WebpandaError('Unable to upload: Container is not open')
-    files = container.files
+    cc = container.files
 
-    file = None
-    for f in files:
+    ff = None
+    for c in cc:
+        f = c.file
         if f.lfn == lfn:
-            file = f
-    if not file:
-        file = File()
-        file.scope = getScope(g.user.username)
-        file.type = 'input'
-        file.lfn = lfn
-        file.guid = getGUID(file.scope, file.lfn)
-        file.status = 'defined'
-        files_.save(file)
+            ff = f
+    if not ff:
+        ff = File()
+        ff.scope = getScope(g.user.username)
+        ff.lfn = lfn
+        ff.guid = getGUID(ff.scope, ff.lfn)
+        ff.status = 'defined'
+        files_.save(ff)
 
         # Register file in container
-        fc.reg_file_in_cont(file, container, 'input')
+        fc.reg_file_in_cont(ff, container, 'input')
 
     path = os.path.join(site.datadir, getScope(g.user.username), container.guid)
-    replfn = '/' + os.path.join(getScope(g.user.username), container.guid, file.lfn)
-    destination = os.path.join(path, file.lfn)
+    replfn = '/' + os.path.join(getScope(g.user.username), container.guid, ff.lfn)
+    destination = os.path.join(path, ff.lfn)
 
-    for r in file.replicas:
+    for r in ff.replicas:
         if r.se == site.se:
             destination = site.datadir + r.lfn
             file_dir = '/'.join(destination.split('/')[:-1])
@@ -171,11 +175,11 @@ def file_save(container_guid, lfn):
                 f.close()
 
                 # Update file info
-                setFileMeta(file.id, destination)
+                setFileMeta(ff.id, destination)
 
                 r.status = 'ready'
                 replicas_.save(r)
-                return {'guid': file.guid}
+                return {'guid': ff.guid}
             else:
                 raise WebpandaError('Replica status: %s' % r.status)
 
@@ -192,16 +196,16 @@ def file_save(container_guid, lfn):
     f.close()
 
     # Update file info
-    setFileMeta(file.id, destination)
+    setFileMeta(ff.id, destination)
 
     # Create/change replica
     replica.se = site.se
     replica.status = 'ready'
     replica.lfn = replfn
     replica.token = ''
-    replica.original = file
+    replica.original = ff
     replicas_.save(replica)
-    return {'guid': file.guid}
+    return {'guid': ff.guid}
     # return make_response(jsonify({'error': 'Illegal Content-Type'}), 400)
 
 
@@ -212,18 +216,19 @@ def file_fetch(container_guid, lfn):
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
-    files = container.files
-    for file in files:
-        if file.lfn == lfn:
-            replicas = file.replicas
+    cc = container.files
+    for c in cc:
+        f = c.file
+        if f.lfn == lfn:
+            replicas = f.replicas
             for replica in replicas:
                 if replica.se == current_app.config['DEFAULT_SE']:
                     fullpath = current_app.config['DATA_PATH'] + replica.lfn
                     f = open(fullpath, 'r')
                     rr = Response(f.read(), status=200, content_type='application/octet-stream')
-                    rr.headers['Content-Disposition'] = 'inline; filename="%s"' % file.lfn
-                    rr.headers['Content-MD5'] = file.md5sum
-                    file.downloaded += 1
-                    files_.save(file)
+                    rr.headers['Content-Disposition'] = 'inline; filename="%s"' % f.lfn
+                    rr.headers['Content-MD5'] = f.md5sum
+                    f.downloaded += 1
+                    files_.save(f)
                     return rr
     raise WebpandaError('File not found')
