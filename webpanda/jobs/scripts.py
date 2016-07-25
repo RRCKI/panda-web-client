@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 
 from taskbuffer.JobSpec import JobSpec
@@ -9,7 +10,8 @@ from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
-from webpanda.files.scripts import getScope, getFullPath, getGUID
+from webpanda.files.scripts import getScope, getFullPath, getGUID, setFileMeta
+from webpanda.jobs import Job
 from webpanda.services import sites_, jobs_, replicas_, files_
 from webpanda.fc.Client import Client as fc
 
@@ -157,7 +159,6 @@ def send_job(jobid, siteid):
     return 0
 
 
-
 def extractLog(id):
     """
     Finds local log archive and extracts it
@@ -188,3 +189,77 @@ def extractOutputs(id):
             for r in replicas:
                 if r.se == current_app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.tgz'):
                     ddm_localextractfile(r.lfn)
+
+
+def update_status():
+    # Method to sync PandaDB job status and local job status
+    # show users jobs
+    jobs = Job.query.filter(Job.pandaid.isnot(None))\
+        .filter(~Job.status.in_(['finished', 'failed', 'cancelled']))\
+        .all()
+
+    ids = []
+    localids = []
+    for job in jobs:
+        localids.append(job.id)
+        ids.append(job.pandaid)
+
+    # get status update
+    if len(ids) > 0:
+        _logger.debug('getJobStatus: ' + str(ids))
+        s, o = Client.getJobStatus(ids)
+        for job in jobs:
+            if job.pandaid in ids:
+                for obj in o:
+                    if obj.PandaID == job.pandaid:
+                        # Update attemptNr if changed
+                        if job.attemptnr not in [obj.attemptNr]:
+                            job.attemptnr = obj.attemptNr
+                            jobs_.save(job)
+
+                        # Update status if changed
+                        if job.status != obj.jobStatus:
+                            job.status = obj.jobStatus
+                            job.modification_time = datetime.utcnow()
+                            jobs_.save(job)
+
+    return localids
+
+
+def register_outputs():
+    jobs = jobs_.find().filter(Job.status.in_(['finished', 'failed', 'cancelled']))\
+        .filter(Job.registered != 1)\
+        .all()
+    ids = []
+    for job in jobs:
+        ids.append(job.id)
+        site = sites_.first(ce=job.ce)
+        cont = job.container
+        cc = cont.files
+
+        slist = {}
+        if job.status == 'finished':
+            slist['output'] = 'ready'
+            slist['log'] = 'ready'
+        elif job.status == 'failed':
+            slist['output'] = 'failed'
+            slist['log'] = 'ready'
+        elif job.status == 'cancelled':
+            slist['output'] = 'failed'
+            slist['log'] = 'ready'
+        else:
+            continue
+
+        for c in cc:
+            if c.type in ['output', 'log']:
+                for replica in c.file.replicas:
+                    if replica.se == site.se:
+                        # Update replica status
+                        replica.status = slist[c.type]
+                        replicas_.save(replica)
+
+        job.registered = 1
+        job.registation_time = datetime.utcnow()
+        jobs_.save(job)
+
+    return ids

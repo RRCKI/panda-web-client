@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
+from flask import current_app
 
 from webpanda.async import celery
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
-from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer
+from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer, setFileMeta
+from webpanda.jobs import Job
 from webpanda.jobs.scripts import killJobs, send_job
-from webpanda.services import conts_
+from webpanda.services import conts_, sites_
 
 
 _logger = NrckiLogger().getLogger("async")
@@ -77,3 +79,34 @@ def prepareInputFiles(cont_id, se):
         if not hasReplica:
             tasks.append(async_cloneReplica.s(replicas[0].id, se))
     return tasks
+
+
+def transfer_outputs(ids=[]):
+    if len(ids) == 0:
+        return 0
+    to_site = sites_.first(se=current_app.config['DEFAULT_SE'])
+    jobs = Job.query.filter(Job.id.in_(ids)).all()
+    for job in jobs:
+        from_site = sites_.first(ce=job.ce)
+        cont = job.container
+        files = cont.files
+        for file in files:
+            if file.type in ['log', 'output']:
+                replicas = file.replicas
+                needReplica = False
+                fromReplica = 0
+                hasReplica = False
+                for replica in replicas:
+                    if replica.se == from_site.se and replica.status == 'ready':
+                       needReplica = True
+                       fromReplica = replica.id
+                    if replica.se == to_site.se:
+                        if replica.status == 'ready':
+                            hasReplica = True
+                            setFileMeta(file.id, current_app.config['DATA_PATH'] + replica.lfn)
+                        if replica.status != 'ready':
+                            raise Exception('Broken replica. File: %s' % file.guid)
+                if needReplica and not hasReplica:
+                    task = async_cloneReplica.delay(fromReplica, to_site.se)
+
+    return 0

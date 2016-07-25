@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask_login import login_user, logout_user
 from flask import Blueprint, render_template, request, url_for, flash, g
+from webpanda.auth.forms import LoginForm
+from webpanda.auth.forms import RegisterForm
 
-from webpanda.app.forms import LoginForm, RegisterForm
 from webpanda.auth.models import User
 from webpanda.dashboard import route, route_s
 from webpanda.services import users_
