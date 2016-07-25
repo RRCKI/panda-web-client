@@ -22,5 +22,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'webpanda.async.pipelines.cron_paleomix_main_check_running_tasks',
         'schedule': timedelta(seconds=60),
         #'schedule': crontab()
+    },
+    'main_cron_add': {
+        'task': 'webpanda.async.scripts.cron_add',
+        'schedule': timedelta(seconds=60),
+        #'schedule': crontab()
     }
 }

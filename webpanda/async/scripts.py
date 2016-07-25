@@ -7,7 +7,7 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
 from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer, setFileMeta
 from webpanda.jobs import Job
-from webpanda.jobs.scripts import killJobs, send_job
+from webpanda.jobs.scripts import killJobs, send_job, update_status, register_outputs
 from webpanda.services import conts_, sites_
 
 
@@ -57,6 +57,15 @@ def async_uploadContainer(ftp_dir, scope, cont_guid):
     #except Exception as e:
     #raise async_uploadContainer.retry(countdown=60, exc=e, max_retries=5)
     return json.dumps(res)
+
+
+@celery.task
+def cron_add():
+    update_status()
+    ids = register_outputs()
+    #transferOutputFiles(ids)
+    #for i in ids:
+    #    extractLog(i)
 
 
 def prepareInputFiles(cont_id, se):
