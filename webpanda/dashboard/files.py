@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, jsonify, request, render_template, url_for, make_response, g, current_app, session, \
     Response
-from webpanda.files import File, Replica
+from webpanda.files import File, Replica, Container
 from webpanda.files.forms import NewFileForm
 from werkzeug.utils import redirect
 
@@ -96,11 +96,9 @@ def index():
         files_.save(file)
         cont_guid = form.container.data
 
-        if (cont_guid not in [None, '']): # TODO Check regex
-            container = conts_.first(guid=cont_guid)
-            # Register file in catalog
-            fc.reg_file_in_cont(file, container, 'input')
-
+        container = conts_.first(guid=cont_guid)
+        # Register file in catalog
+        fc.reg_file_in_cont(file, container, 'input')
 
         replica = Replica()
         replica.se = from_se
