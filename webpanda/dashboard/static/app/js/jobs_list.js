@@ -38,7 +38,7 @@ $(document).ready(function() {
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {
-                        return '<td><a href="/job/'+data+'">'+data+'</a></td>';
+                        return '<td><a href="/jobs/'+data+'">'+data+'</a></td>';
                     }
                     return '<td></td>';
                 }

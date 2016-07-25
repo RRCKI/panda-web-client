@@ -11,7 +11,7 @@ from functools import wraps
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from flask_login import login_required, current_user
-from flask import jsonify, g
+from flask import jsonify, g, current_app
 
 from webpanda.auth.models import ROLE_ADMIN, User
 from webpanda.core import WebpandaError, WebpandaFormError, db
@@ -92,7 +92,9 @@ def route_s(bp, *args, **kwargs):
 
     return decorator
 
+
 def on_webpanda_error(e):
+    current_app.error_logger.error(e.msg)
     return jsonify(dict(error=e.msg)), 400
 
 
