@@ -71,12 +71,16 @@ class HPCSEPlugin(SEPlugin):
     def fsize(self, path, rel=True):
         if rel:
             path = self.datadir + path
-        _logger.debug('HPC: Try to list files in path %s' % (path))
+        _logger.debug('HPC: Trying to get file size of file: %s' % (path))
+
+        cmd = "ssh -i {key} {user}@{host} 'stat -c %s {path}'".format(key=self.key, user=self.user, host=self.host, path=path)
+        _logger.debug(cmd)
 
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("ssh -i {key} {user}@{host} 'stat -c %s {path}'".format(key=self.key, user=self.user, host=self.host, path=path))
+            out = proc.communicate(cmd)
             _logger.debug(out[0])
+            _logger.debug(out[1])
             return out[0]
         except OSError:
             _logger.error('Unable to get file size: %s' % (path))
@@ -85,12 +89,16 @@ class HPCSEPlugin(SEPlugin):
     def md5sum(self, path, rel=True):
         if rel:
             path = self.datadir + path
-        _logger.debug('HPC: Try to list files in path %s' % (path))
+        _logger.debug('HPC: Trying to get md5sum of file: %s' % (path))
+
+        cmd = "ssh -i {key} {user}@{host} 'md5sum {path}'".format(key=self.key, user=self.user, host=self.host, path=path)
+        _logger.debug(cmd)
 
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("ssh -i {key} {user}@{host} 'md5sum {path}'".format(key=self.key, user=self.user, host=self.host, path=path))
+            out = proc.communicate(cmd)
             _logger.debug(out[0])
+            _logger.debug(out[1])
             return out[0].split(' ')[0]
         except OSError:
             _logger.error('Unable to calculate md5: %s' % (path))
@@ -99,12 +107,16 @@ class HPCSEPlugin(SEPlugin):
     def adler32(self, path, rel=True):
         if rel:
             path = self.datadir + path
-        _logger.debug('HPC: Try to list files in path %s' % (path))
+        _logger.debug('HPC: Trying to get adler32 of file: %s' % (path))
+
+        cmd = "TODO:add script"
+        _logger.debug(cmd)
 
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             # out = proc.communicate("ssh -i {key} {user}@{host} 'ls -p {path} | grep -v /'".format(key=self.key, user=self.user, host=self.host, path=path))
             #_logger.debug(out[0])
+            #_logger.debug(out[1])
             # return out[0].split('\n')
             return "testtest"
         except OSError:
