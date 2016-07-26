@@ -86,7 +86,7 @@ def index():
         path = form.path.data
 
         # Define SE connector
-        se_name = 'ANALY_RRC-KI-HPC'
+        se_name = 'RRC-KI-HPC'
         se = sites_.first(se=se_name)
 
 
