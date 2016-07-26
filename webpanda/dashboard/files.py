@@ -93,6 +93,8 @@ def index():
 
         # Get container
         cont = fc.new_cont()
+        cont.status = 'user'
+        fc.save(cont)
 
         # Upload files to container
         async_upload_dir.delay(user.id, cont.id, se.id, path)
