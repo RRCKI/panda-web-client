@@ -94,7 +94,7 @@ def index():
         cont = fc.new_cont()
 
         # Upload files to container
-        async_upload_dir.delay()
+        async_upload_dir.delay(cont.id, se.id, path)
 
         # Return container page
         return redirect(url_for('conts.cont_info', guid=cont.guid))
