@@ -73,7 +73,7 @@ class HPCSEPlugin(SEPlugin):
             path = self.datadir + path
         _logger.debug('HPC: Trying to get file size of file: %s' % (path))
 
-        cmd = "ssh -i {key} {user}@{host} 'stat -c %s {path}'".format(key=self.key, user=self.user, host=self.host, path=path)
+        cmd = "ssh -i {key} {user}@{host} 'stat -Lc %s {path}'".format(key=self.key, user=self.user, host=self.host, path=path)
         _logger.debug(cmd)
 
         try:
