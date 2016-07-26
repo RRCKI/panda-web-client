@@ -39,7 +39,7 @@ def files_list():
 
     hours_limit = session.get('hours_limit', current_app.config['HOURS_LIMIT'])
     display_limit = session.get('display_limit', current_app.config['DISPLAY_LIMIT'])
-    scope = getScope(user.username)
+    scope = fc.getScope(user.username)
     # show users jobs
     files = files_.find(scope=scope).order_by(File.id).limit(display_limit)
 

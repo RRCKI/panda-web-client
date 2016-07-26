@@ -329,10 +329,12 @@ def upload_dir(cont_id, se_id, path):
     se = sites_.get(se_id)
 
     # Initialize SE connector
+    print "=Initialize SE connector"
     conn_factory = SEFactory()
     connector = conn_factory.getSE(se.plugin, None)
 
     # Fetch list of files
+    print "=Fetch list of files"
     try:
         list_of_lfn = connector.ls(path, rel=False)
         for item in list_of_lfn:
@@ -341,32 +343,42 @@ def upload_dir(cont_id, se_id, path):
                 list_of_lfn.remove(item)
     except:
         raise WebpandaError("Unable to get list of files from SE: " + str(se_id))
+    print "=" + str(len(list_of_lfn))
 
     # Create list of File objs
+    print "=Create list of File objs"
     list_of_obj = list()
+    print "=" + str(len(list_of_obj))
+
     for item in list_of_lfn:
         list_of_obj.append(fc.new_file(item))
 
         # Add files to container:
+        print "=Add files to container"
         fc.reg_file_in_cont(item, cont, 'intermediate')
 
         # Copy files into system dir
+        print "=Copy files into system dir"
         connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item))
 
         # Calculate fsize, adler32, md5hash
+        print "=Calculate fsize, adler32, md5hash"
         item.fsize = connector.fsize(fc.get_file_path(item))
         item.md5sum = connector.md5sum(fc.get_file_path(item))
         item.checksum = connector.adler32(fc.get_file_path(item))
         fc.save(item)
 
         # Create list of Replica objs
+        print "=Create list of Replica objs"
         r = fc.new_replica(item, se)
         r.status = 'ready'
         fc.save(r)
 
         # Update files' status
+        print "=Update files' status"
         item.status = 'ready'
         fc.save(item)
 
     # Return container id
+    print "=Return container id"
     return cont_id
