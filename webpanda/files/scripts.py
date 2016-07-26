@@ -355,7 +355,7 @@ def upload_dir(user_id, cont_id, se_id, path):
 
     # Iterate through files objects
     print "=IterateLoop:Start"
-    for item in list_of_lfn:
+    for item in list_of_obj:
         # Add files to container:
         print "=Add file to container"
         fc.reg_file_in_cont(item, cont, 'intermediate')
