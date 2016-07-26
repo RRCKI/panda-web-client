@@ -362,7 +362,7 @@ def upload_dir(user_id, cont_id, se_id, path):
 
         # Copy files into system dir
         print "=Copy file into system dir"
-        connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item))
+        connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item), rel=False)
 
         # Calculate fsize, adler32, md5hash
         print "=Calculate fsize, adler32, md5hash"
