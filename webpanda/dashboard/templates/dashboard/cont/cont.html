@@ -8,10 +8,13 @@
 <link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
 {% endblock %}
 
-{% block content %}
+{% block jumbotron %}
 <b>CONTAINER:</b> {{cont.id}} <br>
 <b>GUID:</b> {{cont.guid}} <br>
 <b>STATUS:</b> {{cont.status}} <br>
+{% endblock %}
+
+{% block content %}
 <table id="filestable" class="display" cellspacing="0" width="100%">
 <thead>
     <tr>
