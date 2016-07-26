@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 from flask import Blueprint, jsonify, request, render_template, url_for, make_response, g, current_app, session, \
     Response
-from webpanda.files import File, Replica, Container
+from webpanda.files import File
 from webpanda.files.forms import NewFileForm
 from werkzeug.utils import redirect
 
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.async.scripts import async_cloneReplica
+from webpanda.async.scripts import async_upload_dir
 from webpanda.dashboard import route_s
-from webpanda.files.scripts import getScope, getUrlInfo, getGUID
-from webpanda.services import conts_, files_, replicas_, sites_
-from webpanda.fc.Client import Client as fc
+from webpanda.services import files_, sites_
+from webpanda.fc import scripts as fc
 
 
 bp = Blueprint('files', __name__, url_prefix="/files")
@@ -79,39 +78,27 @@ def file_info(guid):
 @route_s(bp, "/new", methods=['GET', 'POST'])
 def index():
     """
-    New file form view
+    Register files from HPC
     :return: Response obj
     """
     form = NewFileForm()
     if request.method == 'POST':
-        se = form.se.data
+        path = form.path.data
 
-        from_se, path, token = getUrlInfo(form.url.data)
+        # Define SE connector
+        se_name = 'ANALY_RRC-KI-HPC'
+        se = sites_.first(se=se_name)
 
-        file = File()
-        file.scope = getScope(g.user.username)
-        file.lfn = path.split('/')[-1]
-        file.guid = getGUID(file.scope, file.lfn)
-        file.status = 'defined'
-        files_.save(file)
-        cont_guid = form.container.data
 
-        container = conts_.first(guid=cont_guid)
-        # Register file in catalog
-        fc.reg_file_in_cont(file, container, 'input')
+        # Get container
+        cont = fc.new_cont()
 
-        replica = Replica()
-        replica.se = from_se
-        replica.status = 'ready'
-        replica.token = token
-        replica.lfn = ':/'.join([from_se, path])
-        replica.original = file
-        replicas_.save(replica)
+        # Upload files to container
+        async_upload_dir.delay()
 
-        resp = async_cloneReplica.delay(replica.id, se)
-        return redirect(url_for('files.file_info', guid=file.guid))
+        # Return container page
+        return redirect(url_for('conts.cont_info', guid=cont.guid))
 
-    form.se.choices = [("%s" % site.se, "%s" % site.se) for site in sites_.find(active=1)]
     return render_template("dashboard/files/file_new.html", form=form)
 
 
@@ -127,7 +114,7 @@ def file_download(guid):
     except(Exception):
         _logger.error(Exception.message)
         return make_response(jsonify({'error': 'File not found'}), 404)
-    if file.scope != getScope(g.user.username):
+    if file.scope != fc.getScope(g.user.username):
         return make_response(jsonify({'error': 'File is not in your scope'}), 403)
 
     replicas = file.replicas

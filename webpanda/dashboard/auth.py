@@ -21,7 +21,7 @@ def login():
         # if user is logged in we get out of here
         return redirect(url_for('main.index'))
     form = LoginForm()
-    if form.validate_on_submit():
+    if form.validate():
         user = users_.first(username=form.username.data)
         if user is None or not user.verify_password(form.password.data):
             flash('Invalid username or password.')
@@ -42,7 +42,7 @@ def logout():
 @route(bp, '/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    if form.validate_on_submit():
+    if form.validate():
         username = form.username.data
         password = form.password.data
         password_again = form.password_again.data

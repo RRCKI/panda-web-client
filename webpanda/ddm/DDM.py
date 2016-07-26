@@ -56,3 +56,19 @@ class SEPlugin(object):
     def link(self, lfn, dir):
         _logger.error("SEPlugin.link not implemented")
         raise NotImplementedError("SEPlugin.link not implemented")
+
+    def ls(self, path, rel=True):
+        _logger.error("SEPlugin.ls not implemented")
+        raise NotImplementedError("SEPlugin.ls not implemented")
+
+    def fsize(self, path, rel=True):
+        _logger.error("SEPlugin.ls not implemented")
+        raise NotImplementedError("SEPlugin.fsize not implemented")
+
+    def md5sum(self, path, rel=True):
+        _logger.error("SEPlugin.ls not implemented")
+        raise NotImplementedError("SEPlugin.md5sum not implemented")
+
+    def adler32(self, path, rel=True):
+        _logger.error("SEPlugin.ls not implemented")
+        raise NotImplementedError("SEPlugin.adler32 not implemented")

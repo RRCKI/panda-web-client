@@ -5,12 +5,13 @@ from datetime import datetime
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import adler32, md5sum, fsize
+from webpanda.core import WebpandaError
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists, ddm_localrmtree, \
     ddm_getlocalfilemeta, ddm_localisdir
+from webpanda.fc import scripts as fc
 from webpanda.files import File, Replica
 from webpanda.services import files_, conts_, sites_, replicas_
-from webpanda.fc.Client import Client as fc
 
 DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
@@ -260,9 +261,9 @@ def getLinkLFN(scope, url):
 
 
 def movedata(params, fileList, from_plugin, from_params, to_plugin, to_params):
-    print 'FROM_PLUGIN'
-    print from_plugin
-    print str(from_params)
+    _logger.debug('FROM_PLUGIN')
+    _logger.debug(from_plugin)
+    _logger.debug(str(from_params))
     if len(fileList) == 0:
         _logger.debug('No files to move')
         return 0, 'No files to move'
@@ -314,3 +315,58 @@ def linkdata(setype, separams, lfn, dir):
     sefactory = SEFactory()
     se = sefactory.getSE(setype, separams)
     se.link(lfn, dir)
+
+
+def upload_dir(cont_id, se_id, path):
+    """
+    Uploads files from external dir path into defined contained
+    :param cont_id: id of Container
+    :param se_id: id of SE
+    :param path: dir path on SE
+    :return:
+    """
+    cont = conts_.get(cont_id)
+    se = sites_.get(se_id)
+
+    # Initialize SE connector
+    conn_factory = SEFactory()
+    connector = conn_factory.getSE(se.plugin, None)
+
+    # Fetch list of files
+    try:
+        list_of_lfn = connector.ls(path, rel=False)
+        for item in list_of_lfn:
+            # Check empty items
+            if item == "":
+                list_of_lfn.remove(item)
+    except:
+        raise WebpandaError("Unable to get list of files from SE: " + str(se_id))
+
+    # Create list of File objs
+    list_of_obj = list()
+    for item in list_of_lfn:
+        list_of_obj.append(fc.new_file(item))
+
+        # Add files to container:
+        fc.reg_file_in_cont(item, cont, 'intermediate')
+
+        # Copy files into system dir
+        connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item))
+
+        # Calculate fsize, adler32, md5hash
+        item.fsize = connector.fsize(fc.get_file_path(item))
+        item.md5sum = connector.md5sum(fc.get_file_path(item))
+        item.checksum = connector.adler32(fc.get_file_path(item))
+        fc.save(item)
+
+        # Create list of Replica objs
+        r = fc.new_replica(item, se)
+        r.status = 'ready'
+        fc.save(r)
+
+        # Update files' status
+        item.status = 'ready'
+        fc.save(item)
+
+    # Return container id
+    return cont_id

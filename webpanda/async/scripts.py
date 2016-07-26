@@ -5,7 +5,7 @@ from flask import current_app
 from webpanda.async import celery
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
-from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer, setFileMeta
+from webpanda.files.scripts import cloneReplica, linkReplica, copyReplica, uploadContainer, setFileMeta, upload_dir
 from webpanda.jobs import Job
 from webpanda.jobs.scripts import killJobs, send_job, update_status, register_outputs
 from webpanda.services import conts_, sites_
@@ -47,6 +47,11 @@ def async_linkReplica(replicaid, dir):
 @celery.task
 def async_copyReplica(replicaid, se, path):
     return json.dumps(copyReplica(replicaid, se, path))
+
+
+@celery.task
+def async_upload_dir(cont_id, se_id, path):
+    return json.dumps(upload_dir(cont_id, se_id, path))
 
 
 @celery.task

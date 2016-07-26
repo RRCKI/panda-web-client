@@ -1,9 +1,10 @@
 from flask_wtf import Form
-from webpanda.forms import RedirectForm
-from webpanda.services import users_
 from wtforms import SubmitField, PasswordField, StringField, BooleanField
 from wtforms.validators import EqualTo, Length
 from wtforms.validators import Required
+
+from webpanda.forms import RedirectForm
+from webpanda.services import users_
 
 
 class LoginForm(RedirectForm):

@@ -1,7 +1,8 @@
 from urlparse import urlparse, urljoin
 from flask import request, url_for
 from werkzeug.utils import redirect
-from wtforms import Form, HiddenField
+from flask_wtf import Form
+from wtforms import HiddenField
 
 
 def is_safe_url(target):
