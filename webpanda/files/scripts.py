@@ -349,17 +349,19 @@ def upload_dir(user_id, cont_id, se_id, path):
     # Create list of File objs
     print "=Create list of File objs"
     list_of_obj = list()
-    print "=" + str(len(list_of_obj))
-
     for item in list_of_lfn:
         list_of_obj.append(fc.new_file(user, item))
+    print "=" + str(len(list_of_obj))
 
+    # Iterate through files objects
+    print "=IterateLoop:Start"
+    for item in list_of_lfn:
         # Add files to container:
-        print "=Add files to container"
+        print "=Add file to container"
         fc.reg_file_in_cont(item, cont, 'intermediate')
 
         # Copy files into system dir
-        print "=Copy files into system dir"
+        print "=Copy file into system dir"
         connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item))
 
         # Calculate fsize, adler32, md5hash
@@ -370,7 +372,7 @@ def upload_dir(user_id, cont_id, se_id, path):
         fc.save(item)
 
         # Create list of Replica objs
-        print "=Create list of Replica objs"
+        print "=Create Replica object"
         r = fc.new_replica(item, se)
         r.status = 'ready'
         fc.save(r)
@@ -379,6 +381,7 @@ def upload_dir(user_id, cont_id, se_id, path):
         print "=Update files' status"
         item.status = 'ready'
         fc.save(item)
+    print "=IterateLoop:Finish"
 
     # Return container id
     print "=Return container id"
