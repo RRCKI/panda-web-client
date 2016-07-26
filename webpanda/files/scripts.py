@@ -11,7 +11,7 @@ from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexis
     ddm_getlocalfilemeta, ddm_localisdir
 from webpanda.fc import scripts as fc
 from webpanda.files import File, Replica
-from webpanda.services import files_, conts_, sites_, replicas_
+from webpanda.services import files_, conts_, sites_, replicas_, users_
 
 DATA_DIR = client_config.TMP_DIR
 _logger = NrckiLogger().getLogger("files.scripts")
@@ -317,7 +317,7 @@ def linkdata(setype, separams, lfn, dir):
     se.link(lfn, dir)
 
 
-def upload_dir(cont_id, se_id, path):
+def upload_dir(user_id, cont_id, se_id, path):
     """
     Uploads files from external dir path into defined contained
     :param cont_id: id of Container
@@ -325,6 +325,7 @@ def upload_dir(cont_id, se_id, path):
     :param path: dir path on SE
     :return:
     """
+    user = users_.get(user_id)
     cont = conts_.get(cont_id)
     se = sites_.get(se_id)
 
@@ -351,7 +352,7 @@ def upload_dir(cont_id, se_id, path):
     print "=" + str(len(list_of_obj))
 
     for item in list_of_lfn:
-        list_of_obj.append(fc.new_file(item))
+        list_of_obj.append(fc.new_file(user, item))
 
         # Add files to container:
         print "=Add files to container"

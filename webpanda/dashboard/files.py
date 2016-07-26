@@ -84,6 +84,7 @@ def index():
     form = NewFileForm()
     if request.method == 'POST':
         path = form.path.data
+        user = g.user
 
         # Define SE connector
         se_name = 'RRC-KI-HPC'
@@ -94,7 +95,7 @@ def index():
         cont = fc.new_cont()
 
         # Upload files to container
-        async_upload_dir.delay(cont.id, se.id, path)
+        async_upload_dir.delay(user.id, cont.id, se.id, path)
 
         # Return container page
         return redirect(url_for('conts.cont_info', guid=cont.guid))

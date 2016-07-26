@@ -3,6 +3,7 @@ import commands
 from datetime import datetime
 
 from flask import g
+from webpanda.auth import User
 
 from webpanda.files import File, Container, Catalog, Replica
 from webpanda.jobs import Site
@@ -36,12 +37,14 @@ def reg_file_in_cont(f, c, t):
     return True
 
 
-def new_file(lfn):
+def new_file(user, lfn):
     """
     Creates new file object
     :param lfn: Local FileName
     :return: File obj
     """
+    if not isinstance(user, User):
+        raise Exception("Illegal user class: not User")
     if not isinstance(lfn, str):
         raise Exception("Illegal lfn class: not str")
     if len(lfn) == 0:
@@ -49,7 +52,7 @@ def new_file(lfn):
 
     # Prepare File obj
     f = File()
-    f.scope = getScope(g.username)
+    f.scope = getScope(user.username)
     f.attemptn = 0
     f.guid = getGUID(f.scope, None)
     f.lfn = lfn
@@ -134,12 +137,21 @@ def get_file_dir(f):
 
 
 def save(o):
+    """
+    Wrapper for .save methods of Service instances
+    :param o: object to save
+    :return:
+    """
     if isinstance(o, File):
         files_.save(o)
-    if isinstance(o, Container):
+        return True
+    elif isinstance(o, Container):
         conts_.save(o)
-    if isinstance(o, Replica):
+        return True
+    elif isinstance(o, Replica):
         replicas_.save(o)
+        return True
+    return False
 
 
 def getScope(username):

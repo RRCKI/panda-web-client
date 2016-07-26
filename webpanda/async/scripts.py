@@ -50,8 +50,8 @@ def async_copyReplica(replicaid, se, path):
 
 
 @celery.task
-def async_upload_dir(cont_id, se_id, path):
-    return json.dumps(upload_dir(cont_id, se_id, path))
+def async_upload_dir(user_id, cont_id, se_id, path):
+    return json.dumps(upload_dir(user_id, cont_id, se_id, path))
 
 
 @celery.task
