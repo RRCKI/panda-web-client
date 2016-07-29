@@ -48,14 +48,15 @@ def new_pipeline():
 
         # Add guids to container
         for item in ifiles:
-            f = files_.first(guid=item)
-            if f is not None:
-                    # Register file in catalog
-                    fc.reg_file_in_cont(f, pp_cont, 'input')
-            else:
-                pp_cont.status = 'broken'
-                conts_.save(pp_cont)
-                return make_response(jsonify({'error': "GUID {} not found".format(f)}))
+            if item != '':
+                f = files_.first(guid=item)
+                if f is not None:
+                        # Register file in catalog
+                        fc.reg_file_in_cont(f, pp_cont, 'input')
+                else:
+                    pp_cont.status = 'broken'
+                    conts_.save(pp_cont)
+                    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
 
         # Prepare init task
         task = Task()
