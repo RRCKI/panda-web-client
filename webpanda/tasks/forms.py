@@ -9,6 +9,4 @@ from wtforms import validators, TextAreaField
 
 
 class NewPipelineForm(RedirectForm):
-    ifiles = TextAreaField(u'Input files', [
-        validators.DataRequired(),
-        validators.Length(1, 1000)])
+    ifiles = TextAreaField(u'Input files')

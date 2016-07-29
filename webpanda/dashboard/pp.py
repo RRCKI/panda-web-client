@@ -29,7 +29,7 @@ def list_all():
 def new_pipeline():
     form = NewPipelineForm(request.form)
 
-    if request.method == 'POST' and form.validate():
+    if request.method == 'POST':
         ifiles = request.form.getlist('iguids[]')
 
         current_user = g.user
