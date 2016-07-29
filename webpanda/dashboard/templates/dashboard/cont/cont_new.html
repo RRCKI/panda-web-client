@@ -8,11 +8,12 @@
 {% endblock %}
 
 {% block jumbotron %}
-<h2>New Container</h2>
+<h2>Upload from <a href="ftp://144.206.233.179:8021/">FTP</a></h2>
 <form method="post" id="file-form" action="{{ url_for('conts.container') }}" enctype="multipart/form-data">
     <div class='form-group' title="ftpdir">
-            <label for="ftpdir">FTP DIR:</label>
-            {{ form.ftpdir() }}
+            <label for="ftpdir">FTP dir:</label>
+            {{ form.ftpdir() }} <br>
+            *use your login/pass
     </div>
     <div class='form-group'>
             <input type="reset" name="reset" class="btn btn-default" value="Reset">

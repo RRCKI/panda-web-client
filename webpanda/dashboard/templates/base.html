@@ -54,7 +54,7 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Pipelines <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('pipelines.list_all') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
-                        <li><a href="{{ url_for('pipelines.new_pipeline') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+                        <li><a href="{{ url_for('pipelines.new_pipeline') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Paleomix BAM</a></li>
                     </ul>
 	            </li>
 
@@ -70,7 +70,6 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Containers <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('conts.containers') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
-                        <li><a href="{{ url_for('conts.container') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
                     </ul>
                 </li>
 
@@ -78,7 +77,8 @@
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Files <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('files.files') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
-                        <li><a href="{{ url_for('files.index') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+                        <li><a href="{{ url_for('files.index') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Lustre</a></li>
+                        <li><a href="{{ url_for('conts.container') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> FTP</a></li>
                     </ul>
                 </li>
             <li><a href="ftp://144.206.233.179:8021/" target="_blank">FTP</a></li>

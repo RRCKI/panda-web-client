@@ -13,7 +13,7 @@ from wtforms.validators import Length
 
 class NewFileForm(RedirectForm):
     path = StringField(u'PATH', validators=[Required(), Length(1, 64)])
-    submitbtn = SubmitField(u'Upload file')
+    submitbtn = SubmitField(u'Upload')
 
 
 class NewContainerForm(RedirectForm):

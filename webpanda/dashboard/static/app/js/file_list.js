@@ -2,6 +2,7 @@ $(document).ready(function() {
     moment.locale('ru');
 
     $('#filestable').dataTable( {
+        "scrollX": true,
         "order": [[ 0, "desc" ]],
         "processing": true,
         "ajax": "/files/list",
