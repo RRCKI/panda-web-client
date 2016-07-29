@@ -331,11 +331,13 @@ def upload_dir(user_id, cont_id, se_id, path):
 
     # Initialize SE connector
     print "=Initialize SE connector"
+    _logger.debug("=Initialize SE connector")
     conn_factory = SEFactory()
     connector = conn_factory.getSE(se.plugin, None)
 
     # Fetch list of files
     print "=Fetch list of files"
+    _logger.debug("=Fetch list of files")
     try:
         list_of_lfn = connector.ls(path, rel=False)
         for item in list_of_lfn:
@@ -345,27 +347,34 @@ def upload_dir(user_id, cont_id, se_id, path):
     except:
         raise WebpandaError("Unable to get list of files from SE: " + str(se_id))
     print "=" + str(len(list_of_lfn))
+    _logger.debug("=" + str(len(list_of_lfn)))
 
     # Create list of File objs
     print "=Create list of File objs"
+    _logger.debug("=Create list of File objs")
     list_of_obj = list()
     for item in list_of_lfn:
         list_of_obj.append(fc.new_file(user, item))
     print "=" + str(len(list_of_obj))
+    _logger.debug("=" + str(len(list_of_obj)))
 
     # Iterate through files objects
     print "=IterateLoop:Start"
+    _logger.debug("=IterateLoop:Start")
     for item in list_of_obj:
         # Add files to container:
         print "=Add file to container"
+        _logger.debug("=Add file to container")
         fc.reg_file_in_cont(item, cont, 'intermediate')
 
         # Copy files into system dir
         print "=Copy file into system dir"
+        _logger.debug("=Copy file into system dir")
         connector.link(os.path.join(path, item.lfn), fc.get_file_dir(item), rel=False)
 
         # Calculate fsize, adler32, md5hash
         print "=Calculate fsize, adler32, md5hash"
+        _logger.debug("=Calculate fsize, adler32, md5hash")
         item.fsize = connector.fsize(fc.get_file_path(item))
         item.md5sum = connector.md5sum(fc.get_file_path(item))
         item.checksum = connector.adler32(fc.get_file_path(item))
@@ -373,16 +382,20 @@ def upload_dir(user_id, cont_id, se_id, path):
 
         # Create list of Replica objs
         print "=Create Replica object"
+        _logger.debug("=Create Replica object")
         r = fc.new_replica(item, se)
         r.status = 'ready'
         fc.save(r)
 
         # Update files' status
         print "=Update files' status"
+        _logger.debug("=Update files' status")
         item.status = 'ready'
         fc.save(item)
     print "=IterateLoop:Finish"
+    _logger.debug("=IterateLoop:Finish")
 
     # Return container id
     print "=Return container id"
+    _logger.debug("=Return container id")
     return cont_id

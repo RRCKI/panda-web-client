@@ -2,7 +2,6 @@ import os
 import commands
 from datetime import datetime
 
-from flask import g
 from webpanda.auth import User
 
 from webpanda.files import File, Container, Catalog, Replica

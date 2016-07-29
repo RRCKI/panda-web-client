@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from flask_login import login_user, logout_user
 from flask import Blueprint, render_template, request, url_for, flash, g
+from werkzeug.utils import redirect
+
 from webpanda.auth.forms import LoginForm
 from webpanda.auth.forms import RegisterForm
-
 from webpanda.auth.models import User
 from webpanda.dashboard import route, route_s
 from webpanda.services import users_
-from werkzeug.utils import redirect
 from webpanda.common.NrckiLogger import NrckiLogger
 
 bp = Blueprint('auth', __name__)
@@ -17,6 +17,7 @@ _logger = NrckiLogger().getLogger("dashboard.auth")
 @route(bp, '/login', methods=['GET', 'POST'])
 def login():
     user = g.user
+    _logger.debug("Trying to login user: {user}".format(user=user.username))
     if user.is_authenticated:
         # if user is logged in we get out of here
         return redirect(url_for('main.index'))
