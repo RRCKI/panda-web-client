@@ -9,18 +9,20 @@
 
 {% block jumbotron %}
 {% from "_formhelpers.html" import render_field %}
-<form method="post" action="" id="upload-form">
-<h2>New Paleomix BAM run</h2>
-<p>
+    <h2>New Paleomix BAM run</h2>
+
     <ol>
     <li>Upload input files from <a href="{{ url_for('files.index') }}">Lustre</a> or <a href="{{ url_for('conts.container') }}">FTP</a></li>
     <li><a href="{{ url_for('files.files') }}">Find</a> GUIDs of uploaded files</li>
     <li>Define input files by their GUIDs below</li>
     <li>Start workflow by tapping Submit below</li>
-    <li>See hot it perfectly works</li>
+    <li>See how it perfectly works</li>
     </ol>
-</p>
-    <hr style="width: 100%; color: grey; height: 1px; background-color:grey;" />
+
+{% endblock %}
+
+{% block content %}
+<form method="post" action="" id="upload-form">
     <div class="form-group">
     <div class="row">
     <div class="col-md-4">

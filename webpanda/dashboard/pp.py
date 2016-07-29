@@ -30,8 +30,7 @@ def new_pipeline():
     form = NewPipelineForm(request.form)
 
     if request.method == 'POST' and form.validate():
-        ifiles = form.ifiles.data
-        print ifiles
+        ifiles = request.form.getlist('iguids[]')
 
         current_user = g.user
 
@@ -48,7 +47,7 @@ def new_pipeline():
         conts_.save(pp_cont)
 
         # Add guids to container
-        for item in ifiles.split(';'):
+        for item in ifiles:
             f = files_.first(guid=item)
             if f is not None:
                     # Register file in catalog
