@@ -74,7 +74,30 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
         for state in states:
             if getattr(self, state + 'type_id') is not None:
                 return getattr(self, state + 'type_id')
+ #do it (2 upper) this way?
+        i = states.index(current_state) + 1
+        if i < len(states):
+            id = states[i] + 'type_id'
+            if getattr(self, states) is not None:
+                return getattr(self, states)
+            return states[i]
+#        else:
+#            raise WebpandaError("Illegal get_next_state")
+        return None
 
+    def get_next_task_type_id2(self, current_state):
+        """
+        Returns int ID of next task or None if pipeline finished
+        :return: int or None
+        """
+        # Set list of all states
+        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
+
+        i = int(current_state)+1
+        if i < len(states):
+            return states[i]
+        # else:
+        #            raise WebpandaError("Illegal get_next_state")
         return None
 
 
@@ -92,6 +115,7 @@ class Task(TaskJsonSerializer, db.Model):
     creation_time = db.Column(db.DateTime)
     modification_time = db.Column(db.DateTime)
     status = db.Column(db.String(64), default='defined')
+    #TODO place comment - task_status= ?(defined, starting, sent,running finished, cancelled, failed). Also for pipelines -?
     jobs = db.relationship('Job', secondary=tasks_jobs)
     trf = db.Column(db.String(1024))
     input = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
@@ -138,6 +162,30 @@ class Pipeline(PipelineJsonSerializer, db.Model):
         except:
             raise WebpandaError("Unable to get current task ID")
         return current_task_id
+
+    def get_current_task_id2(self):
+        """
+        Returns current task id. Get current_state as int, not string.
+        :return: int
+        """
+        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
+        try:
+            current_task_id = getattr(self, states[int(self.current_state)] + "_id")
+        except:
+            raise WebpandaError("Unable to get current task ID")
+        return current_task_id
+
+    def get_current_task(self):
+        """
+        Returns current task id. Get current_state as int, not string.
+        :return: int
+        """
+        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
+        i = int(self.current_state)
+#        if i == len(states)-1:
+        if i == 6:
+            return -1
+        return i
 
 
 
