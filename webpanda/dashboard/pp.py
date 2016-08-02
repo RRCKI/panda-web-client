@@ -59,12 +59,8 @@ def new_pipeline():
                     conts_.save(pp_cont)
                     return make_response(jsonify({'error': "GUID {} not found".format(f)}))
 
-        # Prepare init task
-        task_type = task_types_.first(method='start')
-        task = pclient.new_task(task_type)
-
         # Set current task
-        pclient.set_current_task(pp, task)
+        pclient.get_start_task(pp)
 
         return redirect(url_for('pipelines.list_all'))
 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from webpanda.services import tasks_, pipelines_, pipeline_catalog_
+from webpanda.services import tasks_, pipelines_, pipeline_catalog_, task_types_
 from webpanda.tasks import Pipeline, Task, PipelineType, PipelineCatalog, TaskType
 
 
@@ -76,6 +76,25 @@ def get_next_task(p):
     return next_task
 
 
+def get_start_task(p):
+    """
+    Returns start task object
+    :param p: Pipeline obj
+    :return: Task obj
+    """
+    if not isinstance(p, Pipeline):
+        raise Exception("Illegal pipeline class: not Pipeline")
+
+    # Create start_task
+    start_task_type = task_types_.first(method='start')
+    start_task = new_task(start_task_type.id)
+    tasks_.save(start_task)
+
+    # Update Pipeline obj
+    set_current_task(p, start_task)
+    return start_task
+
+
 def new_task(tt):
     """
     Creates default Task obj
@@ -90,7 +109,6 @@ def new_task(tt):
     t.modification_time = datetime.utcnow()
     t.status = 'defined'
     t.task_type = tt
-    tasks_.save(t)
     return t
 
 
