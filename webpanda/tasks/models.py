@@ -16,10 +16,10 @@ tasks_jobs = db.Table(
 
 
 class PipelineCatalog(db.Model):
-    __tablename__ = 'pipeline_catalog'
+    __tablename__ = 'pipeline_catalog2'
     pipeline_type_id = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'), primary_key=True)
-    current_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'))
-    next_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'))
+    current_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), primary_key=True)
+    next_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), primary_key=True)
 
     pipeline_type = db.relationship("PipelineType", back_populates="tasks")
     current_task_type = db.relationship("TaskType", foreign_keys=[current_task_type_id])

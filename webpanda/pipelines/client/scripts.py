@@ -73,6 +73,7 @@ def get_next_task(p):
 
     # Update Pipeline obj
     p.current_task_id = next_task.id
+    p.modification_time = datetime.utcnow()
     pipelines_.save(p)
     return next_task
 
