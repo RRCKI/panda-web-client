@@ -15,6 +15,17 @@ tasks_jobs = db.Table(
     db.Column('job_id', db.Integer(), db.ForeignKey('jobs.id')))
 
 
+class PipelineCatalog(db.Model):
+    __tablename__ = 'pipeline_catalog'
+    pipeline_type_id = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'), primary_key=True)
+    current_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'))
+    next_task_type_id = db.Column(db.Integer, db.ForeignKey('task_types.id'))
+
+    pipeline_type = db.relationship("PipelineType", back_populates="tasks")
+    current_task_type = db.relationship("TaskType", foreign_keys=[current_task_type_id])
+    next_task_type = db.relationship("TaskType", foreign_keys=[next_task_type_id])
+
+
 class TaskTypeJsonSerializer(JsonSerializer):
     pass
 
@@ -40,14 +51,8 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
     __tablename__ = 'pipeline_types'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256))
-    init_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    pre_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    split_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    prun_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    merge_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    post_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
-    finish_tasktype_id = db.Column(db.Integer, db.ForeignKey('task_types.id'), default=None)
     pipelines = db.relationship("Pipeline", back_populates="pipeline_type")
+    tasks = db.relationship("PipelineCatalog", back_populates="pipeline_type")
 
     def __repr__(self):
         return '<PipelineType id=%s>' % self.id
@@ -136,18 +141,9 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     type_id = db.Column(db.Integer, db.ForeignKey('pipeline_types.id'))
     pipeline_type = db.relationship("PipelineType", back_populates="pipelines")
-    name = db.Column(db.String(256))
     tag = db.Column(db.String(256))
-    current_state = db.Column(db.String(256))
+    current_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
     status = db.Column(db.String(256))
-
-    init_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    pre_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    split_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    prun_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    merge_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    post_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
-    finish_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
 
     def __repr__(self):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
@@ -157,35 +153,11 @@ class Pipeline(PipelineJsonSerializer, db.Model):
         Returns current task id
         :return: int
         """
-        try:
-            current_task_id = getattr(self, self.current_state + "_id")
-        except:
-            raise WebpandaError("Unable to get current task ID")
-        return current_task_id
+        return self.current_task_id
 
-    def get_current_task_id2(self):
-        """
-        Returns current task id. Get current_state as int, not string.
-        :return: int
-        """
-        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
-        try:
-            current_task_id = getattr(self, states[int(self.current_state)] + "_id")
-        except:
-            raise WebpandaError("Unable to get current task ID")
-        return current_task_id
 
-    def get_current_task(self):
-        """
-        Returns current task id. Get current_state as int, not string.
-        :return: int
-        """
-        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
-        i = int(self.current_state)
-#        if i == len(states)-1:
-        if i == 6:
-            return -1
-        return i
+
+
 
 
 

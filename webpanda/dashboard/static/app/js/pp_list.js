@@ -15,7 +15,6 @@ $(document).ready(function() {
             { "data": "tag"},
             { "data": "id" },
             { "data": "owner_id" },
-            { "data": "pipeline.name" },
             { "data": "creation_time" },
             { "data": "modification_time" },
             { "data": "status" }
