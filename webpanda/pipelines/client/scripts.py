@@ -87,7 +87,7 @@ def get_start_task(p):
 
     # Create start_task
     start_task_type = task_types_.first(method='start')
-    start_task = new_task(start_task_type.id)
+    start_task = new_task(start_task_type)
     tasks_.save(start_task)
 
     # Update Pipeline obj
