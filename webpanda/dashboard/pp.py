@@ -2,14 +2,16 @@
 import commands
 from datetime import datetime
 from flask import Blueprint, jsonify, request, render_template, url_for, g, make_response, current_app, session
+from werkzeug.utils import redirect
+
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.dashboard import route_s
 from webpanda.files import Container
-from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files_
+from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files_, task_types_
 from webpanda.tasks import Pipeline, Task
 from webpanda.tasks.forms import NewPipelineForm
-from werkzeug.utils import redirect
 from webpanda.fc.Client import Client as fc
+from webpanda.pipelines import client as pclient
 
 
 bp = Blueprint('pipelines', __name__, url_prefix="/pipelines")
@@ -59,18 +61,11 @@ def new_pipeline():
                     return make_response(jsonify({'error': "GUID {} not found".format(f)}))
 
         # Prepare init task
-        task = Task()
-        task.owner_id = current_user.id
-        task.task_type_id = 2
-        task.creation_time = datetime.utcnow()
-        task.modification_time = datetime.utcnow()
-        task.status = 'defined'
-        task.input = pp_cont.id
-        task.output = pp_cont.id
-        tasks_.save(task)
+        task_type = task_types_.first(method='start')
+        task = pclient.new_task(task_type)
 
-        pp.init_task_id = task.id
-        pipelines_.save(pp)
+        # Set current task
+        pclient.set_current_task(pp, task)
 
         return redirect(url_for('pipelines.list_all'))
 
