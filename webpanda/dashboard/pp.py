@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 import commands
-from datetime import datetime
 from flask import Blueprint, jsonify, request, render_template, url_for, g, make_response, current_app, session
 from werkzeug.utils import redirect
 
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.dashboard import route_s
 from webpanda.files import Container
-from webpanda.services import pipelines_, conts_, tasks_, pipeline_types_, files_, task_types_
-from webpanda.tasks import Pipeline, Task
+from webpanda.services import conts_, pipeline_types_, files_, task_types_, pipelines_
+from webpanda.tasks import Pipeline
 from webpanda.tasks.forms import NewPipelineForm
 from webpanda.fc.Client import Client as fc
 from webpanda.pipelines import client as pclient
@@ -39,9 +38,9 @@ def new_pipeline():
         # Prepare pipeline
         pp = Pipeline()
         pp.status = 'running'
-        pp.current_state = 'init_task'
         pp.type_id = pipeline_types_.get(1).id
         pp.owner_id = current_user.id
+        pipelines_.save(pp)
 
         # Prepare container
         pp_cont = Container()
