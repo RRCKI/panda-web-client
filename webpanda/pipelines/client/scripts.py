@@ -90,7 +90,7 @@ def new_task(tt):
     t.modification_time = datetime.utcnow()
     t.status = 'defined'
     t.task_type = tt
-    tasks_.save(tt)
+    tasks_.save(t)
     return t
 
 
