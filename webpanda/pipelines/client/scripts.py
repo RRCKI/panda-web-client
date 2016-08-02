@@ -1,5 +1,5 @@
 from datetime import datetime
-from webpanda.services import tasks_, pipelines_, pipeline_catalog_, task_types_
+from webpanda.services import tasks_, pipelines_, pipeline_catalog_
 from webpanda.tasks import Pipeline, Task, PipelineType, PipelineCatalog, TaskType
 
 
@@ -72,9 +72,7 @@ def get_next_task(p):
     tasks_.save(next_task)
 
     # Update Pipeline obj
-    p.current_task_id = next_task.id
-    p.modification_time = datetime.utcnow()
-    pipelines_.save(p)
+    set_current_task(p, next_task)
     return next_task
 
 
