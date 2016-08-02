@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint
+from flask import Blueprint, g
 
 from webpanda.api import route
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -11,4 +11,4 @@ _logger = NrckiLogger().getLogger("api.pipelines")
 
 @route(bp, "/", methods=['GET'])
 def list_all():
-    return pipelines_.all()
+    return pipelines_.find(owner_id=g.user.id).all()

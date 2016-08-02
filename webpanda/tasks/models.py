@@ -57,57 +57,9 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
     def __repr__(self):
         return '<PipelineType id=%s>' % self.id
 
-    def get_next_task_type_id(self, current_state):
-        """
-        Returns Type ID of next task or None if pipeline finished
-        :return: int or None
-        """
-        # Set list of all states
-        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
-
-        # Check input param
-        if current_state not in states:
-            raise WebpandaError("Illegal current_state param")
-
-        # Remove all state before current state (including)
-        for state in states:
-            states.remove(state)
-            if state == current_state:
-                break
-
-        # Find next not None state
-        for state in states:
-            if getattr(self, state + 'type_id') is not None:
-                return getattr(self, state + 'type_id')
- #do it (2 upper) this way?
-        i = states.index(current_state) + 1
-        if i < len(states):
-            id = states[i] + 'type_id'
-            if getattr(self, states) is not None:
-                return getattr(self, states)
-            return states[i]
-#        else:
-#            raise WebpandaError("Illegal get_next_state")
-        return None
-
-    def get_next_task_type_id2(self, current_state):
-        """
-        Returns int ID of next task or None if pipeline finished
-        :return: int or None
-        """
-        # Set list of all states
-        states = ['init_task', "pre_task", "split_task", "prun_task", "merge_task", "post_task", "finish_task"]
-
-        i = int(current_state)+1
-        if i < len(states):
-            return states[i]
-        # else:
-        #            raise WebpandaError("Illegal get_next_state")
-        return None
-
 
 class TaskJsonSerializer(JsonSerializer):
-    pass
+    __json_public__ = ['tag', 'id', 'owner_id', 'creation_time', 'modification_time', 'status']
 
 
 class Task(TaskJsonSerializer, db.Model):
@@ -132,7 +84,7 @@ class Task(TaskJsonSerializer, db.Model):
 
 
 class PipelineJsonSerializer(JsonSerializer):
-    __json_public__ = ['id', 'name']
+    __json_public__ = ['id', 'owner_id', 'type_id', 'tag', 'current_task_id', 'status']
 
 
 class Pipeline(PipelineJsonSerializer, db.Model):
@@ -144,16 +96,12 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     tag = db.Column(db.String(256))
     current_task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), default=None)
     status = db.Column(db.String(256))
+    creation_time = db.Column(db.DateTime)
+    modification_time = db.Column(db.DateTime)
 
     def __repr__(self):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
 
-    def get_current_task_id(self):
-        """
-        Returns current task id
-        :return: int
-        """
-        return self.current_task_id
 
 
 

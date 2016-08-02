@@ -6,7 +6,7 @@
 """
 
 from webpanda.core import Service
-from webpanda.tasks.models import Task, Pipeline, PipelineType, TaskType
+from webpanda.tasks.models import Task, Pipeline, PipelineType, TaskType, PipelineCatalog
 
 
 class TaskService(Service):
@@ -21,3 +21,7 @@ class PipelineService(Service):
 
 class PipelineTypeService(Service):
     __model__ = PipelineType
+
+class PipelineCatalogService(Service):
+    __model__ = PipelineCatalog
+

@@ -4,6 +4,7 @@ from webpanda.pipelines.scripts import paleomix_init, paleomix_split, paleomix
 from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_
 from webpanda.tasks import Task
 from webpanda.fc.Client import Client as fc
+from webpanda.pipelines import client as pclient
 from webpanda.core import WebpandaError
 
 
@@ -28,7 +29,7 @@ def run():
             pipelines_.save(pipeline)
 
         # Fetch task object
-        current_task = tasks_.get(pipeline.get_current_task_id())
+        current_task = pclient.get_current_task(pipeline)
 
         if current_task.status == 'defined':
             # Run task if defined
@@ -64,7 +65,7 @@ def run2():
             pipelines_.save(pipeline)
 
         # Fetch task object
-        current_task = tasks_.get(pipeline.get_current_task_id2())
+        current_task = pclient.get_current_task(pipeline)
 
         if current_task is None:
             return WebpandaError('Illegal task ID')
@@ -134,62 +135,6 @@ def check_running_tasks():
     return True
 
 
-def check_next_task():
-    """
-    Checks finished task and starts next one
-    :return:
-    """
-
-    # Get all pipelines
-    pipelines = pipelines_.find(status='running')
-    for pipeline in pipelines:
-        current_task = tasks_.get(pipeline.get_current_task_id())
-
-        if current_task.status == 'finished':
-            pipeline_type = pipeline.pipeline_type
-
-            # Get next task type id
-            next_task_type_id = pipeline_type.get_next_task_type_id(current_task.task_type.method)
-
-            # Check if last task
-            if next_task_type_id is None:
-                pipeline.current_state = None
-                pipeline.status = 'finished'
-                pipelines_.save(pipeline)
-                continue
-
-            # Get next task type
-            next_task_type = task_types_.get(next_task_type_id)
-
-            # If next task exists
-            next_task = Task()
-            next_task.owner_id = pipeline.owner_id
-            next_task.task_type_id = next_task_type_id
-            next_task.creation_time = datetime.utcnow()
-            next_task.modification_time = datetime.utcnow()
-            next_task.status = 'defined'
-            next_task.input = current_task.input
-            next_task.output = current_task.output
-            tasks_.save(next_task)
-
-            # Set task/pipeline relation
-            pipeline.current_state = next_task_type.method
-            setattr(pipeline, next_task_type.method + "_id", next_task.id)
-            pipelines_.save(pipeline)
-        elif current_task.status == 'failed':
-            #TODO: What to do if failed?
-            pipeline.current_state = None
-            pipeline.status = 'failed'
-            pipelines_.save(pipeline)
-            return True
-        elif current_task.status == 'cancelled':
-            #TODO: What to do if cancelled?
-            #TODO: Who or by whom? If by system - resubmit, if by user -nothing?
-            pipeline.current_state = None
-            pipeline.status = 'cancelled'
-            pipelines_.save(pipeline)
-            return True
-
 def check_next_task2():
     """
     Checks finished task and starts next one
@@ -200,49 +145,26 @@ def check_next_task2():
     # Get all pipelines
     pipelines = pipelines_.find(status='running')
     for pipeline in pipelines:
-        current_task = tasks_.get(pipeline.get_current_task_id2())
+        current_task = pclient.get_current_task(pipeline)
 
         if current_task.status == 'finished':
-            pipeline_type = pipeline.pipeline_type
-
-            # Get next task type id
-            next_task_type_id = pipeline_type.get_next_task_type_id2(current_task.task_type.method)
+            # Get next_task
+            next_task = pclient.get_next_task(pipeline)
 
             # Check if last task
-            if next_task_type_id is None:
-                pipeline.current_state = None
+            if pclient.is_finish_task(next_task):
                 pipeline.status = 'finished'
                 pipelines_.save(pipeline)
                 continue
 
-            # Get next task type
-            next_task_type = task_types_.get(next_task_type_id)
-
-            # If next task exists
-            next_task = Task()
-            next_task.owner_id = pipeline.owner_id
-            next_task.task_type_id = next_task_type_id
-            next_task.creation_time = datetime.utcnow()
-            next_task.modification_time = datetime.utcnow()
-            next_task.status = 'defined'
-            next_task.input = current_task.input
-            next_task.output = current_task.output
-            tasks_.save(next_task)
-
-            # Set task/pipeline relation
-            pipeline.current_state = next_task_type.method
-            setattr(pipeline, next_task_type.method + "_id", next_task.id)
-            pipelines_.save(pipeline)
         elif current_task.status == 'failed':
             #TODO: What to do if failed?
-            pipeline.current_state = None
             pipeline.status = 'failed'
             pipelines_.save(pipeline)
             return True
         elif current_task.status == 'cancelled':
             #TODO: What to do if cancelled?
             #TODO: Who or by whom? If by system - resubmit, if by user -nothing?
-            pipeline.current_state = None
             pipeline.status = 'cancelled'
             pipelines_.save(pipeline)
             return True

@@ -10,7 +10,7 @@ def cron_paleomix_main():
 
 @celery.task
 def cron_paleomix_main_check_next_task():
-    return json.dumps(paleomix_main.check_next_task())
+    return json.dumps(paleomix_main.check_next_task2())
 
 
 @celery.task

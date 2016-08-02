@@ -7,17 +7,17 @@
 $(document).ready(function() {
     moment.locale('ru');
 
-    $('#taskstable').dataTable( {
+    $('#pptable').dataTable( {
         "order": [[ 0, "desc" ]],
         "processing": true,
-        "ajax": "/api/tasks",
+        "ajax": "/api/pipelines",
         "columns": [
-            { "data": "tag"},
             { "data": "id" },
-            { "data": "owner_id" },
+            { "data": "type_id" },
+            { "data": "current_task_id" },
+            { "data": "status" },
             { "data": "creation_time" },
-            { "data": "modification_time" },
-            { "data": "status" }
+            { "data": "modification_time" }
         ],
         // Add link - start
         "aoColumnDefs": [

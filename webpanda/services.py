@@ -6,7 +6,7 @@
 """
 from webpanda.auth import UserService, GrantService, ClientService, TokenService
 from webpanda.files import FileService, ContService, ReplicaService, CatalogService, TransferTaskService, TaskMetaService, TaskSetMetaService
-from webpanda.tasks import TaskService, PipelineService, PipelineTypeService, TaskTypeService
+from webpanda.tasks import TaskService, PipelineService, PipelineTypeService, TaskTypeService, PipelineCatalogService
 from webpanda.jobs import JobService, SiteService, DistrService
 
 # Auth
@@ -20,6 +20,7 @@ tasks_ = TaskService()
 task_types_ = TaskTypeService()
 pipelines_ = PipelineService()
 pipeline_types_ = PipelineTypeService()
+pipeline_catalog_ = PipelineCatalogService()
 
 # Jobs
 jobs_ = JobService()
