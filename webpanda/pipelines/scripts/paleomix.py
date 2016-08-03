@@ -49,7 +49,11 @@ def run(task, metod):
         if metod == 'init_task':
             payload1(task)
         if metod == 'split_task':
+            #TODO need to save N (as split parts)
             payload2(task)
+        if metod == 'run1_task':
+            #TODO need to pass N
+            payload3(task)
         #...
 
         # Change task state to 'finished'
@@ -109,7 +113,6 @@ def payload2(task):
     split_task
     Split input *.1.fastq and *.2.fastq into 'rn' pieces=
     run panda /bin/bash split.sh
-    -Register results into output_cont
     :param task:
     :return:
     """
@@ -122,8 +125,8 @@ def payload2(task):
 
     # Get containers
     input_cont = conts_.get(task.input)
+    #TODO do smth with output container?
     output_cont = conts_.get(task.output)
-
 
     # Get container
     container = Container()
@@ -141,26 +144,117 @@ def payload2(task):
                 rn = getn(f.fsize)
             elif f.lfn.endswith('fastq.bz2'):
                 rn = getn2(f.fsize)
-
         for file_template in files_template_list:
             # TODO: Change file template here
             m = re.match(file_template, f.lfn)
             if m is not None:
                 # Register file in container
                 fc.reg_file_in_cont(f, container, 'input')
+                if f.lfn.endswith('.fastq'):
+                    for fi in gen_sfx(f.lfn[:-6], rn, '.fastq'):
+                        fc.reg_file_in_cont_byname(fi, container, 'output')
+                if f.lfn.endswith('.fastq.bz2'):
+                    for fi in gen_sfx(f.lfn[:-10], rn, '.fastq'):
+                        fc.reg_file_in_cont_byname(fi, container, 'output')
+                if f.lfn.endswith('.fasta'):
+                    fn=f.lfn+'.'
+                    fc.reg_file_in_cont_byname(fn[:-6], container, 'output')
+                    for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
+                        fc.reg_file_in_cont_byname(fn+sfx, container, 'output')
+    #reg additional output
+    for fi in gen_sfx('Makefile', rn):
+        fc.reg_file_in_cont_byname(fi, container, 'output')
 
     # Prepare trf script
     script = task.task_type.trf_template
-    #TODO script
-    #script="/bin/bash /home/users/poyda/lustre/swp/split.sh " + str(rn)
+    #TODO just for test - only emulate, not real jobs
+    script="/bin/bash /home/users/poyda/lustre/swp/split1.sh " + str(rn)
+    script+=" && /bin/bash /home/users/poyda/lustre/swp/genref1.sh"
 
     send_job_(task, container, script)
 
     return True
 
+def payload3(task):
+    """
+    run1 - N parallel jobs. {N} = sequence 0..01,0..02,...,N, not less than 2 placeholders
+    #TODO deal with {N}.fastq.bz2 ??
+    input: Makefile.{N}, *.fasta.{sfx list}, *1.{N}.fastq, *2.{N}.fastq
+    output: likely reads{N}.tgz, maps{N}.tgz
+    :param task:
+    :return:
+    """
+
+    #### Prepare
+    # Check type of task
+    task_type = task.task_type
+#    if task_type.id != 3or6?:
+#        raise WebpandaError("Illegal task_type.id")
+
+    #TODO need N
+    n=10
+
+    # Get containers
+    input_cont = conts_.get(task.input)
+    #TO_DO do smth with output container?
+    output_cont = conts_.get(task.output)
+
+    for jobname in gen_sfx("",n):
+        # Get container
+        container = Container()
+        container.guid = task.tag + "."+jobname
+        conts_.save(container)
+
+        # Add input files to container
+        files_template_list = task_type.ifiles_template.split(',')
+        for item in input_cont.files:
+            f = item.file
+            for file_template in files_template_list:
+                # TO_DO: Change file template here
+                m = re.match(file_template, f.lfn)
+                if m is not None:
+                    # Register file in container
+                    fc.reg_file_in_cont(f, container, 'input')
+
+        # reg additional output
+        fc.reg_file_in_cont_byname(jobname+'.reads.tgz', container, 'output')
+        fc.reg_file_in_cont_byname(jobname + '.maps.tgz', container, 'output')
+
+        # Prepare trf script
+        script = task.task_type.trf_template
+        # TO_DO just for test - only emulate, not real jobs
+        script = "/bin/bash /home/users/poyda/lustre/swp/run11.sh " +jobname
+
+        send_job_(task, container, script)
+
+
+    return True
+
+
+def gen_sfx(pre,n,end=""):
+    #return list of range (1,n) with addition of prefix and end, and use equal placeholders for all numbers from sequence
+    #not more than 999!!!
+    r=range(1,n)
+    k=n
+    nc=1 #number of 0..0 prefix in list, - fon n <10: nc=1 : 01,02,..,09
+    while (k>=100):
+        nc+=1
+        k=k//10
+    j=nc
+    pp=""
+    ppf=1
+    while (j>0):
+        pp+="0"
+        j-=1
+    for i in xrange(0,n-1):
+        if i==9:
+            pp = pp[:-1]
+        elif i==99:
+            pp=pp[:-1]
+        r[i]=pre+pp+str(i+1)+end
+    return r
 
 def getn(fsize):
-    # TO_DO deal with fastq.bz2 input files
     basen = 1610612736  #1.5G - we has 3.6G for small biotask, and 175G for 135 subtasks for bigbiotask
     basedst = 2
     rn = 0
@@ -183,7 +277,7 @@ def getn(fsize):
     return rn
 
 def getn2(fsize):
-    # TO_DO deal with fastq.bz2 input files
+    # deal with fastq.bz2 input files
     basen = 240*1024*1024  #240Mb - bz2 ratio from x6 to x5 - we has 650M for small biotask, and 240M for 135 subtasks for ??G bigbiotask
     basedst = 2
     rn = 0

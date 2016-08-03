@@ -39,6 +39,55 @@ class Client:
         return True
 
     @staticmethod
+    def reg_file_in_cont_byname(lfn, c, t):
+        """
+        Registers file in catalog
+        :param f: File obj
+        :param c: Container obj
+        :param t: type (input, output, log)
+        :return: True/False
+        """
+        if not isinstance(lfn, str):
+            raise Exception("Illegal lfn class: not str")
+        if len(lfn) == 0:
+            raise Exception("Illegal lfn length: zero")
+
+        # Prepare File obj
+        f = File()
+        f.scope = getScope(g.username)
+        f.attemptn = 0
+        f.guid = getGUID(f.scope, None)
+        f.lfn = lfn
+        f.status = "defined"
+        f.transfertask = None
+        # f.fsize =
+        # md5sum =
+        # checksum =
+        f.modification_time = datetime.utcnow()
+        f.downloaded = 0
+
+        # Save to fc
+        files_.save(f)
+
+        if not isinstance(f, File):
+            raise Exception("Illegal file class: not File")
+        if not isinstance(c, Container):
+            raise Exception("Illegal catalog class: not Container")
+        if not isinstance(t, str):
+            raise Exception("Illegal type class: not str")
+        if t not in ['input', 'output', 'log', 'intermediate']:
+            raise Exception("Illegal type value: " + t)
+
+        catalog_item = Catalog()
+        catalog_item.file = f
+        catalog_item.cont = c
+        catalog_item.type = t
+        # TODO: Add registration time
+
+        catalog_.save(catalog_item)
+        return True
+
+    @staticmethod
     def new_file(lfn):
         """
         Creates new file object
