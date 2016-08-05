@@ -13,11 +13,6 @@ CELERYBEAT_SCHEDULE = {
         'schedule': timedelta(seconds=60),
         #'schedule': crontab()
     },
-    'paleomix_main_cron2': {
-        'task': 'webpanda.async.pipelines.cron_paleomix_main_check_next_task',
-        'schedule': timedelta(seconds=60),
-        #'schedule': crontab()
-    },
     'paleomix_main_cron3': {
         'task': 'webpanda.async.pipelines.cron_paleomix_main_check_running_tasks',
         'schedule': timedelta(seconds=60),
