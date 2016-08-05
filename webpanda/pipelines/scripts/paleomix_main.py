@@ -1,48 +1,13 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from webpanda.pipelines.scripts import paleomix_init, paleomix_split, paleomix
-from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_
-from webpanda.tasks import Task
+from webpanda.pipelines.scripts import paleomix
+from webpanda.services import pipelines_, tasks_, jobs_, conts_
 from webpanda.fc import client as fc
 from webpanda.pipelines import client as pclient
 from webpanda.core import WebpandaError
 
 
 def run():
-    """
-    Starts current defined task
-    :return:
-    """
-    print "main started"
-
-    # Fetch pipelines (init state)
-    pipelines = pipelines_.all()
-    for pipeline in pipelines:
-        # Check if finished
-        if pipeline.status in ['finished', 'failed', 'cancelled']:
-            continue
-
-        # By default set init_task state
-        if pipeline.status == 'starting':
-            pipeline.status = 'running'
-            pipeline.current_state = 'init_task'
-            pipelines_.save(pipeline)
-
-        # Fetch task object
-        current_task = pclient.get_current_task(pipeline)
-
-        if current_task.status == 'defined':
-            # Run task if defined
-            current_task.status = 'sent'
-            tasks_.save(current_task)
-
-            #TODO: Run async regime
-            if current_task.task_type.method == 'init_task':
-                paleomix_init.run(current_task.id)
-            elif current_task.task_type.method == 'split_task':
-                paleomix_split.run(current_task.id)
-
-def run2():
     """
     Starts current defined task
     :return:
@@ -57,13 +22,6 @@ def run2():
         if pipeline.status in ['finished', 'failed', 'cancelled']:
             continue
 
-        # By default set init_task state
-        #TODO can do it at pipeline creation time? We`ve done apparently nothing else since that.
-        if pipeline.status == 'starting':
-            pipeline.status = 'running'
-            pipeline.current_state = '0'
-            pipelines_.save(pipeline)
-
         # Fetch task object
         current_task = pclient.get_current_task(pipeline)
 
@@ -71,15 +29,38 @@ def run2():
             return WebpandaError('Illegal task ID')
 
         if current_task.status == 'defined':
-            # Do some checks if it usefull - or we have all files already, or there would be never enough of them.
-            if paleomix.check_input(current_task) != 0:
-                continue
-            # Run task if defined
-            current_task.status = 'sent'
-            tasks_.save(current_task)
+            if current_task.task_type.method == 'start':
+                # Process system start task
+                # Do some checks if it usefull - or we have all files already, or there would be never enough of them.
+                if paleomix.has_input(current_task):
+                    continue
+                else:
+                    current_task.status = "failed"
+                    current_task.modification_time = datetime.utcnow()
+                    current_task.comment = "Input files check failed"
+                    tasks_.save(current_task)
 
-            #TO_DO: Run async regime
-            paleomix.run(current_task) # we already get task from id. Not need to obtain again, is it?
+                    pipeline.status = 'failed'
+                    pipeline.modification_time = datetime.utcnow()
+                    pipelines_.save(pipeline)
+                    continue
+            elif current_task.task_type.method == 'finish':
+                current_task.status = 'finished'
+                current_task.modification_time = datetime.utcnow()
+                tasks_.save(current_task)
+
+                # Process system finish task
+                pipeline.status = 'finished'
+                pipeline.modification_time = datetime.utcnow()
+                pipelines_.save(pipeline)
+                continue
+            else:
+                # Run task if defined
+                current_task.status = 'sent'
+                tasks_.save(current_task)
+
+                #TO_DO: Run async regime
+                paleomix.run(current_task, current_task.task_type.method) # we already get task from id. Not need to obtain again, is it?
         #TODO if current_task.status != 'defined' we can operate some steps from 2 others 'cron_tasks'
 
 

@@ -8,12 +8,14 @@ from flask import current_app
 from webpanda.core import WebpandaError
 from webpanda.files import Container
 from webpanda.jobs import Job
+from webpanda.pipelines.scripts import logger
 from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, users_
 from webpanda.async import async_send_job
 from webpanda.fc import client as fc
 
 
-def check_input(task):
+def has_input(task):
+    logger.debug("has_input: Start " + str(task.id))
     # Get containers
     input_cont = conts_.get(task.input)
     #output_cont = conts_.get(task.output)
@@ -31,7 +33,9 @@ def check_input(task):
                 files_template_list.remove(file_template)
     #if len(files_template_list)>0:
     #   raise WebpandaDebug("Input files not found in input container")
-    return len(files_template_list)
+    retval = len(files_template_list) == 0
+    logger.debug("has_input: " + str(retval))
+    return retval
 
 
 def run(task, method):
@@ -46,10 +50,7 @@ def run(task, method):
         tasks_.save(task)
 
         # Custom payload
-        if method == 'start':
-            # TODO: add start handler
-            pass
-        elif method == 'init_task':
+        if method == 'init_task':
             payload1(task)
         elif method == 'split_task':
             #TODO need to save N (as split parts)
@@ -57,9 +58,6 @@ def run(task, method):
         elif method == 'run1_task':
             #TODO need to pass N
             payload3(task)
-        elif method == 'finish':
-            # TODO: add special finish handler
-            pass
         else:
             raise WebpandaError("Task payload error: method not found")
 
@@ -111,7 +109,8 @@ def send_job_(task, container, script):
 
 
 def payload1(task):
-    # init
+    # Init
+    logger.debug("payload1: Start")
     return True
 
 
@@ -123,7 +122,7 @@ def payload2(task):
     :param task:
     :return:
     """
-
+    logger.debug("payload2: Start")
     #### Prepare
     # Check type of task
     task_type = task.task_type
@@ -182,6 +181,7 @@ def payload2(task):
 
     return True
 
+
 def payload3(task):
     """
     run1 - N parallel jobs. {N} = sequence 0..01,0..02,...,N, not less than 2 placeholders
@@ -191,6 +191,7 @@ def payload3(task):
     :param task:
     :return:
     """
+    logger.debug("payload3: Start")
 
     #### Prepare
     # Check type of task
