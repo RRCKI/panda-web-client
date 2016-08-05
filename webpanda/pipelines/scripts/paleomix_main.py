@@ -30,20 +30,13 @@ def run():
 
         if current_task.status == 'defined':
             if current_task.task_type.method == 'start':
-                # Process system start task
-                # Do some checks if it usefull - or we have all files already, or there would be never enough of them.
-                if paleomix.has_input(current_task):
-                    continue
-                else:
-                    current_task.status = "failed"
-                    current_task.modification_time = datetime.utcnow()
-                    current_task.comment = "Input files check failed"
-                    tasks_.save(current_task)
 
-                    pipeline.status = 'failed'
-                    pipeline.modification_time = datetime.utcnow()
-                    pipelines_.save(pipeline)
-                    continue
+                # Do some general pipeline checks
+
+                current_task.status = 'finished'
+                current_task.modification_time = datetime.utcnow()
+                tasks_.save(current_task)
+                continue
             elif current_task.task_type.method == 'finish':
                 current_task.status = 'finished'
                 current_task.modification_time = datetime.utcnow()
@@ -55,12 +48,26 @@ def run():
                 pipelines_.save(pipeline)
                 continue
             else:
+                # Process system start task
+                # Do some checks if it usefull - or we have all files already, or there would be never enough of them.
+                if not paleomix.has_input(current_task):
+                    current_task.status = "failed"
+                    current_task.modification_time = datetime.utcnow()
+                    current_task.comment = "Input files check failed"
+                    tasks_.save(current_task)
+
+                    pipeline.status = 'failed'
+                    pipeline.modification_time = datetime.utcnow()
+                    pipelines_.save(pipeline)
+                    continue
+
                 # Run task if defined
                 current_task.status = 'sent'
                 tasks_.save(current_task)
 
                 #TO_DO: Run async regime
                 paleomix.run(current_task, current_task.task_type.method) # we already get task from id. Not need to obtain again, is it?
+                # if we use async run, all params must be serializable (BaseQuery is not)
         #TODO if current_task.status != 'defined' we can operate some steps from 2 others 'cron_tasks'
 
 
