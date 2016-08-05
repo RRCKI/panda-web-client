@@ -10,6 +10,7 @@ from webpanda.async.scripts import async_upload_dir
 from webpanda.dashboard import route_s
 from webpanda.services import files_, sites_
 from webpanda.fc import client as fc
+from webpanda.files.common import getScope
 
 
 bp = Blueprint('files', __name__, url_prefix="/files")
@@ -39,7 +40,7 @@ def files_list():
 
     hours_limit = session.get('hours_limit', current_app.config['HOURS_LIMIT'])
     display_limit = session.get('display_limit', current_app.config['DISPLAY_LIMIT'])
-    scope = fc.getScope(user.username)
+    scope = getScope(user.username)
     # show users jobs
     files = files_.find(scope=scope).order_by(File.id).limit(display_limit)
 
@@ -117,7 +118,7 @@ def file_download(guid):
     except(Exception):
         _logger.error(Exception.message)
         return make_response(jsonify({'error': 'File not found'}), 404)
-    if file.scope != fc.getScope(g.user.username):
+    if file.scope != getScope(g.user.username):
         return make_response(jsonify({'error': 'File is not in your scope'}), 403)
 
     replicas = file.replicas

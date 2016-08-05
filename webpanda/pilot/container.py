@@ -6,7 +6,8 @@ import os
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
 from webpanda.files import Container
-from webpanda.files.scripts import getScope, registerLocalFile
+from webpanda.files.scripts import registerLocalFile
+from webpanda.files.common import getScope
 from webpanda.pilot import route
 from webpanda.services import conts_
 
