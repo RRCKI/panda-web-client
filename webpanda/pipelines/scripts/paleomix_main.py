@@ -3,7 +3,7 @@ from datetime import datetime
 from webpanda.pipelines.scripts import paleomix_init, paleomix_split, paleomix
 from webpanda.services import pipelines_, tasks_, jobs_, task_types_, conts_
 from webpanda.tasks import Task
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 from webpanda.pipelines import client as pclient
 from webpanda.core import WebpandaError
 

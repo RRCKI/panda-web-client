@@ -10,7 +10,7 @@ from webpanda.files import Container
 from webpanda.jobs import Job
 from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, users_
 from webpanda.async import async_send_job
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 
 def run(task_id):

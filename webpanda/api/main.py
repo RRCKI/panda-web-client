@@ -15,7 +15,7 @@ from webpanda.jobs import Job
 from webpanda.jobs.scripts import extractLog
 from webpanda.services import jobs_, distrs_, conts_, sites_, files_
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 
 bp = Blueprint('main', __name__)

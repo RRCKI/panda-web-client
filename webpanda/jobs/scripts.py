@@ -13,7 +13,7 @@ from webpanda.files import Replica, File
 from webpanda.files.scripts import getScope, getFullPath, getGUID, setFileMeta
 from webpanda.jobs import Job
 from webpanda.services import sites_, jobs_, replicas_, files_
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 _logger = NrckiLogger().getLogger("files.scripts")
 

@@ -9,7 +9,7 @@ from webpanda.files import Container
 from webpanda.services import conts_, pipeline_types_, files_, task_types_, pipelines_, tasks_
 from webpanda.tasks import Pipeline
 from webpanda.tasks.forms import NewPipelineForm
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 from webpanda.pipelines import client as pclient
 
 

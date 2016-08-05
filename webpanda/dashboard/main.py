@@ -11,7 +11,7 @@ from webpanda.files.scripts import getScope, setFileMeta
 from webpanda.files.scripts import getGUID
 from webpanda.services import sites_, conts_, files_, replicas_
 from werkzeug.utils import redirect
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 bp = Blueprint('main', __name__)
 _logger = NrckiLogger().getLogger("dashboard.main")

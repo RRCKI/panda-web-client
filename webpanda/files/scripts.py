@@ -9,7 +9,7 @@ from webpanda.core import WebpandaError
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexists, ddm_localrmtree, \
     ddm_getlocalfilemeta, ddm_localisdir
-from webpanda.fc import scripts as fc
+from webpanda.fc import client as fc
 from webpanda.files import File, Replica
 from webpanda.services import files_, conts_, sites_, replicas_, users_
 

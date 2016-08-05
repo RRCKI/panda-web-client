@@ -9,7 +9,7 @@ from webpanda.files.scripts import getFtpLink, getScope, getGUID, setFileMeta
 from webpanda.pilot import route
 from webpanda.services import sites_, conts_, files_, replicas_
 from webpanda.async.scripts import async_cloneReplica, async_copyReplica
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 
 bp = Blueprint('file', __name__, url_prefix="/file")

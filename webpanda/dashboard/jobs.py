@@ -17,7 +17,7 @@ from webpanda.jobs import Job
 from webpanda.jobs.forms import NewJobForm, JobResendForm, JobKillForm
 from webpanda.services import distrs_, jobs_, conts_, files_, replicas_
 from webpanda.services import sites_
-from webpanda.fc.Client import Client as fc
+from webpanda.fc import client as fc
 
 bp = Blueprint('jobs', __name__, url_prefix="/jobs")
 _logger = NrckiLogger().getLogger("dashboard.jobs")

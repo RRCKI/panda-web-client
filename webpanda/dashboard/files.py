@@ -9,7 +9,7 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.async.scripts import async_upload_dir
 from webpanda.dashboard import route_s
 from webpanda.services import files_, sites_
-from webpanda.fc import scripts as fc
+from webpanda.fc import client as fc
 
 
 bp = Blueprint('files', __name__, url_prefix="/files")
