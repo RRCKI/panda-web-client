@@ -13,7 +13,8 @@ from webpanda.app.scripts import registerLocalFile, extractLog, register_ftp_fil
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.app.models import Distributive, Container, File, Site, Replica, TaskMeta, Job
-from webpanda.files.scripts import getScope, getGUID, getFtpLink, setFileMeta
+from webpanda.files.scripts import getFtpLink, setFileMeta
+from webpanda.files.common import getScope, getGUID
 
 _logger = NrckiLogger().getLogger("app.api")
 

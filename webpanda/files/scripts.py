@@ -11,6 +11,7 @@ from webpanda.ddm.scripts import ddm_localmakedirs, ddm_localcp, ddm_checkifexis
     ddm_getlocalfilemeta, ddm_localisdir
 from webpanda.fc import client as fc
 from webpanda.files import File, Replica
+from webpanda.files.common import getGUID
 from webpanda.services import files_, conts_, sites_, replicas_, users_
 
 DATA_DIR = client_config.TMP_DIR
@@ -192,26 +193,6 @@ def linkFile(fileid, se, dir):
             linkReplica(replica.id, dir)
             return
     raise Exception('No replica to link file:%s on SE:%s' % (f.guid, se))
-
-
-def getScope(username):
-    """
-    Get default user's scope
-    :param username:
-    :return: str
-    """
-    return 'web.' + username
-
-
-def getGUID(scope, lfn):
-    guid = commands.getoutput('uuidgen')
-    return scope + '_' + guid
-
-
-def getFullPath(scope, dataset, lfn):
-    if ':' in dataset:
-        return '/' + '/'.join([dataset.split(':')[0], '.sys', dataset.split(':')[1], lfn])
-    return '/' + '/'.join([scope, '.sys', dataset, lfn])
 
 
 def getUrlInfo(url):

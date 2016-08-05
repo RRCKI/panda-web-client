@@ -5,7 +5,8 @@ import os
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.core import WebpandaError
 from webpanda.files import Replica, File
-from webpanda.files.scripts import getFtpLink, getScope, getGUID, setFileMeta
+from webpanda.files.scripts import getFtpLink, setFileMeta
+from webpanda.files.common import getScope, getGUID
 from webpanda.pilot import route
 from webpanda.services import sites_, conts_, files_, replicas_
 from webpanda.async.scripts import async_cloneReplica, async_copyReplica

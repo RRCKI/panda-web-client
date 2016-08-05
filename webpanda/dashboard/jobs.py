@@ -12,7 +12,8 @@ from webpanda.common.utils import find
 from webpanda.dashboard import route_s
 from webpanda.ddm.scripts import ddm_checkexternalifexists, ddm_getlocalabspath
 from webpanda.files.models import File, Replica
-from webpanda.files.scripts import getScope, register_ftp_files, getUrlInfo, getGUID
+from webpanda.files.scripts import register_ftp_files, getUrlInfo
+from webpanda.files.common import getGUID, getScope
 from webpanda.jobs import Job
 from webpanda.jobs.forms import NewJobForm, JobResendForm, JobKillForm
 from webpanda.services import distrs_, jobs_, conts_, files_, replicas_

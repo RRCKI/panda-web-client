@@ -4,7 +4,7 @@ from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.dashboard import route_s
 from webpanda.files import Container
 from webpanda.files.forms import NewContainerForm
-from webpanda.files.scripts import getScope
+from webpanda.files.common import getScope
 from webpanda.services import conts_
 from webpanda.async.scripts import async_uploadContainer
 from werkzeug.utils import redirect

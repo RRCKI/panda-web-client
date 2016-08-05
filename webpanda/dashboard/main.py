@@ -7,8 +7,8 @@ from webpanda.common.utils import adler32, md5sum, fsize
 from webpanda.dashboard import route_s
 from webpanda.ddm.scripts import ddm_checkifexists
 from webpanda.files import Container, File, Replica
-from webpanda.files.scripts import getScope, setFileMeta
-from webpanda.files.scripts import getGUID
+from webpanda.files.scripts import setFileMeta
+from webpanda.files.common import getGUID, getScope
 from webpanda.services import sites_, conts_, files_, replicas_
 from werkzeug.utils import redirect
 from webpanda.fc import client as fc

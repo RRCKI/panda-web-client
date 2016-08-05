@@ -19,7 +19,8 @@ from webpanda.async import async_cloneReplica, async_uploadContainer, async_kill
 
 from pandaserver.userinterface import Client
 #comment
-from webpanda.files.scripts import getScope, getUrlInfo, getGUID, setFileMeta
+from webpanda.files.scripts import setFileMeta, getUrlInfo
+from webpanda.files.common import getScope, getGUID
 
 HOURS_LIMIT = 96
 DISPLAY_LIMIT = 200

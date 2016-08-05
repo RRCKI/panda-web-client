@@ -10,7 +10,7 @@ from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
-from webpanda.files.scripts import getScope, getFullPath, getGUID, setFileMeta
+from webpanda.files.common import getScope, getFullPath, getGUID
 from webpanda.jobs import Job
 from webpanda.services import sites_, jobs_, replicas_, files_
 from webpanda.fc import client as fc
