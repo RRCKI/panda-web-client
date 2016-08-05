@@ -34,7 +34,7 @@ def check_input(task):
     return len(files_template_list)
 
 
-def run(task, metod):
+def run(task, method):
     try:
         if task.status != 'sent':
             return False
@@ -46,15 +46,22 @@ def run(task, metod):
         tasks_.save(task)
 
         # Custom payload
-        if metod == 'init_task':
+        if method == 'start':
+            # TODO: add start handler
+            pass
+        elif method == 'init_task':
             payload1(task)
-        if metod == 'split_task':
+        elif method == 'split_task':
             #TODO need to save N (as split parts)
             payload2(task)
-        if metod == 'run1_task':
+        elif method == 'run1_task':
             #TODO need to pass N
             payload3(task)
-        #...
+        elif method == 'finish':
+            # TODO: add special finish handler
+            pass
+        else:
+            raise WebpandaError("Task payload error: method not found")
 
         # Change task state to 'finished'
         task.status = 'running'
