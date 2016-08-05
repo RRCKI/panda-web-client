@@ -123,11 +123,15 @@ def payload2(task):
     :return:
     """
     logger.debug("payload2: Start")
+
     #### Prepare
     # Check type of task
     task_type = task.task_type
     if task_type.id != 2:
         raise WebpandaError("Illegal task_type.id")
+
+    # Get user
+    user = users_.get(task.owner_id)
 
     # Get containers
     input_cont = conts_.get(task.input)
@@ -158,18 +162,18 @@ def payload2(task):
                 fc.reg_file_in_cont(f, container, 'input')
                 if f.lfn.endswith('.fastq'):
                     for fi in gen_sfx(f.lfn[:-6], rn, '.fastq'):
-                        fc.reg_file_in_cont_byname(fi, container, 'output')
+                        fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fastq.bz2'):
                     for fi in gen_sfx(f.lfn[:-10], rn, '.fastq'):
-                        fc.reg_file_in_cont_byname(fi, container, 'output')
+                        fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fasta'):
                     fn=f.lfn+'.'
-                    fc.reg_file_in_cont_byname(fn[:-6], container, 'output')
+                    fc.reg_file_in_cont_byname(user, fn[:-6], container, 'output')
                     for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
-                        fc.reg_file_in_cont_byname(fn+sfx, container, 'output')
+                        fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
     #reg additional output
     for fi in gen_sfx('Makefile', rn):
-        fc.reg_file_in_cont_byname(fi, container, 'output')
+        fc.reg_file_in_cont_byname(user, fi, container, 'output')
 
     # Prepare trf script
     script = task.task_type.trf_template
@@ -199,6 +203,9 @@ def payload3(task):
 #    if task_type.id != 3or6?:
 #        raise WebpandaError("Illegal task_type.id")
 
+    # Get user
+    user = users_.get(task.owner_id)
+
     #TODO need N
     n=10
 
@@ -225,8 +232,8 @@ def payload3(task):
                     fc.reg_file_in_cont(f, container, 'input')
 
         # reg additional output
-        fc.reg_file_in_cont_byname(jobname+'.reads.tgz', container, 'output')
-        fc.reg_file_in_cont_byname(jobname + '.maps.tgz', container, 'output')
+        fc.reg_file_in_cont_byname(user, jobname+'.reads.tgz', container, 'output')
+        fc.reg_file_in_cont_byname(user, jobname + '.maps.tgz', container, 'output')
 
         # Prepare trf script
         script = task.task_type.trf_template

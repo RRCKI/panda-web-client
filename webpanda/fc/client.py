@@ -1,7 +1,7 @@
 import commands
 from datetime import datetime
-from flask import g
 import os
+from webpanda.auth import User
 
 from webpanda.files import File, Container, Catalog, Replica
 from webpanda.files.common import getScope, getGUID
@@ -36,7 +36,7 @@ def reg_file_in_cont(f, c, t):
     return True
 
 
-def reg_file_in_cont_byname(lfn, c, t):
+def reg_file_in_cont_byname(user, lfn, c, t):
     """
     Registers file in catalog
     :param f: File obj
@@ -51,7 +51,7 @@ def reg_file_in_cont_byname(lfn, c, t):
 
     # Prepare File obj
     f = File()
-    f.scope = getScope(g.username)
+    f.scope = getScope(user.username)
     f.attemptn = 0
     f.guid = getGUID(f.scope, None)
     f.lfn = lfn
@@ -85,12 +85,14 @@ def reg_file_in_cont_byname(lfn, c, t):
     return True
 
 
-def new_file(lfn):
+def new_file(user, lfn):
     """
     Creates new file object
     :param lfn: Local FileName
     :return: File obj
     """
+    if not isinstance(user, User):
+        raise Exception("Illegal user class: not User")
     if not isinstance(lfn, str):
         raise Exception("Illegal lfn class: not str")
     if len(lfn) == 0:
@@ -98,7 +100,7 @@ def new_file(lfn):
 
     # Prepare File obj
     f = File()
-    f.scope = getScope(g.username)
+    f.scope = getScope(user.username)
     f.attemptn = 0
     f.guid = getGUID(f.scope, None)
     f.lfn = lfn
