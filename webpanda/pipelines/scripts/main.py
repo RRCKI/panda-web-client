@@ -36,8 +36,7 @@ def run():
             continue
 
         if current_task.status == 'cancelled':
-            #TODO: What to do if cancelled?
-            #TODO: Who or by whom? If by system - resubmit, if by user -nothing?
+            #TODO: What to do if cancelled? Who or by whom? If by system - resubmit, if by user -nothing?
             pipeline.status = 'cancelled'
             current_task.modification_time = datetime.utcnow()
             pipelines_.save(pipeline)
@@ -85,7 +84,7 @@ def run():
                 tasks_.save(current_task)
 
                 #TO_DO: Run async regime
-                paleomix.run(current_task, current_task.task_type.method) # we already get task from id. Not need to obtain again, is it?
+                paleomix.run(current_task) #, current_task.task_type.method) - we already get task from id. Not need to obtain again, is it?
                 # if we use async run, all params must be serializable (BaseQuery is not)
                 continue
 

@@ -38,8 +38,9 @@ def has_input(task):
     return retval
 
 
-def run(task, method):
+def run(task):
     try:
+        method = task.task_type.method
         if task.status != 'sent':
             return False
         #    raise WebpandaError('Illegal task status to start')
@@ -53,10 +54,8 @@ def run(task, method):
         if method == 'init_task':
             payload1(task)
         elif method == 'split_task':
-            #TODO need to save N (as split parts)
             payload2(task)
         elif method == 'run1_task':
-            #TODO need to pass N
             payload3(task)
         else:
             raise WebpandaError("Task payload error: method not found")
@@ -153,7 +152,6 @@ def payload2(task):
     files_template_list = task_type.ifiles_template.split(',')
     for item in input_cont.files:
         f = item.file
-        # TODO deal with fastq.bz2 input files
         if rn == 0:
             if f.lfn.endswith('fastq'):
                 rn = getn(f.fsize)
@@ -173,7 +171,7 @@ def payload2(task):
                         fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fasta'):
                     fn=f.lfn+'.'
-                    fc.reg_file_in_cont_byname(user, fn[:-6], container, 'output')
+                    fc.reg_file_in_cont_byname(user, fn[:-6]+'dict', container, 'output')
                     for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
                         fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
 
@@ -185,9 +183,11 @@ def payload2(task):
 
     # Prepare trf script
     script = task.task_type.trf_template
-    # TODO just for test - only emulate, not real jobs
-    script = "/bin/bash /home/users/poyda/lustre/swp/genref.sh & "
-    script += "&& /bin/bash /home/users/poyda/lustre/swp/split.sh " + str(rn)
+    # TO_DO just for test add "1" - script1.sh- only emulate, not real jobs
+    pipeline_path_name = 'paleomix_bam'
+    swdir='/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
+    script = "/bin/bash " + swdir + "genref.sh && bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err & ;"
+    script += "/bin/bash " + swdir + "split.sh -t" + str(rn)
 
     # Save rn as task param
     task.params = str(rn)
@@ -220,8 +220,12 @@ def payload3(task):
     # Get user
     user = users_.get(task.owner_id)
 
-    #TODO need N
-    n = 10
+    n=10
+    if task.params is not None:
+        n=int(task.params)
+        if n==0:
+            n=10
+
 
     task.tag = "task." + commands.getoutput('uuidgen')
     tasks_.save(task)
@@ -255,7 +259,9 @@ def payload3(task):
         # Prepare trf script
         script = task.task_type.trf_template
         # TO_DO just for test - only emulate, not real jobs
-        script = "/bin/bash /home/users/poyda/lustre/swp/run11.sh " +jobname
+        pipeline_path_name = 'paleomix_bam'
+        swdir = '/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
+        script = "/bin/bash "+swdir+"run11.sh -t" +jobname
 
         send_job_(task, container, script)
 
