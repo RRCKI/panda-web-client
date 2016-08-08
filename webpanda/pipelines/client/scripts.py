@@ -135,3 +135,28 @@ def is_finish_task(t):
         raise Exception("Illegal task class: not Task")
 
     return t.task_type.method == 'finish'
+
+def get_params(p):
+    """
+    Returns parameters for task (current)
+    :param p: Pipeline obj
+    :return: Task obj
+    """
+    if not isinstance(p, Pipeline):
+        raise Exception("Illegal pipeline class: not Pipeline")
+
+    return str(p.n)
+
+def set_params(p,params):
+    """
+    Set parameters for task (current and next)
+    :param p: Pipeline obj
+    :return: True/False
+    """
+    if not isinstance(p, Pipeline):
+        raise Exception("Illegal pipeline class: not Pipeline")
+    try:
+        p.n=int(params)
+        return True
+    except:
+        return False
