@@ -166,10 +166,10 @@ def payload2(task):
                 # Register file in container
                 fc.reg_file_in_cont(f, container, 'input')
                 if f.lfn.endswith('.fastq'):
-                    for fi in gen_sfx(f.lfn[:-6], rn, '.fastq'):
+                    for fi in gen_sfx(f.lfn[:-5], rn, '.fastq'):
                         fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fastq.bz2'):
-                    for fi in gen_sfx(f.lfn[:-10], rn, '.fastq'):
+                    for fi in gen_sfx(f.lfn[:-9], rn, '.fastq'):
                         fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fasta'):
                     fn=f.lfn+'.'
@@ -184,9 +184,9 @@ def payload2(task):
 
     # Prepare trf script
     script = task.task_type.trf_template
-    #TODO just for test - only emulate, not real jobs
-    script="/bin/bash /home/users/poyda/lustre/swp/split1.sh " + str(rn)
-    script+=" && /bin/bash /home/users/poyda/lustre/swp/genref1.sh"
+    # TODO just for test - only emulate, not real jobs
+    script = "/bin/bash /home/users/poyda/lustre/swp/genref.sh & "
+    script += "&& /bin/bash /home/users/poyda/lustre/swp/split.sh " + str(rn)
 
     logger.debug("payload2: script " + script)
     logger.debug("payload2: send_job " + container.guid)
@@ -254,43 +254,43 @@ def payload3(task):
 
         send_job_(task, container, script)
 
-
     return True
 
 
-def gen_sfx(pre,n,end=""):
-    #return list of range (1,n) with addition of prefix and end, and use equal placeholders for all numbers from sequence
-    #not more than 999!!!
-    r=range(1,n)
-    k=n
-    nc=1 #number of 0..0 prefix in list, - fon n <10: nc=1 : 01,02,..,09
-    while (k>=100):
-        nc+=1
-        k=k//10
-    j=nc
-    pp=""
-    ppf=1
-    while (j>0):
-        pp+="0"
-        j-=1
-    for i in xrange(0,n-1):
-        if i==9:
+def gen_sfx(pre, n, end=""):
+    # return list of range (1,n) with addition of prefix and end, and use equal placeholders for all numbers from sequence
+    # not more than 999!!!
+    r = range(1, n)
+    k = n
+    nc = 1  # number of 0..0 prefix in list, - fon n <10: nc=1 : 01,02,..,09
+    while k >= 100:
+        nc += 1
+        k = k // 10
+    j = nc
+    pp = ""
+    ppf = 1
+    while j > 0:
+        pp += "0"
+        j -= 1
+    for i in xrange(0, n-1):
+        if i == 9:
             pp = pp[:-1]
-        elif i==99:
-            pp=pp[:-1]
-        r[i]=pre+pp+str(i+1)+end
+        elif i == 99:
+            pp = pp[:-1]
+        r[i] = pre+pp+str(i+1)+end
     return r
 
+
 def getn(fsize):
-    basen = 1610612736  #1.5G - we has 3.6G for small biotask, and 175G for 135 subtasks for bigbiotask
+    basen = 1610612736  # 1.5G - we has 3.6G for small biotask, and 175G for 135 subtasks for bigbiotask
     basedst = 2
     rn = 0
     n = int(fsize // basen)
-    if n > 10 and n < 150:
+    if 10 < n < 150:
         rn = n
     elif n >= 150:
         rn = 200
-    elif n >= 1 and n <= 10:
+    elif 1 <= n <= 10:
         rn = n * 2
     else:
         rn = 4
@@ -303,17 +303,18 @@ def getn(fsize):
             basedst -= 1
     return rn
 
+
 def getn2(fsize):
     # deal with fastq.bz2 input files
-    basen = 240*1024*1024  #240Mb - bz2 ratio from x6 to x5 - we has 650M for small biotask, and 240M for 135 subtasks for ??G bigbiotask
+    basen = 240*1024*1024  # 240Mb - bz2 ratio from x6 to x5 - we has 650M for small biotask, and 240M for 135 subtasks for ??G bigbiotask
     basedst = 2
     rn = 0
     n = int(fsize // basen)
-    if n > 10 and n < 150:
+    if 10 < n < 150:
         rn = n
     elif n >= 150:
         rn = 200
-    elif n >= 1 and n <= 10:
+    elif 1 <= n <= 10:
         rn = n * 2
     else:
         rn = 4
