@@ -102,7 +102,7 @@ def check_running_tasks():
         if task.tag is not None and task.tag != "":
             # Check failed Panda jobs
             jobs = jobs_.find(tags=task.tag, status='failed')
-            if jobs.count > 0:
+            if jobs.count() > 0:
                 task.status = 'failed'
                 task.modification_time = datetime.utcnow()
                 task.comment = "Failed task due to {n} failed jobs".format(n=jobs.count)
@@ -111,7 +111,7 @@ def check_running_tasks():
 
             # Check failed Panda jobs
             jobs = jobs_.find(tags=task.tag, status='canceled')
-            if jobs.count > 0:
+            if jobs.count() > 0:
                 task.status = 'cancelled'
                 task.modification_time = datetime.utcnow()
                 tasks_.save(task)
@@ -120,7 +120,7 @@ def check_running_tasks():
             # Check finished Panda jobs
             jobs = jobs_.find(tags=task.tag, status='finished')
             jobs_all = jobs_.find(tags=task.tag)
-            if jobs.count == jobs_all.count:
+            if jobs.count() == jobs_all.count():
                 # Register files from jobs into task container
                 cont = conts_.get(task.input)
                 for job in jobs:
