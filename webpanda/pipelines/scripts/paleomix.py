@@ -182,11 +182,16 @@ def payload2(task):
     for fi in gen_sfx('Makefile', rn):
         fc.reg_file_in_cont_byname(user, fi, container, 'output')
 
+
     # Prepare trf script
     script = task.task_type.trf_template
     # TODO just for test - only emulate, not real jobs
     script = "/bin/bash /home/users/poyda/lustre/swp/genref.sh & "
     script += "&& /bin/bash /home/users/poyda/lustre/swp/split.sh " + str(rn)
+
+    # Save rn as task param
+    task.params = str(rn)
+    tasks_.save(task)
 
     logger.debug("payload2: script " + script)
     logger.debug("payload2: send_job " + container.guid)

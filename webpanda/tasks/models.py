@@ -78,7 +78,7 @@ class Task(TaskJsonSerializer, db.Model):
     input = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
     output = db.Column(db.Integer, db.ForeignKey('containers.id'), default=None)
     comment = db.Column(db.String(1024))
-
+    params = db.Column(db.Text)
 
     def __repr__(self):
         return '<Task id=%s tag=%s>' % (self.id, self.tag)
@@ -99,7 +99,6 @@ class Pipeline(PipelineJsonSerializer, db.Model):
     status = db.Column(db.String(256))
     creation_time = db.Column(db.DateTime)
     modification_time = db.Column(db.DateTime)
-    n = db.Column(db.Integer)
 
     def __repr__(self):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
