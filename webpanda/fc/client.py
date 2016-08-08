@@ -44,7 +44,7 @@ def reg_file_in_cont_byname(user, lfn, c, t):
     :param t: type (input, output, log)
     :return: True/False
     """
-    if not isinstance(lfn, str) or isinstance(lfn, unicode):
+    if not (isinstance(lfn, str) or isinstance(lfn, unicode)):
         raise Exception("Illegal lfn class: not str")
     if len(lfn) == 0:
         raise Exception("Illegal lfn length: zero")
