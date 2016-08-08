@@ -102,7 +102,7 @@ def send_job_(task, container, script):
     jobs_.save(job)
 
     # Async sendjob
-    async_send_job.s(jobid = job.id, siteid = site.id)
+    async_send_job.s(jobid=job.id, siteid=site.id)
 
 
 def payload1(task):
@@ -127,8 +127,11 @@ def payload2(task):
     if task_type.id != 1:
         raise WebpandaError("Illegal task_type.id")
 
+    logger.debug("payload2: tasktype " + str(task_type.id))
+
     # Get user
     user = users_.get(task.owner_id)
+    logger.debug("payload2: user " + str(user.id))
 
     # Get containers
     input_cont = conts_.get(task.input)
@@ -137,11 +140,13 @@ def payload2(task):
 
     task.tag = "task." + commands.getoutput('uuidgen')
     tasks_.save(task)
+    logger.debug("payload2: tag " + task.tag)
 
     # Get container
     container = Container()
     container.guid = task.tag + ".0"
     conts_.save(container)
+    logger.debug("payload2: cont " + container.guid)
 
     rn = 0
     # Add input files to container
@@ -171,6 +176,8 @@ def payload2(task):
                     fc.reg_file_in_cont_byname(user, fn[:-6], container, 'output')
                     for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
                         fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
+
+    logger.debug("payload2: reg Makefile")
     #reg additional output
     for fi in gen_sfx('Makefile', rn):
         fc.reg_file_in_cont_byname(user, fi, container, 'output')
@@ -181,6 +188,8 @@ def payload2(task):
     script="/bin/bash /home/users/poyda/lustre/swp/split1.sh " + str(rn)
     script+=" && /bin/bash /home/users/poyda/lustre/swp/genref1.sh"
 
+    logger.debug("payload2: script " + script)
+    logger.debug("payload2: send_job " + container.guid)
     send_job_(task, container, script)
 
     return True
