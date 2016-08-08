@@ -105,6 +105,7 @@ def check_running_tasks():
             if jobs.count > 0:
                 task.status = 'failed'
                 task.modification_time = datetime.utcnow()
+                task.comment = "Failed task due to {n} failed jobs".format(n=jobs.count)
                 tasks_.save(task)
                 return False
 
