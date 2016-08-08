@@ -102,7 +102,7 @@ def send_job_(task, container, script):
     jobs_.save(job)
 
     # Async sendjob
-    async_send_job.s(jobid=job.id, siteid=site.id)
+    async_send_job.delay(jobid=job.id, siteid=site.id)
 
 
 def payload1(task):

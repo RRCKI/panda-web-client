@@ -16,6 +16,7 @@ _logger = NrckiLogger().getLogger("async")
 
 @celery.task
 def async_send_job(*args, **kwargs):
+    _logger.debug("async_send_job: start")
     jobid = kwargs.get('jobid', 0L)
     siteid = kwargs.get('siteid', 0L)
     if int(jobid) == 0:
