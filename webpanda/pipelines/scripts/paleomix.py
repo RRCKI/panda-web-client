@@ -78,9 +78,6 @@ def run(task, method):
 
 def send_job_(task, container, script):
     #### Send PanDA jobs
-    task.tag = "task." + commands.getoutput('uuidgen')
-    tasks_.save(task)
-
     # Get default ComputingElement
     site = sites_.first(ce=current_app.config['DEFAULT_CE'])
     if site is None:
@@ -127,7 +124,7 @@ def payload2(task):
     #### Prepare
     # Check type of task
     task_type = task.task_type
-    if task_type.id != 2:
+    if task_type.id != 1:
         raise WebpandaError("Illegal task_type.id")
 
     # Get user
@@ -137,6 +134,9 @@ def payload2(task):
     input_cont = conts_.get(task.input)
     #TODO do smth with output container?
     output_cont = conts_.get(task.output)
+
+    task.tag = "task." + commands.getoutput('uuidgen')
+    tasks_.save(task)
 
     # Get container
     container = Container()
@@ -207,7 +207,10 @@ def payload3(task):
     user = users_.get(task.owner_id)
 
     #TODO need N
-    n=10
+    n = 10
+
+    task.tag = "task." + commands.getoutput('uuidgen')
+    tasks_.save(task)
 
     # Get containers
     input_cont = conts_.get(task.input)
