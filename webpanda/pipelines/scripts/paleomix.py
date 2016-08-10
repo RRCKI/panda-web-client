@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from base64 import b64encode
+from flask import current_app
 import re
 import commands
 from datetime import datetime
-from flask import current_app
 
 from webpanda.core import WebpandaError
 from webpanda.files import Container
 from webpanda.jobs import Job
 from webpanda.pipelines.scripts import logger
-from webpanda.services import tasks_, conts_, jobs_, sites_, distrs_, users_
-from webpanda.async import async_send_job
+from webpanda.services import tasks_, conts_, users_, jobs_, sites_
 from webpanda.fc import client as fc
+from webpanda.pipelines import client as pclient
+from webpanda.async import async_send_job
 
 
 def has_input(task):
@@ -36,6 +37,43 @@ def has_input(task):
     retval = len(files_template_list) == 0
     logger.debug("has_input: " + str(retval))
     return retval
+
+
+def send_job_(task, container, script):
+    """
+    Prepares a job for task with container and trf script
+    :param task: Task obj to append a job
+    :param container: Container obj for job
+    :param script: str Trf script
+    :return: True
+    """
+    # Get default ComputingElement
+    site = sites_.first(ce=current_app.config['DEFAULT_CE'])
+    if site is None:
+        raise WebpandaError("ComputingElement not found")
+
+    # Get distributive
+    distr = task.task_type.distr
+
+    # Define jobs
+    job = Job()
+    job.pandaid = None
+    job.status = 'pending'
+    job.owner = users_.get(task.owner_id)
+    job.params = b64encode(script)
+    job.distr = distr
+    job.container = container
+    job.creation_time = datetime.utcnow()
+    job.modification_time = datetime.utcnow()
+    #job.ninputfiles = 0
+    #job.noutputfiles = 0
+    job.corecount = 1
+    job.tags = task.tag
+    jobs_.save(job)
+
+    # Async sendjob
+    async_send_job.delay(jobid=job.id, siteid=site.id)
+    return True
 
 
 def run(task):
@@ -73,35 +111,6 @@ def run(task):
         task.comment = e.msg
         tasks_.save(task)
         return False
-
-
-def send_job_(task, container, script):
-    #### Send PanDA jobs
-    # Get default ComputingElement
-    site = sites_.first(ce=current_app.config['DEFAULT_CE'])
-    if site is None:
-        raise WebpandaError("ComputingElement not found")
-    # Get distributive
-    distr = distrs_.get(1)
-
-    # Define jobs
-    job = Job()
-    job.pandaid = None
-    job.status = 'pending'
-    job.owner = users_.get(task.owner_id)
-    job.params = b64encode(script)
-    job.distr = distr
-    job.container = container
-    job.creation_time = datetime.utcnow()
-    job.modification_time = datetime.utcnow()
-    #job.ninputfiles = 0
-    #job.noutputfiles = 0
-    job.corecount = 1
-    job.tags = task.tag
-    jobs_.save(job)
-
-    # Async sendjob
-    async_send_job.delay(jobid=job.id, siteid=site.id)
 
 
 def payload1(task):
@@ -195,7 +204,7 @@ def payload2(task):
 
     logger.debug("payload2: script " + script)
     logger.debug("payload2: send_job " + container.guid)
-    send_job_(task, container, script)
+    pclient.send_job_(task, container, script)
 
     return True
 
@@ -263,7 +272,7 @@ def payload3(task):
         swdir = '/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
         script = "/bin/bash "+swdir+"run11.sh -t" +jobname
 
-        send_job_(task, container, script)
+        pclient.send_job_(task, container, script)
 
     return True
 

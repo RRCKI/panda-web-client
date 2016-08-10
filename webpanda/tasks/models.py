@@ -38,6 +38,8 @@ class TaskType(TaskTypeJsonSerializer, db.Model):
     ifiles_template = db.Column(db.String(1024))
     ofiles_template = db.Column(db.String(1024))
     tasks = db.relationship("Task", back_populates="task_type")
+    distr_id = db.Column(db.Integer, db.ForeignKey('distr.id'))
+    distr = db.relationship("Distributive")
 
     def __repr__(self):
         return '<TaskType id=%s>' % self.id
