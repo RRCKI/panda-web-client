@@ -3,7 +3,7 @@ from flask import Blueprint, g, request, make_response, jsonify, session, render
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.dashboard import route_s
 from webpanda.files import Container
-from webpanda.files.forms import NewContainerForm
+from webpanda.files.forms import NewContainerForm, RunForm
 from webpanda.files.common import getScope
 from webpanda.services import conts_
 from webpanda.async.scripts import async_uploadContainer
@@ -67,7 +67,10 @@ def cont_info(guid):
     except(Exception):
         _logger.error(Exception.message)
         return make_response(jsonify({'message': 'Container not found'}), 404)
-    return render_template("dashboard/cont/cont.html", cont=container, files=container.files)
+
+    paleomix_form = RunForm()
+    return render_template("dashboard/cont/cont.html", cont=container, files=container.files,
+                           paleomix_form=paleomix_form)
 
 
 @route_s(bp, "/new", methods=['GET', 'POST'])

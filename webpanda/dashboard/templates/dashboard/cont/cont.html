@@ -12,6 +12,10 @@
 <b>CONTAINER:</b> {{cont.id}} <br>
 <b>GUID:</b> {{cont.guid}} <br>
 <b>STATUS:</b> {{cont.status}} <br>
+<form method="post" id="paleomix_form" action="{{ url_for('pipelines.new_pipeline_from_cont') }}">
+{{ paleomix_form.guid(class_="hidden", value=cont.guid) }}
+<input class="btn btn-danger" name='run' value="Run Paleomix" type='submit'>
+</form>
 {% endblock %}
 
 {% block content %}
