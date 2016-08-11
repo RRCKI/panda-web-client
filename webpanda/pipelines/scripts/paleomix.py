@@ -11,7 +11,6 @@ from webpanda.jobs import Job
 from webpanda.pipelines.scripts import logger
 from webpanda.services import tasks_, conts_, users_, jobs_, sites_
 from webpanda.fc import client as fc
-from webpanda.pipelines import client as pclient
 from webpanda.async import async_send_job
 
 
@@ -204,7 +203,7 @@ def payload2(task):
 
     logger.debug("payload2: script " + script)
     logger.debug("payload2: send_job " + container.guid)
-    pclient.send_job_(task, container, script)
+    send_job_(task, container, script)
 
     return True
 
@@ -272,7 +271,7 @@ def payload3(task):
         swdir = '/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
         script = "/bin/bash "+swdir+"run11.sh -t" +jobname
 
-        pclient.send_job_(task, container, script)
+        send_job_(task, container, script)
 
     return True
 
