@@ -1,18 +1,22 @@
-.. panda-web-client documentation master file, created by
-   sphinx-quickstart on Fri May 29 13:30:23 2015.
+.. PandaWebClient documentation master file, created by
+   sphinx-quickstart on Tue Aug 23 10:43:01 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Panda Web Client
-============================================
+Welcome to PandaWebClient's documentation!
+==========================================
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-   overview
-   registration
-   webclient
-   api
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
