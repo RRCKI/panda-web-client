@@ -19,7 +19,20 @@ _logger = NrckiLogger().getLogger("pilot.file")
 
 @route(bp, '/<container_guid>/<lfn>/makereplica/<se>', methods=['POST'])
 def new_replica(container_guid, lfn, se):
-    """Creates task to make new file replica"""
+    """
+    POST: /pilot/file/<container_guid>/<lfn>/makereplica/<se>
+
+    Creates task to make new file replica
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :param se: SE codename
+    :type se: str
+    :return: Id of task
+    :rtype: json
+    """
     nsite = sites_.find(se=se).count()
     if nsite == 0:
         return make_response(jsonify({'error': 'SE not found'}), 400)
@@ -53,7 +66,18 @@ def new_replica(container_guid, lfn, se):
 
 @route(bp, '/<container_guid>/<lfn>/copy', methods=['POST'])
 def stage_in(container_guid, lfn):
-    """Creates task to copy file in path on se"""
+    """
+    POST: /pilot/file/<container_guid>/<lfn>/copy
+
+    Creates task to copy file in path on se
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :return: Id of task
+    :rtype: json
+    """
     args = request.form
     if not ('to_se' in args.keys() and 'to_path' in args.keys()):
         raise WebpandaError('Please specify correct request params')
@@ -81,7 +105,18 @@ def stage_in(container_guid, lfn):
 
 @route(bp, '/<container_guid>/<lfn>/info', methods=['GET'])
 def file_info(container_guid, lfn):
-    """Returns file metadata"""
+    """
+    GET: /pilot/file/<container_guid>/<lfn>/info
+
+    Returns file metadata
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :return: lfn/guid/modtime/fsize/adler32/md5sum
+    :rtype: json
+    """
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
@@ -102,7 +137,18 @@ def file_info(container_guid, lfn):
 
 @route(bp, '/<container_guid>/<lfn>/link', methods=['GET'])
 def link_file(container_guid, lfn):
-    """Returns ftp link to file"""
+    """
+    GET: /pilot/file/<container_guid>/<lfn>/link
+
+    Returns ftp link to file
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :return: id/guid/ftp
+    :rtype: json
+    """
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]
     container = conts_.first(guid=container_guid)
@@ -125,7 +171,18 @@ def link_file(container_guid, lfn):
 
 @route(bp, '/<container_guid>/<lfn>/save', methods=['POST'])
 def file_save(container_guid, lfn):
-    """Saves file from request, returns file guid"""
+    """
+    POST: /pilot/file/<container_guid>/<lfn>/save
+
+    Saves file from request, returns file guid
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :return: guid
+    :rtype: json
+    """
     site = sites_.first(se=current_app.config['DEFAULT_SE'])
 
     if ':' in container_guid:
@@ -212,7 +269,18 @@ def file_save(container_guid, lfn):
 
 @route(bp, '/<container_guid>/<lfn>/fetch', methods=['GET'])
 def file_fetch(container_guid, lfn):
-    """Returns file in response"""
+    """
+    GET: /pilot/file/<container_guid>/<lfn>/fetch
+
+    Returns file in response
+
+    :param container_guid: Guid of container
+    :type container_guid: str
+    :param lfn: Local FileName
+    :type lfn: str
+    :return: File
+    :rtype: application/octet-stream
+    """
 
     if ':' in container_guid:
         container_guid = container_guid.split(':')[-1]

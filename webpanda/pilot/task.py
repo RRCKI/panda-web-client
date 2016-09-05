@@ -11,7 +11,14 @@ _logger = NrckiLogger().getLogger("pilot.task")
 
 @route(bp, '/<id>/info', methods=['GET'])
 def task_info(id):
-    """Returns task status"""
+    """
+    GET: /pilot/task/<id>/info
+
+    Returns task status
+
+    :param id: Task id
+    :rtype: json
+    """
     n = transfers_meta_.find(task_id=id).count()
     if n == 0:
         data = {}

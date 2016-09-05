@@ -12,9 +12,13 @@ from webpanda.services import catalog_, files_, conts_, replicas_
 def reg_file_in_cont(f, c, t):
     """
     Registers file in catalog
-    :param f: File obj
-    :param c: Container obj
-    :param t: type (input, output, log)
+
+    :param f: File to register
+    :param c: Container to register in
+    :param t: Type of file (input, output, log)
+    :type f: File
+    :type c: Container
+    :type t: str
     :return: True/False
     """
     if not isinstance(f, File):
@@ -38,10 +42,16 @@ def reg_file_in_cont(f, c, t):
 
 def reg_file_in_cont_byname(user, lfn, c, t):
     """
-    Registers file in catalog
-    :param f: File obj
-    :param c: Container obj
-    :param t: type (input, output, log)
+    Registers file in catalog by filename
+
+    :param user: File owner
+    :param lfn: Local FileName
+    :param c: Container to register in
+    :param t: Type of file (input, output, log)
+    :type user: User
+    :type lfn: str
+    :type c: Container
+    :type t: str
     :return: True/False
     """
     if not (isinstance(lfn, str) or isinstance(lfn, unicode)):
@@ -88,8 +98,13 @@ def reg_file_in_cont_byname(user, lfn, c, t):
 def new_file(user, lfn):
     """
     Creates new file object
+
+    :param user: File owner
     :param lfn: Local FileName
-    :return: File obj
+    :type user: User
+    :type lfn: str
+    :return: Created file
+    :rtype: File
     """
     if not isinstance(user, User):
         raise Exception("Illegal user class: not User")
@@ -121,9 +136,13 @@ def new_file(user, lfn):
 def new_replica(f, site):
     """
     Creates new replica of file on se
-    :param f: File obj
-    :param se: Site obj
-    :return: Replica obj
+
+    :param f: File to be replicated
+    :param site: Site with target SE
+    :type f: File
+    :type site: Site
+    :return: Created replica
+    :rtype: Replica
     """
     if not isinstance(f, File):
         raise Exception("Illegal file class: not File")
@@ -147,7 +166,9 @@ def new_replica(f, site):
 def new_cont():
     """
     Creates new Container object
-    :return: Container obj
+
+    :return: New container
+    :rtype: Container
     """
     # Prepare Container obj
     f = Container()
@@ -163,8 +184,11 @@ def new_cont():
 def get_file_dir(f):
     """
     Returns relative system path to file's replicas
-    :param f: File obj
-    :return: str
+
+    :param f: Target file
+    :type f: File
+    :return: Relative path to file
+    :rtype: str
     """
     if not isinstance(f, File):
         raise Exception("Illegal file class: not File")
@@ -177,9 +201,12 @@ def get_file_dir(f):
 
 def get_file_path(f):
     """
-    Returns relative system path to file's replicas
-    :param f: File obj
-    :return: str
+    Returns relative system path to dir of file's replicas
+
+    :param f: Target file
+    :type f: File
+    :return: Relative dir path
+    :rtype: str
     """
     if not isinstance(f, File):
         raise Exception("Illegal file class: not File")
@@ -193,8 +220,10 @@ def get_file_path(f):
 def save(o):
     """
     Wrapper for .save methods of Service instances
+
     :param o: object to save
-    :return:
+    :type o: File/Container/Replica
+    :return: True/False
     """
     if isinstance(o, File):
         files_.save(o)
