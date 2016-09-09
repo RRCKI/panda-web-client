@@ -1,8 +1,7 @@
-<!-- extend base layout -->
 {% extends "base.html" %}
 
 {% block title %}
-<title>WEBPANDA - Pipeline status</title>
+<title>WEBPANDA - Pipeline info</title>
 {% endblock %}
 
 {% block css_import %}
@@ -10,27 +9,31 @@
 {% endblock %}
 
 {% block jumbotron %}
-<h2>PIPELINE RUNS</h2><br>
+<b>PIPELINE:</b> {{pp.id}} <br>
+<b>STATUS:</b> {{pp.status}} <br>
+<b>TYPE:</b> {{pp.pipeline_type.name}} <br>
+<b>TAG:</b> {{pp.tag}} <br>
+<b>CURRENT_TASK_ID:</b> {{pp.current_task_id}} <br>
+<b>CREATION_TIME:</b> {{pp.creation_time}} <br>
+<b>MODIFICATION_TIME:</b> {{pp.modification_time}}
 {% endblock %}
 
 {% block content %}
-<h4>Update period: 5 min</h4>
 <table id="pptable" class="display" cellspacing="0" width="100%">
 <thead>
     <tr>
         <th>ID</th>
-        <th>Type</th>
-        <th>Current Task</th>
-        <th>Status</th>
-        <th>Created</th>
-        <th>Modified</th>
     </tr>
 </thead>
+<tbody>
+    <tr>
+        <th>{{pp.current_task_id}}</th>
+    </tr>
+</tbody>
 </table>
 {% endblock %}
 
 {% block js_import %}
 <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-<script src="{{ url_for('static', filename='app/js/moment-with-locales.min.js') }}"></script>
-<script src="{{ url_for('static', filename='app/js/pp_list.js') }}"></script>
+<script src="{{ url_for('static', filename='app/js/pp.js') }}"></script>
 {% endblock %}

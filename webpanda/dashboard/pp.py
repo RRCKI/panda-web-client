@@ -28,6 +28,18 @@ def list_all():
     return render_template("dashboard/pp/list.html")
 
 
+
+@route_s(bp, "/<id>", methods=['GET'])
+def pipeline_info(id):
+    """
+    Pipeline info view
+    :param guid: guid of job
+    :return: Response obj
+    """
+    pp = pipelines_.get(id)
+    return render_template("dashboard/pp/pp.html", pp=pp)
+
+
 @route_s(bp, "/new", methods=['GET', 'POST'])
 def new_pipeline():
     form = NewPipelineForm(request.form)

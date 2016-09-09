@@ -1,20 +1,14 @@
-/*$(document).ready(function() {
-    $('#jobstable').dataTable( {
-        "order": [[ 3, "desc" ]]
-    } );
-} );*/
-
 $(document).ready(function() {
     moment.locale('ru');
 
-    $('#pptable').dataTable( {
+    $('#taskstable').dataTable( {
         "order": [[ 0, "desc" ]],
         "processing": true,
-        "ajax": "/api/pipelines",
+        "ajax": "/api/tasks",
         "columns": [
             { "data": "id" },
-            { "data": "type_id" },
-            { "data": "current_task_id" },
+            { "data": "task_type.method" },
+            { "data": "tag" },
             { "data": "status" },
             { "data": "creation_time" },
             { "data": "modification_time" }
@@ -26,7 +20,7 @@ $(document).ready(function() {
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {
-                        return '<td><a href="/pipelines/'+data+'">'+data+'</a></td>';
+                        return '<td><a href="/tasks/'+data+'">'+data+'</a></td>';
                     }
                     return '<td></td>';
                 }

@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-<title>WEBPANDA - Pipeline status</title>
+<title>WEBPANDA - Tasks status</title>
 {% endblock %}
 
 {% block css_import %}
@@ -10,17 +10,17 @@
 {% endblock %}
 
 {% block jumbotron %}
-<h2>PIPELINE RUNS</h2><br>
+<h2>TASKS LIST</h2><br>
 {% endblock %}
 
 {% block content %}
 <h4>Update period: 5 min</h4>
-<table id="pptable" class="display" cellspacing="0" width="100%">
+<table id="taskstable" class="display" cellspacing="0" width="100%">
 <thead>
     <tr>
         <th>ID</th>
         <th>Type</th>
-        <th>Current Task</th>
+        <th>Tag</th>
         <th>Status</th>
         <th>Created</th>
         <th>Modified</th>
@@ -32,5 +32,5 @@
 {% block js_import %}
 <script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
 <script src="{{ url_for('static', filename='app/js/moment-with-locales.min.js') }}"></script>
-<script src="{{ url_for('static', filename='app/js/pp_list.js') }}"></script>
+<script src="{{ url_for('static', filename='app/js/tasks_list.js') }}"></script>
 {% endblock %}

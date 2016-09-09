@@ -27,7 +27,7 @@ class PipelineCatalog(db.Model):
 
 
 class TaskTypeJsonSerializer(JsonSerializer):
-    pass
+    __json_public__ = ['id', 'method']
 
 
 class TaskType(TaskTypeJsonSerializer, db.Model):
@@ -61,7 +61,7 @@ class PipelineType(PipelineTypeJsonSerializer, db.Model):
 
 
 class TaskJsonSerializer(JsonSerializer):
-    __json_public__ = ['tag', 'id', 'owner_id', 'creation_time', 'modification_time', 'status']
+    __json_public__ = ['tag', 'id', 'task_type', 'owner_id', 'creation_time', 'modification_time', 'status']
 
 
 class Task(TaskJsonSerializer, db.Model):
