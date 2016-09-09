@@ -180,7 +180,9 @@ def payload2(task):
                 if f.lfn.endswith('.fasta'):
                     fn=f.lfn+'.'
                     fc.reg_file_in_cont_byname(user, fn[:-6]+'dict', container, 'output')
-                    for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
+                    # itert: validated file has null size
+                    #for sfx in ('amb','ann','bwt','fai','pac','sa','validated'):
+                    for sfx in ('amb','ann','bwt','fai','pac','sa'):
                         fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
 
     logger.debug("payload2: reg Makefile")
