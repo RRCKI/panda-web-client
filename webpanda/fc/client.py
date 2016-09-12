@@ -181,7 +181,7 @@ def new_cont():
     return f
 
 
-def get_file_dir(f):
+def get_file_path(f):
     """
     Returns relative system path to file's replicas
 
@@ -199,7 +199,7 @@ def get_file_dir(f):
     return os.path.join('/system', f.scope, f.guid, f.lfn)
 
 
-def get_file_path(f):
+def get_file_dir(f):
     """
     Returns relative system path to dir of file's replicas
 

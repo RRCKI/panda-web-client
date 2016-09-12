@@ -47,8 +47,6 @@ def killJobs(jobList):
 def send_job(jobid, siteid):
     _logger.debug('Jobid: ' + str(jobid))
 
-    jobList = []
-
     site = sites_.get(siteid)
 
     job = jobs_.get(int(jobid))
@@ -109,12 +107,7 @@ def send_job(jobid, siteid):
             pandajob.addFile(fileOT)
 
             # Save replica meta
-            replica = Replica()
-            replica.se = site.se
-            replica.status = 'defined'
-            replica.lfn = os.path.join(cont_path, f.lfn)
-            replica.original = f
-            replicas_.save(replica)
+            fc.new_replica(f, site)
 
     # Prepare lof file
     fileOL = FileSpec()
@@ -135,20 +128,14 @@ def send_job(jobid, siteid):
     log.status = 'defined'
     files_.save(log)
 
+    # Save replica meta
+    fc.new_replica(log, site)
+
     # Register file in container
     fc.reg_file_in_cont(log, cont, 'log')
 
-    replica = Replica()
-    replica.se = pandajob.destinationSE
-    replica.status = 'defined'
-    replica.lfn = os.path.join(cont_path, f.lfn)
-    replica.original = log
-    replicas_.save(replica)
-
-    jobList.append(pandajob)
-
-    #submitJob
-    o = submitJobs(jobList)
+    # Submit job
+    o = submitJobs([pandajob])
     x = o[0]
 
     try:
@@ -237,8 +224,10 @@ def register_outputs():
     ids = []
     for job in jobs:
         ids.append(job.id)
+        user = users_.get(job.owner_id)
         site = sites_.first(ce=job.ce)
         cont = job.container
+        cont_path = fc.get_cont_dir(cont, fc.get_scope(user))
         cc = cont.files
 
         update_info = False
@@ -262,18 +251,24 @@ def register_outputs():
                 f = c.file
                 for replica in f.replicas:
                     if replica.se == site.se:
-                        # Update replica status
-                        replica.status = slist[c.type]
-                        replicas_.save(replica)
-
                         if update_info:
                             conn_factory = SEFactory()
                             connector = conn_factory.getSE(site.plugin, None)
+
+                            # link real file to saved replica
+                            replica_dir = replica.lfn[:-len(f.lfn)]
+                            connector.link(os.path.join(cont_path, f.lfn), replica_dir, rel=True)
+
+                            # get replica info
                             f.fsize = connector.fsize(replica.lfn)
                             f.md5sum = connector.md5sum(replica.lfn)
                             f.checksum = connector.adler32(replica.lfn)
                             f.modification_time = datetime.utcnow()
                             fc.save(f)
+
+                        # Update replica status
+                        replica.status = slist[c.type]
+                        replicas_.save(replica)
 
         job.registered = 1
         job.registation_time = datetime.utcnow()
