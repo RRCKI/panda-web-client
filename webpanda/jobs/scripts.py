@@ -8,6 +8,7 @@ from flask import current_app
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
 from webpanda.files.common import getScope, getFullPath, getGUID
@@ -237,10 +238,13 @@ def register_outputs():
         cont = job.container
         cc = cont.files
 
+        update_info = False
+
         slist = {}
         if job.status == 'finished':
             slist['output'] = 'ready'
             slist['log'] = 'ready'
+            update_info = True
         elif job.status == 'failed':
             slist['output'] = 'failed'
             slist['log'] = 'ready'
@@ -252,11 +256,21 @@ def register_outputs():
 
         for c in cc:
             if c.type in ['output', 'log']:
-                for replica in c.file.replicas:
+                f = c.file
+                for replica in f.replicas:
                     if replica.se == site.se:
                         # Update replica status
                         replica.status = slist[c.type]
                         replicas_.save(replica)
+
+                        if update_info:
+                            conn_factory = SEFactory()
+                            connector = conn_factory.getSE(site.plugin, None)
+                            f.fsize = connector.fsize(replica.lfn)
+                            f.md5sum = connector.md5sum(replica.lfn)
+                            f.checksum = connector.adler32(replica.lfn)
+                            f.modification_time = datetime.utcnow()
+                            fc.save(f)
 
         job.registered = 1
         job.registation_time = datetime.utcnow()
