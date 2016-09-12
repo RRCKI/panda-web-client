@@ -5,15 +5,16 @@ from taskbuffer.JobSpec import JobSpec
 from taskbuffer.FileSpec import FileSpec
 import userinterface.Client as Client
 from flask import current_app
+import os
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
-from webpanda.files.common import getScope, getFullPath, getGUID
+from webpanda.files.common import getScope, getGUID
 from webpanda.jobs import Job
-from webpanda.services import sites_, jobs_, replicas_, files_
+from webpanda.services import sites_, jobs_, replicas_, files_, users_
 from webpanda.fc import client as fc
 
 _logger = NrckiLogger().getLogger("files.scripts")
@@ -51,7 +52,9 @@ def send_job(jobid, siteid):
     site = sites_.get(siteid)
 
     job = jobs_.get(int(jobid))
+    user = users_.get(job.owner_id)
     cont = job.container
+    cont_path = fc.get_cont_dir(cont, fc.get_scope(user))
     files_catalog = cont.files
 
     fscope = getScope(job.owner.username)
@@ -109,7 +112,7 @@ def send_job(jobid, siteid):
             replica = Replica()
             replica.se = site.se
             replica.status = 'defined'
-            replica.lfn = getFullPath(f.scope, pandajob.jobName, f.lfn)
+            replica.lfn = os.path.join(cont_path, f.lfn)
             replica.original = f
             replicas_.save(replica)
 
@@ -138,7 +141,7 @@ def send_job(jobid, siteid):
     replica = Replica()
     replica.se = pandajob.destinationSE
     replica.status = 'defined'
-    replica.lfn = getFullPath(log.scope, pandajob.jobName, log.lfn)
+    replica.lfn = os.path.join(cont_path, f.lfn)
     replica.original = log
     replicas_.save(replica)
 

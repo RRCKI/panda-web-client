@@ -217,6 +217,39 @@ def get_file_path(f):
     return os.path.join('/system', f.scope, f.guid)
 
 
+def get_cont_dir(c, scope):
+    """
+    Returns relative system path to container
+
+    :param c: Target container
+    :type c: Container
+    :param scope: Scope of container TODO: add scope to container, remove this param
+    :type scope: str
+    :return: Relative path to file
+    :rtype: str
+    """
+    if not isinstance(c, Container):
+        raise Exception("Illegal cont class: not Container")
+    if not scope:
+        raise Exception("Illegal scope class: not str")
+    return os.path.join('/system', scope, ".sys", c.guid)
+
+
+def get_scope(user):
+    """
+    Get default user's scope
+
+    :param user: Target user
+    :type user: User
+    :return: User's scope
+    :rtype: str
+    """
+    if not isinstance(user, User):
+        raise Exception("Illegal user class: not User")
+
+    return 'web.' + user.username
+
+
 def save(o):
     """
     Wrapper for .save methods of Service instances
