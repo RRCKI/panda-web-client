@@ -9,6 +9,7 @@ import os
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.core import WebpandaError
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localextractfile
 from webpanda.files import Replica, File
@@ -221,7 +222,10 @@ def register_outputs():
     jobs = jobs_.find().filter(Job.status.in_(['finished', 'failed', 'cancelled']))\
         .filter(Job.registered != 1)\
         .all()
+
     ids = []
+    conn_factory = SEFactory()
+
     for job in jobs:
         ids.append(job.id)
         user = users_.get(job.owner_id)
@@ -230,44 +234,38 @@ def register_outputs():
         cont_path = fc.get_cont_dir(cont, fc.get_scope(user))
         cc = cont.files
 
-        update_info = False
-
-        slist = {}
+        out_ready = False
         if job.status == 'finished':
-            slist['output'] = 'ready'
-            slist['log'] = 'ready'
-            update_info = True
-        elif job.status == 'failed':
-            slist['output'] = 'failed'
-            slist['log'] = 'ready'
-        elif job.status == 'cancelled':
-            slist['output'] = 'failed'
-            slist['log'] = 'ready'
-        else:
-            continue
+            out_ready = True
 
         for c in cc:
-            if c.type in ['output', 'log']:
-                f = c.file
-                for replica in f.replicas:
-                    if replica.se == site.se:
-                        if update_info:
-                            conn_factory = SEFactory()
-                            connector = conn_factory.getSE(site.plugin, None)
+            if c.type not in ["log", "output"]:
+                continue
 
-                            # link real file to saved replica
-                            replica_dir = replica.lfn[:-len(f.lfn)]
-                            connector.link(os.path.join(cont_path, f.lfn), replica_dir, rel=True)
+            f = c.file
+            for replica in f.replicas:
+                if replica.se == site.se:
+                    if c.type == 'output' and not out_ready:
+                        # Update replica status
+                        replica.status = "failed"
+                        replicas_.save(replica)
+                    else:
+                        connector = conn_factory.getSE(site.plugin, None)
 
-                            # get replica info
-                            f.fsize = connector.fsize(replica.lfn)
-                            f.md5sum = connector.md5sum(replica.lfn)
-                            f.checksum = connector.adler32(replica.lfn)
-                            f.modification_time = datetime.utcnow()
-                            fc.save(f)
+                        # link real file to saved replica
+                        replica_dir = replica.lfn[:-len(f.lfn)]
+                        connector.link(os.path.join(cont_path, f.lfn), replica_dir, rel=True)  #
+                        # TODO: add "move" method
+
+                        # get replica info
+                        f.fsize = connector.fsize(replica.lfn)
+                        f.md5sum = connector.md5sum(replica.lfn)
+                        f.checksum = connector.adler32(replica.lfn)
+                        f.modification_time = datetime.utcnow()
+                        fc.save(f)
 
                         # Update replica status
-                        replica.status = slist[c.type]
+                        replica.status = "ready"
                         replicas_.save(replica)
 
         job.registered = 1
