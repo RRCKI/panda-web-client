@@ -187,7 +187,7 @@ def payload2(task):
 
     logger.debug("payload2: reg Makefile")
     #reg additional output
-    for fi in gen_sfx('Makefile', rn):
+    for fi in gen_sfx('Makefile', rn, '.yaml'):
         fc.reg_file_in_cont_byname(user, fi, container, 'output')
 
 
