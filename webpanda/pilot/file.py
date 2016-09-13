@@ -128,7 +128,7 @@ def file_info(container_guid, lfn):
             data['lfn'] = f.lfn
             data['guid'] = f.guid
             data['modification_time'] = str(f.modification_time)
-            data['fsize'] = int(f.fsize)
+            data['fsize'] = f.fsize
             data['adler32'] = f.checksum
             data['md5sum'] = f.md5sum
             return make_response(jsonify(data), 200)
