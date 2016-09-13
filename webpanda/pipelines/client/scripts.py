@@ -69,6 +69,7 @@ def get_next_task(p):
     next_task.owner_id = p.owner_id
     next_task.input = current_task.input
     next_task.output = current_task.output
+    next_task.params = current_task.params
     tasks_.save(next_task)
 
     # Update Pipeline obj
