@@ -196,7 +196,7 @@ def payload2(task):
     # TO_DO just for test add "1" - script1.sh- only emulate, not real jobs
     pipeline_path_name = 'paleomix_bam'
     swdir='/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
-    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t ;"  # 1>bam.out 2>bam.err & ;"
+    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err & ;"
     script += "/bin/bash " + swdir + "split.sh -t " + str(rn)
 
     # Save rn as task param
@@ -281,7 +281,8 @@ def payload3(task):
 def gen_sfx(pre, n, end=""):
     # return list of range (1,n) with addition of prefix and end, and use equal placeholders for all numbers from sequence
     # not more than 999!!!
-    r = range(1, n)
+    #r = range(1, n)
+    r=[]
     k = n
     nc = 1  # number of 0..0 prefix in list, - fon n <10: nc=1 : 01,02,..,09
     while k >= 100:
@@ -293,12 +294,12 @@ def gen_sfx(pre, n, end=""):
     while j > 0:
         pp += "0"
         j -= 1
-    for i in xrange(0, n-1):
+    for i in xrange(n):
         if i == 9:
             pp = pp[:-1]
         elif i == 99:
             pp = pp[:-1]
-        r[i] = pre+pp+str(i+1)+end
+        r.append(pre+pp+str(i+1)+end)
     return r
 
 
