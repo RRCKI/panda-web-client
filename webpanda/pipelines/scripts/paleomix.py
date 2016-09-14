@@ -204,7 +204,7 @@ def payload2(task):
              "web.it_211f2187-41f2-489f-ba63-73f004f21c66"
              ]
     for guid in guids:
-        fc.reg_file_in_cont_byname(user, files_.first(guid=guid), container, 'input')
+        fc.reg_file_in_cont(files_.first(guid=guid), container, 'input')
 
     # Prepare trf script
     script = task.task_type.trf_template
