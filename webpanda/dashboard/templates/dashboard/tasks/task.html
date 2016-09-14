@@ -12,7 +12,6 @@
 <b>TASK: </b>{{ task.id }}<br>
 <b>TAG: </b>{{ task.tag }}<br>
 <b>STATUS: </b>{{ task.status }}<br>
-<b>DONE: </b>{{ task.percentage }}%<br>
 {% endblock %}
 
 {% block content %}
@@ -29,6 +28,20 @@
         <th>Status</th>
     </tr>
 </thead>
+<tbody>
+{% for j in jobs %}
+    <tr>
+        <th><a href="/jobs/{{j.id}}">{{j.id}}</a></th>
+        <th>{{j.owner_id}}</th>
+        <th>{{j.pandaid}}</th>
+        <th>{{j.distr_id}}</th>
+        <th>{{j.creation_time}}</th>
+        <th>{{j.modification_time}}</th>
+        <th>{{j.attemptnr}}</th>
+        <th>{{j.status}}</th>
+    </tr>
+{% endfor %}
+</tbody>
 </table>
 {% endblock %}
 
