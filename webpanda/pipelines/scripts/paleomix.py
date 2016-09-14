@@ -310,12 +310,18 @@ def gen_sfx(pre, n, end=""):
     while j > 0:
         pp += "0"
         j -= 1
+#    for i in xrange(n):
+#        if i == 9:
+#            pp = pp[:-1]
+#        elif i == 99:
+#            pp = pp[:-1]
+#        r.append(pre+pp+str(i+1)+end)
     for i in xrange(n):
-        if i == 9:
+        if i == 10:
             pp = pp[:-1]
-        elif i == 99:
+        elif i == 100:
             pp = pp[:-1]
-        r.append(pre+pp+str(i+1)+end)
+        r.append(pre + pp + str(i) + end)
     return r
 
 
