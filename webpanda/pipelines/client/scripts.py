@@ -1,6 +1,6 @@
 from datetime import datetime
-from webpanda.services import tasks_, pipelines_, pipeline_catalog_, task_types_
-from webpanda.tasks import Pipeline, Task, PipelineType, PipelineCatalog, TaskType
+from webpanda.services import tasks_, pipelines_, pipeline_catalog_, task_types_, pipeline_archive_
+from webpanda.tasks import Pipeline, Task, PipelineType, PipelineCatalog, TaskType, PipelineArchive
 
 
 def get_current_task(p):
@@ -34,6 +34,12 @@ def set_current_task(p, t):
 
     p.current_task_id = t.id
     pipelines_.save(p)
+
+    ar = PipelineArchive()
+    ar.pipeline_id = p.id
+    ar.task_id = t.id
+    ar.creation_time = datetime.utcnow()
+    pipeline_archive_.save(ar)
 
     return p
 

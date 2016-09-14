@@ -3,6 +3,7 @@ from flask import Blueprint, request, render_template, current_app, session
 
 from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.dashboard import route_s
+from webpanda.services import tasks_, jobs_
 
 
 bp = Blueprint('tasks', __name__, url_prefix="/tasks")
@@ -16,3 +17,15 @@ def list_all():
     session['hours_limit'] = hours_limit
     session['display_limit'] = display_limit
     return render_template("dashboard/tasks/list.html")
+
+
+@route_s(bp, "/<id>", methods=['GET'])
+def task_info(id):
+    """
+    Task info view
+    :param guid: guid of job
+    :return: Response obj
+    """
+    task = tasks_.get(id)
+    jobs = jobs_.find(tags=task.tag)
+    return render_template("dashboard/tasks/task.html", jobs=jobs, task=task)
