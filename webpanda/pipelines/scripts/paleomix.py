@@ -187,7 +187,7 @@ def payload2(task):
                     for sfx in ('amb','ann','bwt','fai','pac','sa', 'validated'):
                         fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
 
-                    script_add += "; echo 123 > {fname}".format(fname=fn+"validated")
+                    script_add += "; echo 123 > ../{fname}".format(fname=fn+"validated")
 
     logger.debug("payload2: reg Makefile")
     #reg additional output
