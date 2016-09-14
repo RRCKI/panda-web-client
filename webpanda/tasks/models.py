@@ -106,15 +106,8 @@ class Pipeline(PipelineJsonSerializer, db.Model):
         return '<Pipeline id=%s name=%s>' % (self.id, self.name)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+class PipelineArchive(db.Model):
+    __tablename__ = 'pipeline_archive'
+    pipeline_id = db.Column(db.Integer, db.ForeignKey('pipelines.id'), primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), primary_key=True)
+    creation_time = db.Column(db.DateTime)
