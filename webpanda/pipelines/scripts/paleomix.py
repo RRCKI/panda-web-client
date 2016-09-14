@@ -155,6 +155,8 @@ def payload2(task):
     conts_.save(container)
     logger.debug("payload2: cont " + container.guid)
 
+    script_add = ""
+
     rn = 0
     # Add input files to container
     files_template_list = task_type.ifiles_template.split(',')
@@ -185,6 +187,8 @@ def payload2(task):
                     for sfx in ('amb','ann','bwt','fai','pac','sa', 'validated'):
                         fc.reg_file_in_cont_byname(user, fn+sfx, container, 'output')
 
+                    script_add += "; echo 123 > {fname}".format(fname=fn+"validated")
+
     logger.debug("payload2: reg Makefile")
     #reg additional output
     for fi in gen_sfx('Makefile', rn, '.yaml'):
@@ -198,6 +202,7 @@ def payload2(task):
     swdir='/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
     script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t ;"  # 1>bam.out 2>bam.err & ;"
     script += "/bin/bash " + swdir + "split.sh -t " + str(rn)
+    script += script_add
 
     # Save rn as task param
     task.params = str(rn)
