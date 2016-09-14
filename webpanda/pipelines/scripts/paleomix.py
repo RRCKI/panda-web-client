@@ -9,7 +9,7 @@ from webpanda.core import WebpandaError
 from webpanda.files import Container
 from webpanda.jobs import Job
 from webpanda.pipelines.scripts import logger
-from webpanda.services import tasks_, conts_, users_, jobs_, sites_
+from webpanda.services import tasks_, conts_, users_, jobs_, sites_, files_
 from webpanda.fc import client as fc
 from webpanda.async import async_send_job
 
@@ -194,6 +194,17 @@ def payload2(task):
     for fi in gen_sfx('Makefile', rn, '.yaml'):
         fc.reg_file_in_cont_byname(user, fi, container, 'output')
 
+    guids = ["web.it_4b7d4757-9ba4-4ed7-8bc0-6edb8bcc68d2",
+             "web.it_3bc78e60-241b-418a-a631-2461d4ba1977",
+             "web.it_1b88049e-463b-4b4f-8454-9587301a53e5",
+             "web.it_a02271ea-8a9b-42f3-add2-ed6d0f9ff07e",
+             "web.it_61bb7c80-e53c-4641-88b0-fbd16b0f3d56",
+             "web.it_3930f596-25ea-49b0-8943-7a83c84c7940",
+             "web.it_aa7b77a3-c765-464e-a4fa-29ce6dd50346",
+             "web.it_211f2187-41f2-489f-ba63-73f004f21c66"
+             ]
+    for guid in guids:
+        fc.reg_file_in_cont_byname(user, files_.first(guid=guid), container, 'input')
 
     # Prepare trf script
     script = task.task_type.trf_template
