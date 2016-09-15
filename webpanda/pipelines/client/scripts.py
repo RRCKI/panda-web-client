@@ -44,6 +44,23 @@ def set_current_task(p, t):
     return p
 
 
+def get_tasks(p):
+    """
+    Get tasis of pipeline
+    :param p: Pipeline obj
+    :return: list of Task objs
+    """
+    if not isinstance(p, Pipeline):
+        raise Exception("Illegal pipeline class: not Pipeline")
+    retval = list()
+
+    archive = pipeline_archive_.find(pipeline_id=p.id)
+    for item in archive:
+        retval.append(tasks_.get(item.task_id))
+
+    return retval
+
+
 def get_next_task(p):
     """
     Returns next task object

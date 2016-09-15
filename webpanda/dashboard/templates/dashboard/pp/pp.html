@@ -26,9 +26,11 @@
     </tr>
 </thead>
 <tbody>
+{% for task in tasks %}
     <tr>
-        <th>{{pp.current_task_id}}</th>
+        <th>{{task.id}}</th>
     </tr>
+{% endfor %}
 </tbody>
 </table>
 {% endblock %}

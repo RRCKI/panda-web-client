@@ -37,7 +37,8 @@ def pipeline_info(id):
     :return: Response obj
     """
     pp = pipelines_.get(id)
-    return render_template("dashboard/pp/pp.html", pp=pp)
+    tasks = pclient.get_tasks(pp)
+    return render_template("dashboard/pp/pp.html", pp=pp, tasks=tasks)
 
 
 @route_s(bp, "/new", methods=['GET', 'POST'])
