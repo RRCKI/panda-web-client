@@ -293,6 +293,60 @@ def payload3(task):
 
     return True
 
+def payload4(task):
+    """
+    run merge from N inputs
+    input: Makefile.all, *.fasta.{sfx list}, *1.{N}.fastq, *2.{N}.fastq, {N}reads.tgz, {N}maps.tgz
+    output: bam file + results.tgz?
+    :param task:
+    :return:
+    """
+    logger.debug("payload4: Start")
+
+    #### Prepare
+    # Check type of task
+    task_type = task.task_type
+
+    # Get user
+    user = users_.get(task.owner_id)
+
+    task.tag = "task." + commands.getoutput('uuidgen')
+    tasks_.save(task)
+
+    # Get containers
+    input_cont = conts_.get(task.input)
+    #TO_DO do smth with output container?
+    output_cont = conts_.get(task.output)
+
+    # Get container
+    container = Container()
+    container.guid = task.tag
+    conts_.save(container)
+
+    # Add input files to container
+    files_template_list = task_type.ifiles_template.split(',')
+    for item in input_cont.files:
+        f = item.file
+        for file_template in files_template_list:
+            # TO_DO: Change file template here
+            m = re.match(file_template, f.lfn)
+            if m is not None:
+                # Register file in container
+                fc.reg_file_in_cont(f, container, 'input')
+
+    # reg additional output
+    fc.reg_file_in_cont_byname(user, 'output.bam', container, 'output')
+    fc.reg_file_in_cont_byname(user, 'results.tgz', container, 'output')
+
+    # Prepare trf script
+    script = task.task_type.trf_template
+    # TO_DO just for test - only emulate, not real jobs
+    pipeline_path_name = 'paleomix_bam'
+    swdir = '/s/ls2/users/poyda/swp/' + pipeline_path_name + '/'
+    script = "/bin/bash " + swdir + "runmerge.sh"
+    send_job_(task, container, script)
+
+    return True
 
 def gen_sfx(pre, n, end=""):
     # return list of range (1,n) with addition of prefix and end, and use equal placeholders for all numbers from sequence
