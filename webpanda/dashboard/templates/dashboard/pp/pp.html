@@ -23,12 +23,22 @@
 <thead>
     <tr>
         <th>ID</th>
+        <th>Type</th>
+        <th>Tag</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Modified</th>
     </tr>
 </thead>
 <tbody>
 {% for task in tasks %}
     <tr>
-        <th>{{task.id}}</th>
+        <th><a href="/tasks/{{task.id}}">{{task.id}}</a></th>
+        <th>{{task.task_type.method}}</th>
+        <th>{{task.tag}}</th>
+        <th>{{task.status}}</th>
+        <th>{{task.creation_time}}</th>
+        <th>{{task.modification_time}}</th>
     </tr>
 {% endfor %}
 </tbody>
