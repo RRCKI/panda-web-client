@@ -94,6 +94,8 @@ def run(task):
             payload2(task)
         elif method == 'run1_task':
             payload3(task)
+        elif method == 'merge_task':
+            payload4(task)
         else:
             raise WebpandaError("Task payload error: method not found")
 
@@ -174,10 +176,10 @@ def payload2(task):
                 # Register file in container
                 fc.reg_file_in_cont(f, container, 'input')
                 if f.lfn.endswith('.fastq'):
-                    for fi in gen_sfx(f.lfn[:-5], rn, '.fastq'):
+                    for fi in gen_sfx(f.lfn[:-5]+'a', rn, '.fastq'):
                         fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fastq.bz2'):
-                    for fi in gen_sfx(f.lfn[:-9], rn, '.fastq'):
+                    for fi in gen_sfx(f.lfn[:-9]+'a', rn, '.fastq'):
                         fc.reg_file_in_cont_byname(user, fi, container, 'output')
                 if f.lfn.endswith('.fasta'):
                     fn=f.lfn+'.'
@@ -191,7 +193,7 @@ def payload2(task):
 
     logger.debug("payload2: reg Makefile")
     #reg additional output
-    for fi in gen_sfx('Makefile', rn, '.yaml'):
+    for fi in gen_sfx('Makefile.a', rn, '.yaml'):
         fc.reg_file_in_cont_byname(user, fi, container, 'output')
 
     #guids = ["web.it_4b7d4757-9ba4-4ed7-8bc0-6edb8bcc68d2",
