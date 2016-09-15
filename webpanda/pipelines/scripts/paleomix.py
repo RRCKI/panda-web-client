@@ -211,7 +211,7 @@ def payload2(task):
     # TO_DO just for test add "1" - script1.sh- only emulate, not real jobs
     pipeline_path_name = 'paleomix_bam'
     swdir='/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
-    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err & ;"
+    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err;"
     script += "/bin/bash " + swdir + "split.sh -t " + str(rn)
     script += script_add
 
