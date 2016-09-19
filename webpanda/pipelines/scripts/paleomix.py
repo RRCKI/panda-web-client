@@ -254,7 +254,6 @@ def payload3(task):
         if n==0:
             n=10
 
-
     task.tag = "task." + commands.getoutput('uuidgen')
     tasks_.save(task)
 
@@ -315,6 +314,12 @@ def payload4(task):
     task.tag = "task." + commands.getoutput('uuidgen')
     tasks_.save(task)
 
+    n = 10
+    if task.params is not None:
+        n = int(task.params)
+        if n == 0:
+            n = 10
+
     # Get containers
     input_cont = conts_.get(task.input)
     #TO_DO do smth with output container?
@@ -345,7 +350,7 @@ def payload4(task):
     # TO_DO just for test - only emulate, not real jobs
     pipeline_path_name = 'paleomix_bam'
     swdir = '/s/ls2/users/poyda/swp/' + pipeline_path_name + '/'
-    script = "/bin/bash " + swdir + "runmerge.sh"
+    script = "/bin/bash " + swdir + "runmerge.sh -t " + str(n)
     send_job_(task, container, script)
 
     return True
