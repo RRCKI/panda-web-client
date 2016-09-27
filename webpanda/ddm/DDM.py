@@ -1,13 +1,14 @@
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.ddm.LocalSEPlugin import LocalSEPlugin
+from webpanda.core import WebpandaError
 
 _logger = NrckiLogger().getLogger("DDM")
+
 
 class SEFactory:
     def __init__(self):
         pass
 
-    def getSE(self, plugin, params={}):
+    def getSE(self, plugin, params=None):
         try:
             if plugin in ['dropbox']:
                 from webpanda.ddm.DropboxSEPlugin import DropboxSEPlugin
@@ -18,6 +19,7 @@ class SEFactory:
                 se = GridSEPlugin(params)
 
             elif plugin in ['local']:
+                from webpanda.ddm.LocalSEPlugin import LocalSEPlugin
                 se = LocalSEPlugin(params)
 
             elif plugin in ['http', 'https']:
@@ -32,7 +34,7 @@ class SEFactory:
                 from webpanda.ddm.HPCSEPlugin import HPCSEPlugin
                 se = HPCSEPlugin(params)
 
-            elif plugin in ['tobeset']:
+            else:
                 raise Exception('SE needs to be set. Unable to get SE plugin')
 
         except Exception:
@@ -45,30 +47,29 @@ class SEPlugin(object):
     def __init__(self, params=None):
         pass
 
-    def get(self, src, dest, fsize, fsum):
-        _logger.error("SEPlugin.get not implemented")
-        raise NotImplementedError("SEPlugin.get not implemented")
+    def get(self, src, dest):
+        raise WebpandaError("SEPlugin.get not implemented")
 
     def put(self, src, dest):
-        _logger.error("SEPlugin.put not implemented")
-        raise NotImplementedError("SEPlugin.put not implemented")
+        raise WebpandaError("SEPlugin.put not implemented")
 
     def link(self, lfn, dir, rel=True):
-        _logger.error("SEPlugin.link not implemented")
-        raise NotImplementedError("SEPlugin.link not implemented")
+        raise WebpandaError("SEPlugin.link not implemented")
+
+    def mv(self, lfn, lfn2, rel=True):
+        raise WebpandaError("SEPlugin.mv not implemented")
+
+    def rm(self, lfn, rel=True):
+        raise WebpandaError("SEPlugin.rm not implemented")
 
     def ls(self, path, rel=True):
-        _logger.error("SEPlugin.ls not implemented")
-        raise NotImplementedError("SEPlugin.ls not implemented")
+        raise WebpandaError("SEPlugin.ls not implemented")
 
     def fsize(self, path, rel=True):
-        _logger.error("SEPlugin.fsize not implemented")
-        raise NotImplementedError("SEPlugin.fsize not implemented")
+        raise WebpandaError("SEPlugin.fsize not implemented")
 
     def md5sum(self, path, rel=True):
-        _logger.error("SEPlugin.md5sum not implemented")
-        raise NotImplementedError("SEPlugin.md5sum not implemented")
+        raise WebpandaError("SEPlugin.md5sum not implemented")
 
     def adler32(self, path, rel=True):
-        _logger.error("SEPlugin.adler32 not implemented")
-        raise NotImplementedError("SEPlugin.adler32 not implemented")
+        raise WebpandaError("SEPlugin.adler32 not implemented")

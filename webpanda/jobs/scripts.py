@@ -9,10 +9,9 @@ import os
 
 from webpanda.common import client_config
 from webpanda.common.NrckiLogger import NrckiLogger
-from webpanda.core import WebpandaError
 from webpanda.ddm.DDM import SEFactory
 from webpanda.ddm.scripts import ddm_localextractfile
-from webpanda.files import Replica, File
+from webpanda.files import File
 from webpanda.files.common import getScope, getGUID
 from webpanda.jobs import Job
 from webpanda.services import sites_, jobs_, replicas_, files_, users_
@@ -253,9 +252,13 @@ def register_outputs():
                         connector = conn_factory.getSE(site.plugin, None)
 
                         # link real file to saved replica
-                        replica_dir = replica.lfn[:-len(f.lfn)]
-                        connector.link(os.path.join(cont_path, f.lfn), replica_dir, rel=True)  #
-                        # TODO: add "move" method
+                        fpath = os.path.join(cont_path, f.lfn)
+                        # append attemptnr
+                        if job.attemptnr > 0:
+                            fpath += "." + str(job.attemptnr)
+
+                        #connector.link(os.path.join(cont_path, f.lfn), replica_dir, rel=True)
+                        connector.mv(fpath, replica.lfn, rel=True)
 
                         # get replica info
                         f.fsize = connector.fsize(replica.lfn)
