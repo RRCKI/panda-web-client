@@ -59,10 +59,13 @@ class HPCSEPlugin(SEPlugin):
         if rel:
             lfn = self.datadir + lfn
         lfn2 = self.datadir + lfn2
+        lfn2dir = "/".join(lfn2.split("/")[:-1])
         _logger.debug('HPC: Try to link file from %s to %s' % (lfn, lfn2))
         try:
             proc = subprocess.Popen(['/bin/bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            out = proc.communicate("ssh -i %s %s@%s 'mv %s %s'" % (self.key, self.user, self.host, lfn, lfn2))
+            out = proc.communicate("ssh -i %s %s@%s 'mkdir -p %s && mv %s %s'" % (self.key, self.user,
+                                                                                  self.host, lfn2dir,
+                                                                                  lfn, lfn2))
             return True
         except:
             raise WebpandaError('Unable to mv:%s to %s' % (lfn, lfn2))
