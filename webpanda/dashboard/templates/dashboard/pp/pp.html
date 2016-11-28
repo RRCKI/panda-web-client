@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Pipeline info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block jumbotron %}
+<b>PIPELINE:</b> {{pp.id}} <br>
+<b>STATUS:</b> {{pp.status}} <br>
+<b>TYPE:</b> {{pp.pipeline_type.name}} <br>
+<b>TAG:</b> {{pp.tag}} <br>
+<b>CURRENT_TASK_ID:</b> {{pp.current_task_id}} <br>
+<b>CREATION_TIME:</b> {{pp.creation_time}} <br>
+<b>MODIFICATION_TIME:</b> {{pp.modification_time}}
+{% endblock %}
+
+{% block content %}
+<table id="pptable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Tag</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Modified</th>
+    </tr>
+</thead>
+<tbody>
+{% for task in tasks %}
+    <tr>
+        <th><a href="/tasks/{{task.id}}">{{task.id}}</a></th>
+        <th>{{task.task_type.method}}</th>
+        <th>{{task.tag}}</th>
+        <th>{{task.status}}</th>
+        <th>{{task.creation_time}}</th>
+        <th>{{task.modification_time}}</th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="{{ url_for('static', filename='app/js/pp.js') }}"></script>
+{% endblock %}

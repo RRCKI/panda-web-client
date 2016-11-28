@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - File info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<b>FILE:</b> {{file.id}} <br>
+<b>GUID:</b> {{file.guid}} <br>
+<b>LFN:</b> {{file.lfn}} <br>
+<b>SCOPE:</b> {{file.scope}}<br>
+<b>ADLER32:</b> {{file.checksum}}<br>
+<b>MD5SUM:</b> {{file.md5sum}}<br>
+<b>SIZE:</b> {{file.fsize}}<br>
+<b>STATUS:</b> {{file.status}}<br>
+<b>REPLICAS:</b><br>
+<table id="replicastable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>SE</th>
+        <th>LFN</th>
+        <th>STATUS</th>
+    </tr>
+</thead>
+<tbody>
+{% for r in replicas %}
+    <tr>
+        <th>{{r.se}}</th>
+        <th>{{r.lfn}}</th>
+        <th>{{r.status}}</th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="{{ url_for('static', filename='app/js/file.js') }}"></script>
+{% endblock %}

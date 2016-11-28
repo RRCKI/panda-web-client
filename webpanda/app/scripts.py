@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 import os
-from flask import g
-from app import app, db
 
-from common.utils import adler32, fsize
-from common.utils import md5sum
-from ddm.DDM import ddm_checkifexists, ddm_localmakedirs, ddm_localcp
-from models import Container, Site, File, Replica, Job
-from common.NrckiLogger import NrckiLogger
-from ui.FileMaster import getScope, getGUID, cloneReplica, setFileMeta
+from flask import g
 import userinterface.Client as Client
 
+from webpanda.app import app, db
+from webpanda.common.utils import adler32, fsize
+from webpanda.common.utils import md5sum
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_localmakedirs, ddm_localcp, ddm_localextractfile
+from webpanda.app.models import Container, Site, File, Replica, Job
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.files.scripts import setFileMeta
+from webpanda.files.common import getScope, getGUID
+from webpanda.async import async_cloneReplica
+
+
 _logger = NrckiLogger().getLogger('app.scripts')
+
 
 def registerLocalFile(arg, dirname, names):
     """Register files from local dir to container
@@ -81,6 +86,27 @@ def registerLocalFile(arg, dirname, names):
             db.session.add(replica)
             db.session.commit()
 
+
+def register_ftp_files(ftp_dir, scope, guid):
+    """
+    Walks through ftp dir and registers all files
+    :param ftp_dir: Relative ftpdir path
+    :param scope: Files' scope
+    :param guid: Container's guid to register in
+    :return:
+    """
+    if ftp_dir == '':
+        return []
+
+    ftp_dir_full = os.path.join(app.config['UPLOAD_FOLDER'], scope, ftp_dir)
+
+    ftp_walk = os.walk(ftp_dir_full)
+    for item in ftp_walk:
+        # Calculate files' hash, size
+        # Register it If db hasn't similar file
+        registerLocalFile(guid, item[0], item[2])
+
+
 def updateJobStatus():
     # Method to sync PandaDB job status and local job status
     # show users jobs
@@ -102,12 +128,21 @@ def updateJobStatus():
             if job.pandaid in ids:
                 for obj in o:
                     if obj.PandaID == job.pandaid:
-                        job.status = obj.jobStatus
-                        job.modification_time = datetime.utcnow()
-                        db.session.add(job)
-                        db.session.commit()
+                        # Update attemptNr if changed
+                        if job.attemptnr not in [obj.attemptNr]:
+                            job.attemptnr = obj.attemptNr
+                            db.session.add(job)
+                            db.session.commit()
+
+                        # Update status if changed
+                        if job.status != obj.jobStatus:
+                            job.status = obj.jobStatus
+                            job.modification_time = datetime.utcnow()
+                            db.session.add(job)
+                            db.session.commit()
 
     return localids
+
 
 def registerOutputFiles():
     jobs = Job.query.filter(Job.status.in_(['finished', 'failed', 'cancelled']))\
@@ -150,6 +185,7 @@ def registerOutputFiles():
 
     return ids
 
+
 def transferOutputFiles(ids=[]):
     if len(ids) == 0:
         return 0
@@ -176,6 +212,38 @@ def transferOutputFiles(ids=[]):
                         if replica.status != 'ready':
                             raise Exception('Broken replica. File: %s' % file.guid)
                 if needReplica and not hasReplica:
-                    task = cloneReplica.delay(fromReplica, to_site.se)
+                    task = async_cloneReplica.delay(fromReplica, to_site.se)
 
     return 0
+
+
+def extractLog(id):
+    """
+    Finds local log archive and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = Job.query.filter_by(id=id).first()
+    files = job.container.files
+    for f in files:
+        if f.type == 'log':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.log.tgz'):
+                    ddm_localextractfile(r.lfn)
+
+
+def extractOutputs(id):
+    """
+    Finds local output archives and extracts it
+    :param id: Job id
+    :return:
+    """
+    job = Job.query.filter_by(id=id).first()
+    files = job.container.files
+    for f in files:
+        if f.type == 'output':
+            replicas = f.replicas
+            for r in replicas:
+                if r.se == app.config['DEFAULT_SE'] and r.status == 'ready' and r.lfn.endswith('.tgz'):
+                    ddm_localextractfile(r.lfn)

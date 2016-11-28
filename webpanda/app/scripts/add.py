@@ -1,6 +1,8 @@
-from app.scripts import updateJobStatus, transferOutputFiles, registerOutputFiles
+from webpanda.app.scripts import updateJobStatus, transferOutputFiles, registerOutputFiles, extractLog
 
 if __name__ == '__main__':
     updateJobStatus()
     ids = registerOutputFiles()
-    transferOutputFiles(ids)
+    #transferOutputFiles(ids)
+    #for i in ids:
+    #    extractLog(i)

@@ -5,7 +5,8 @@ from flask import url_for, redirect, request
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField, IntegerField, \
     FieldList, TextField
 from wtforms.validators import Required, EqualTo, Length
-from models import User
+
+from webpanda.app.models import User
 
 
 def is_safe_url(target):
@@ -61,9 +62,12 @@ class NewJobForm(RedirectForm):
     distr = SelectField(u'Distributive', coerce=str)
     params = TextAreaField(u'Parameters', validators=[Required(), Length(1, 1000)])
     container = HiddenField(default="")
+    corecount = IntegerField('Cores', default=1)
     ftpdir = StringField(u'FTP DIR')
     submitbtn = SubmitField(u'Send job')
-
+    onebyone = BooleanField(u'One file one job', default=False)
+    tags = StringField(u'Tags')
+    
 class NewFileForm(RedirectForm):
     se = SelectField(u'SE', coerce=str)
     url = StringField(u'URL', validators=[Required(), Length(1, 64)])
@@ -75,4 +79,13 @@ class NewDistrForm(RedirectForm):
     version = StringField('Version', validators=[Required(), Length(1, 64)])
     release = IntegerField('Release')
 
+class NewContainerForm(RedirectForm):
+    ftpdir = StringField(u'FTP DIR', validators=[Length(1, 64)])
+    submitbtn = SubmitField(u'Upload')
+
+class JobResendForm(RedirectForm):
+    id_ = IntegerField('id_', default=1)
+
+class JobKillForm(RedirectForm):
+    id_ = IntegerField('id_', default=1)
 

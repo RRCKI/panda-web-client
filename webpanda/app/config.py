@@ -1,8 +1,9 @@
-from configobj import ConfigObj
-
 import os
 import sys
 import re
+
+from configobj import ConfigObj
+
 
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 tmpConf = ConfigObj(os.path.join(basedir, 'config', 'webpanda.cfg'))

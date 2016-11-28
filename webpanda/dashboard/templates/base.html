@@ -1,0 +1,128 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="{{ url_for('static', filename='app/img/favicon.ico') }}">
+
+    {% block title %}{% endblock %}
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{{ url_for('static', filename='app/css/navbar.css') }}" rel="stylesheet">
+    
+    {% block css_import %}{% endblock %}
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class='container'>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-warning alert-dismissible" id="alert-unit" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <strong>System message: </strong>{{ message}}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">WEB PANDA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Pipelines <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('pipelines.list_all') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                        <li><a href="{{ url_for('pipelines.new_pipeline') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Paleomix BAM</a></li>
+                    </ul>
+	            </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tasks <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('tasks.list_all') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                    </ul>
+	            </li>
+
+	            <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Jobs <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('jobs.jobs') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                        <li><a href="{{ url_for('jobs.job') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+                    </ul>
+	            </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Containers <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('conts.containers') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Files <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{{ url_for('files.files') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                        <li><a href="{{ url_for('files.index') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Lustre</a></li>
+                        <li><a href="{{ url_for('conts.container') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> FTP</a></li>
+                    </ul>
+                </li>
+            <li><a href="ftp://144.206.233.179:8021/" target="_blank">FTP</a></li>
+            <li><a href="{{ url_for('main.help') }}">Help</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              {% if g.user.is_authenticated %}
+              <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><b>{{g.user.username}}</b> [{% if g.user.role == 0 %}user{% endif %}{% if g.user.role == 1 %}admin{% endif %}] <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Profile</a></li>
+                <li class="divider"></li>
+                {% if g.user.role == 1 %}<li><a href="/admin">Admin panel</a></li>{% endif %}
+                <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
+              </ul>
+              </li>
+              {% endif %}
+              {% if not g.user.is_authenticated %}
+              <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
+              {% endif %}
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+    <div class='jumbotron'>
+        {% block jumbotron %}{% endblock %}
+    </div>
+    
+    {% block content %}{% endblock %}
+    
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='app/js/base.js') }}"></script>
+    {% block js_import %}{% endblock %}
+</body>
+</html>

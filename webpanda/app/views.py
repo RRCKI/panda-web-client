@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
+import os
 import commands
-import glob
 import json
-from celery import chord
-from datetime import datetime
 
+from celery import chord
 from flask import render_template, flash, redirect, session, url_for, request, g, jsonify, make_response, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db
-from app.apis import makeReplicaAPI
-from ddm.DDM import ddm_checkifexists, ddm_checkexternalifexists
-from scripts import registerLocalFile
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32, fsize, md5sum
-from forms import LoginForm, RegisterForm, NewJobForm, NewFileForm
-from models import *
-from datetime import datetime
-import os
-from ui.FileMaster import cloneReplica, getScope, getGUID, getUrlInfo, setFileMeta
-from ui.JobMaster import send_job, prepareInputFiles
 
-from userinterface import Client
+from webpanda.app import app
+from webpanda.ddm.scripts import ddm_checkifexists, ddm_checkexternalifexists, ddm_getlocalabspath
+from webpanda.app.scripts import register_ftp_files, extractLog
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32, fsize, md5sum, find
+from webpanda.app.forms import LoginForm, RegisterForm, NewJobForm, NewFileForm, NewContainerForm, JobResendForm, JobKillForm
+from webpanda.app.models import *
+from webpanda.async import async_cloneReplica, async_uploadContainer, async_kill_job, async_send_job, prepareInputFiles
+
+
+from pandaserver.userinterface import Client
+#comment
+from webpanda.files.scripts import setFileMeta, getUrlInfo
+from webpanda.files.common import getScope, getGUID
 
 HOURS_LIMIT = 96
-DISPLAY_LIMIT = 6000
+DISPLAY_LIMIT = 200
 
 _logger = NrckiLogger().getLogger("app.views")
 
@@ -126,15 +126,43 @@ def job():
             _logger.error(Exception.message)
             return make_response(jsonify({'error': 'Container not found'}), 404)
 
+        jparams = form.params.data
+
         ifiles = request.form.getlist('ifiles[]')
-        ofiles = ['results.tgz']
+        iguids = request.form.getlist('iguids[]')
+        iconts = request.form.getlist('iconts[]')
+        ofiles = ['{guid}.out.tgz'.format(guid=container.guid)]
 
         scope = getScope(g.user.username)
 
-        ftpdir = form.ftpdir.data
-        if ftpdir != '':
-            dir = os.path.join(app.config['UPLOAD_FOLDER'], getScope(g.user.username), ftpdir)
-            os.path.walk(dir, registerLocalFile, container.guid)
+        # Process ftp files
+        ftp_dir = form.ftpdir.data
+        register_ftp_files(ftp_dir, scope, container.guid)
+
+        # Process guid list
+        for f in iguids:
+            if f != '':
+                file = File.query.filter_by(guid=f).first()
+                if file is not None:
+                        # Add file to container
+                        container.files.append(file)
+                        db.session.add(container)
+                        db.session.commit()
+                else:
+                    return make_response(jsonify({'error': "GUID {} not found".format(f)}))
+
+        # Process containers
+        for c in iconts:
+            if c != '':
+                try:
+                    form_cont = Container.query.filter_by(guid=c).one()
+                except(Exception):
+                    _logger.error(Exception.message)
+                    return make_response(jsonify({'error': 'Container in form not found'}), 404)
+                for form_cont_file in form_cont.files:
+                    container.files.append(form_cont_file)
+                    db.session.add(container)
+                    db.session.commit()
 
         # Processes urls
         for f in ifiles:
@@ -206,23 +234,89 @@ def job():
         job.pandaid = None
         job.status = 'pending'
         job.owner = g.user
-        job.params = form.params.data
+        job.params = jparams
         job.distr = distr
         job.container = container
         job.creation_time = datetime.utcnow()
         job.modification_time = datetime.utcnow()
         job.ninputfiles = nifiles
         job.noutputfiles = nofiles
+        job.corecount = form.corecount.data
+        job.tags = form.tags.data if form.tags.data != "" else None
         db.session.add(job)
         db.session.commit()
 
         # Async sendjob
-        res = chord(ftasks)(send_job.s(jobid=job.id, siteid=site.id))
+        res = chord(ftasks)(async_send_job.s(jobid=job.id, siteid=site.id))
 
         return redirect(url_for('jobs'))
 
     form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in Distributive.query.order_by('name').order_by('version')]
     return render_template("pandaweb/jobs_new.html", form=form)
+
+
+@app.route("/job/<id>", methods=['GET'])
+@login_required
+def job_info(id):
+    job = Job.query.filter_by(id=id).one()
+    container = job.container
+    resend_form = JobResendForm()
+    kill_form = JobKillForm()
+    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'], resend_form=resend_form, kill_form=kill_form)
+
+
+@app.route('/job/<id>/logs', methods=['GET'])
+@login_required
+def jobLog(id):
+    """Returns job stdout & stderr"""
+    job = Job.query.filter_by(id=id).one()
+    extractLog(id)
+    locdir = '/%s/.sys/%s' % (getScope(job.owner.username), job.container.guid)
+    absdir = ddm_getlocalabspath(locdir)
+    fout = find('payload_stdout.txt', absdir)
+    ferr = find('payload_stderr.txt', absdir)
+    out = ''
+    err = ''
+    if len(fout) > 0:
+        with open(fout[0]) as f:
+            out = f.read()
+    if len(ferr) > 0:
+        with open(ferr[0]) as f:
+            err = f.read()
+    data = {}
+    data['id'] = id
+    data['out'] = out
+    data['err'] = err
+    return make_response(jsonify({'data': data}), 200)
+
+
+@app.route('/job/resend', methods=['POST'])
+@login_required
+def job_resend():
+    form = JobResendForm()
+    if request.method == 'POST':
+        id_ = int(form.id_.data)
+        job = Job.query.filter_by(id=id_).one()
+        pandaid = job.pandaid
+
+        return redirect(url_for('jobs'))
+    return make_response(jsonify({'status': 'Page not found'}), 404)
+
+
+@app.route('/job/kill', methods=['POST'])
+@login_required
+def job_kill():
+    form = JobKillForm()
+    if request.method == 'POST':
+        id_ = int(form.id_.data)
+        job = Job.query.filter_by(id=id_).one()
+        pandaid = job.pandaid
+        if pandaid is not None:
+            out = async_kill_job(pandaid)
+            return make_response(jsonify({'data': out}), 200)
+        return redirect(url_for('jobs'))
+    return make_response(jsonify({'status': 'Page not found'}), 404)
+
 
 @app.route("/upload", methods=['POST'])
 @login_required
@@ -311,12 +405,14 @@ def upload():
     else:
         return redirect(url_for("upload_success"))
 
+
 def ajax_response(status, msg):
     status_code = "ok" if status else "error"
     return json.dumps(dict(
         status=status_code,
         msg=msg,
     ))
+
 
 @app.route("/jobs", methods=['GET'])
 @login_required
@@ -327,6 +423,7 @@ def jobs():
     session['display_limit'] = display_limit
     return render_template("pandaweb/jobs_list.html")
 
+
 @app.route("/jobs/list", methods=['GET'])
 @login_required
 def jobs_list():
@@ -334,9 +431,11 @@ def jobs_list():
 
     hours_limit = session.get('hours_limit', HOURS_LIMIT)
     display_limit = session.get('display_limit', DISPLAY_LIMIT)
+    status = request.args.get('status', "")
+    tags = request.args.get('tag', "")
 
     # show users jobs
-    jobs = Job.query.filter_by(owner_id=user.id).order_by(Job.id).limit(display_limit)
+    jobs = Job.query.filter_by(owner_id=user.id).filter(Job.status.contains(status)).filter(Job.tags.contains(tags)).order_by(Job.id.desc()).limit(display_limit)
 
     # prepare json
     jobs_o = []
@@ -355,11 +454,13 @@ def jobs_list():
         job_o['status'] = job.status
         job_o['ifiles'] = '[%s] ready' % job.ninputfiles
         job_o['ofiles'] = '[%s]' % job.noutputfiles
+        job_o['attemptnr'] = job.attemptnr
         jobs_o.append(job_o)
     data = {}
     data['data'] = jobs_o
 
     return make_response(jsonify(data), 200)
+
 
 @app.route("/file", methods=['GET', 'POST'])
 @login_required
@@ -394,11 +495,12 @@ def file():
         db.session.add(replica)
         db.session.commit()
 
-        resp = cloneReplica.delay(replica.id, se)
+        resp = async_cloneReplica.delay(replica.id, se)
         return redirect(url_for('file_info', guid=file.guid))
 
     form.se.choices = [("%s" % site.se, "%s" % site.se) for site in Site.query.filter_by(active=1)]
     return render_template("pandaweb/file_new.html", form=form)
+
 
 @app.route("/file/<guid>", methods=['GET'])
 @login_required
@@ -409,6 +511,7 @@ def file_info(guid):
         _logger.error(Exception.message)
         return 'File not found'
     return render_template("pandaweb/file.html", file=file, replicas=file.replicas)
+
 
 @app.route("/file/<guid>/download", methods=['GET'])
 @login_required
@@ -435,12 +538,6 @@ def file_download(guid):
             return rr
     return make_response(jsonify({'error': 'No ready replica'}), 404)
 
-@app.route("/job/<id>", methods=['GET'])
-@login_required
-def job_info(id):
-    job = Job.query.filter_by(id=id).one()
-    container = job.container
-    return render_template("pandaweb/job.html", job=job, files=container.files, ftp=app.config['FTP'])
 
 @app.route("/files", methods=['GET'])
 @login_required
@@ -450,6 +547,7 @@ def files():
     session['hours_limit'] = hours_limit
     session['display_limit'] = display_limit
     return render_template("pandaweb/file_list.html")
+
 
 @app.route("/file/list", methods=['GET'])
 @login_required
@@ -475,5 +573,79 @@ def files_list():
         files_o.append(file_o)
     data = {}
     data['data'] = files_o
+
+    return make_response(jsonify(data), 200)
+
+
+@app.route("/cont", methods=['GET', 'POST'])
+@login_required
+def container():
+    form = NewContainerForm()
+    if request.method == 'POST':
+        user = g.user
+        scope = getScope(user.username)
+
+        ftpdir = form.ftpdir.data
+
+        #Create a unique container quid for this particular batch of uploads.
+        cguid = 'job.' + commands.getoutput('uuidgen')
+
+        # Create new container
+        container = Container()
+        container.guid = cguid
+        container.status = 'open'
+        db.session.add(container)
+        db.session.commit()
+
+        resp = async_uploadContainer.delay(ftpdir, scope, container.guid)
+        # resp = async_uploadContainer(ftpdir, scope, container.guid)
+        return redirect(url_for('cont_info', guid=container.guid))
+
+    return render_template("pandaweb/cont_new.html", form=form)
+
+
+@app.route("/cont/<guid>", methods=['GET'])
+@login_required
+def cont_info(guid):
+    try:
+        container = Container.query.filter_by(guid=guid).one()
+    except(Exception):
+        _logger.error(Exception.message)
+        return make_response(jsonify({'message': 'Container not found'}), 404)
+    return render_template("pandaweb/cont.html", cont=container, files=container.files)
+
+
+@app.route("/containers", methods=['GET'])
+@login_required
+def containers():
+    hours_limit = request.args.get('hours', HOURS_LIMIT, type=int)
+    display_limit = request.args.get('display_limit', DISPLAY_LIMIT, type=int)
+    session['hours_limit'] = hours_limit
+    session['display_limit'] = display_limit
+    return render_template("pandaweb/cont_list.html")
+
+
+@app.route("/cont/list", methods=['GET'])
+@login_required
+def conts_list():
+    user = g.user
+
+    hours_limit = session.get('hours_limit', HOURS_LIMIT)
+    display_limit = session.get('display_limit', DISPLAY_LIMIT)
+    scope = getScope(user.username)
+    # show users jobs
+    conts = Container.query.filter_by(status='user').order_by(Container.id.desc()).limit(30)
+
+    # prepare json
+    conts_o = []
+    for cont in conts:
+        cont_o = {}
+        cont_o['id'] = cont.id
+        cont_o['guid'] = cont.guid
+        cont_o['status'] = cont.status
+        cont_o['n'] = cont.files.count()
+        conts_o.append(cont_o)
+    data = {}
+    data['data'] = conts_o
 
     return make_response(jsonify(data), 200)

@@ -1,8 +1,8 @@
 from flask.ext.login import current_user
-from app import adm, db
 from flask.ext.admin.contrib.sqla import ModelView
 
-from models import *
+from webpanda.app import adm, db
+from webpanda.app.models import *
 
 
 class MyModelView(ModelView):

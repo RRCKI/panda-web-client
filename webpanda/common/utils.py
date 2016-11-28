@@ -1,5 +1,5 @@
 import hashlib
-import os
+import os, fnmatch
 import zlib
 
 
@@ -33,3 +33,12 @@ def md5sum(fname):
 
 def fsize(fname):
     return os.path.getsize(fname)
+
+
+def find(pattern, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, pattern):
+                result.append(os.path.join(root, name))
+    return result

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Container info</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block jumbotron %}
+<b>CONTAINER:</b> {{cont.id}} <br>
+<b>GUID:</b> {{cont.guid}} <br>
+<b>STATUS:</b> {{cont.status}} <br>
+<form method="post" id="paleomix_form" action="{{ url_for('pipelines.new_pipeline_from_cont') }}">
+{{ paleomix_form.guid(class_="hidden", value=cont.guid) }}
+<input class="btn btn-danger" name='run' value="Run Paleomix" type='submit'>
+</form>
+{% endblock %}
+
+{% block content %}
+<table id="filestable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>GUID</th>
+        <th>TYPE</th>
+        <th>LFN</th>
+        <th>LINK</th>
+    </tr>
+</thead>
+<tbody>
+{% for f in files %}
+    <tr>
+        <th><a href="{{ url_for('files.file_info', guid=f.file.guid) }}">{{f.file.guid}}</a></th>
+        <th>{{f.type}}</th>
+        <th>{{f.file.lfn}}</th>
+        <th>
+            [<a href="{{ url_for('files.file_download', guid=f.file.guid) }}">http</a>]
+        </th>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="{{ url_for('static', filename='app/js/job.js') }}"></script>
+{% endblock %}

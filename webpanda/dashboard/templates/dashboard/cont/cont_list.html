@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+<title>WEBPANDA - Containers list</title>
+{% endblock %}
+
+{% block css_import %}
+<link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block jumbotron %}
+<h2>Containers List</h2>
+{% endblock %}
+
+{% block content %}
+<table id="contstable" class="display" cellspacing="0" width="100%">
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>GUID</th>
+        <th>Status</th>
+        <th>Files</th>
+    </tr>
+</thead>
+</table>
+{% endblock %}
+
+{% block js_import %}
+<script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script src="{{ url_for('static', filename='app/js/moment-with-locales.min.js') }}"></script>
+<script src="{{ url_for('static', filename='app/js/cont_list.js') }}"></script>
+{% endblock %}

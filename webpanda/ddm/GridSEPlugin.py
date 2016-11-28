@@ -1,9 +1,11 @@
 import os
 import subprocess
 import errno
-from common.NrckiLogger import NrckiLogger
-from common.utils import adler32
-from nrckiclient import basedir
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.common.utils import adler32
+from webpanda.app.config import basedir
+
 
 _logger = NrckiLogger().getLogger("DDM")
 

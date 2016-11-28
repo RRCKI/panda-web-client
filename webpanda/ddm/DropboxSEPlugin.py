@@ -1,7 +1,9 @@
-import dropbox
 import os
-from common.NrckiLogger import NrckiLogger
-from ddm.DDM import ddm_getlocalabspath
+
+import dropbox
+
+from webpanda.common.NrckiLogger import NrckiLogger
+from webpanda.ddm.scripts import ddm_getlocalabspath
 
 _logger = NrckiLogger().getLogger("DDM")
 

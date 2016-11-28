@@ -14,7 +14,7 @@
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="/static/app/css/navbar.css" rel="stylesheet">
-
+    
     {% block css_import %}{% endblock %}
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -46,19 +46,38 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{{ url_for('index') }}">PanDA web client</a>
+            <a class="navbar-brand" href="{{ url_for('index') }}">WEB PANDA</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="{{ url_for('jobs') }}">Job list</a></li>
-            <li><a href="{{ url_for('job') }}">New job</a></li>
-            <!--<li><a href="{{ url_for('files') }}">File list</a></li>-->
-            <!--<li><a href="{{ url_for('file') }}">New file</a></li>-->
+	    <li class="dropdown">
+		<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Jobs <span class="caret"></span></a>
+		<ul class="dropdown-menu">
+                <li><a href="{{ url_for('jobs') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                <li><a href="{{ url_for('job') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+              </ul>
+	    </li>
+
+	    <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Containers <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                <li><a href="{{ url_for('containers') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                <li><a href="{{ url_for('container') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+              </ul>
+            </li>
+
+	    <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Files <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                <li><a href="{{ url_for('files') }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> List</a></li>
+                <li><a href="{{ url_for('file') }}"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</a></li>
+              </ul>
+            </li>
             <li><a href="ftp://144.206.233.179:8021/" target="_blank">FTP</a></li>
             <li><a href="{{ url_for('help') }}">Help</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-              {% if g.user.is_authenticated() %}
+              {% if g.user.is_authenticated %}
               <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><b>{{g.user.username}}</b> [{% if g.user.role == 0 %}user{% endif %}{% if g.user.role == 1 %}admin{% endif %}] <span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
@@ -69,7 +88,7 @@
               </ul>
               </li>
               {% endif %}
-              {% if not g.user.is_authenticated() %}
+              {% if not g.user.is_authenticated %}
               <li><a href="{{ url_for('login') }}">Log in</a></li>
               {% endif %}
           </ul>
@@ -78,8 +97,11 @@
     </nav>
 
     <div class='jumbotron'>
-        {% block content %}{% endblock %}
+        {% block jumbotron %}{% endblock %}
     </div>
+    
+    {% block content %}{% endblock %}
+    
     </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>

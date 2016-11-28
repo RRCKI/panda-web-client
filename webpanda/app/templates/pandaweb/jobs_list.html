@@ -8,6 +8,14 @@
 <link href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css" rel="stylesheet">
 {% endblock %}
 
+{% block jumbotron %}
+<h2>JOBS LIST</h2><br>
+<b>Filter:</b><br>
+<b>Tag: </b><input id="tagFilter" type="text" size="40"><br>
+<b>Status: </b><input id="statusFilter" type="text" size="40"><br>
+<input class="btn btn-primary" type="button" value="Filter" onclick="updateTable()">
+{% endblock %}
+
 {% block content %}
 <h4>Update period: 5 min</h4>
 <table id="jobstable" class="display" cellspacing="0" width="100%">
@@ -19,9 +27,8 @@
         <th>Distributive</th>
         <th>Created</th>
         <th>Modified</th>
+        <th>Attempt</th>
         <th>Status</th>
-        <th>Input Files</th>
-        <th>Output Files</th>
     </tr>
 </thead>
 </table>
