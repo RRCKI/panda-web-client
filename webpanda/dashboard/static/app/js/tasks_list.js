@@ -4,7 +4,7 @@ $(document).ready(function() {
     $('#taskstable').dataTable( {
         "order": [[ 0, "desc" ]],
         "processing": true,
-        "ajax": "/api/tasks",
+        "ajax": "/tasks/list",
         "columns": [
             { "data": "id" },
             { "data": "task_type.method" },
