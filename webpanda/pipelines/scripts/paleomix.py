@@ -213,7 +213,7 @@ def payload2(task):
     # TO_DO just for test add "1" - script1.sh- only emulate, not real jobs
     pipeline_path_name = 'paleomix_bam'
     swdir='/s/ls2/users/poyda/swp/' + pipeline_path_name +'/'
-    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err;"
+    script = "/bin/bash " + swdir + "genref.sh && /bin/bash " + swdir + "runtmplgen.sh -t 1>bam.out 2>bam.err & ;"
     script += "/bin/bash " + swdir + "split.sh -t " + str(rn)
     script += script_add
 
@@ -262,7 +262,7 @@ def payload3(task):
     #TO_DO do smth with output container?
     output_cont = conts_.get(task.output)
 
-    for jobname in gen_sfx("",n):
+    for jobname in gen_sfx("a",n):
         # Get container
         container = Container()
         container.guid = task.tag + "."+jobname
@@ -280,8 +280,8 @@ def payload3(task):
                     fc.reg_file_in_cont(f, container, 'input')
 
         # reg additional output
-        fc.reg_file_in_cont_byname(user, jobname+'.reads.tgz', container, 'output')
-        fc.reg_file_in_cont_byname(user, jobname + '.maps.tgz', container, 'output')
+        fc.reg_file_in_cont_byname(user, jobname+'.reads.bz2', container, 'output')
+        fc.reg_file_in_cont_byname(user, jobname + '.maps.bz2', container, 'output')
 
         # Prepare trf script
         script = task.task_type.trf_template
@@ -343,7 +343,7 @@ def payload4(task):
 
     # reg additional output
     fc.reg_file_in_cont_byname(user, 'output.bam', container, 'output')
-    fc.reg_file_in_cont_byname(user, 'results.tgz', container, 'output')
+    fc.reg_file_in_cont_byname(user, 'myresults.bz2', container, 'output')
 
     # Prepare trf script
     script = task.task_type.trf_template
