@@ -228,7 +228,7 @@ def job():
         return redirect(url_for('jobs.jobs'))
 
     form.distr.choices = [("%s:%s" % (distr.name, distr.release), "%s: %s" % (distr.name, distr.version)) for distr in distrs_.find().order_by('name').order_by('version')]
-    form.site.choices = [("{ce}".format(ce=site.ce), site.id) for site in sites_.find(active=1).order_by('ce')]
+    form.site.choices = [(site.id, "{ce}".format(ce=site.ce)) for site in sites_.find(active=1).order_by('ce')]
     return render_template("dashboard/jobs/new.html", form=form)
 
 
