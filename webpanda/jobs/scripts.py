@@ -29,7 +29,6 @@ def submitJobs(jobList):
     _logger.debug(s)
     _logger.debug("---------------------")
 
-
     for x in o:
         _logger.debug("PandaID=%s" % x[0])
     return o
@@ -53,9 +52,7 @@ def send_job(jobid, siteid):
     site = sites_.get(siteid)
 
     job = jobs_.get(int(jobid))
-    user = users_.get(job.owner_id)
     cont = job.container
-    cont_path = fc.get_cont_dir(cont, fc.get_scope(user))
     files_catalog = cont.files
 
     fscope = getScope(job.owner.username)
@@ -79,9 +76,11 @@ def send_job(jobid, siteid):
     pandajob.prodDBlock = "%s:%s" % (fscope, pandajob.jobName)
     pandajob.coreCount = job.corecount
 
-    pandajob.jobParameters = '%s %s %s "%s"' % (cont.guid, release, distributive, parameters)
-
-    rlinkdir = '/' + '/'.join(pandajob.prodDBlock.split(':'))
+    if site.encode_commands:
+        # It requires script wrapper on cluster side
+        pandajob.jobParameters = '%s %s %s "%s"' % (cont.guid, release, distributive, parameters)
+    else:
+        pandajob.jobParameters = parameters
 
     for fcc in files_catalog:
         if fcc.type == 'input':
@@ -96,7 +95,6 @@ def send_job(jobid, siteid):
             fileIT.status = 'ready'
             fileIT.GUID = guid
             pandajob.addFile(fileIT)
-            #linkFile(file.id, site.se, rlinkdir)
         if fcc.type == 'output':
             f = fcc.file
             fileOT = FileSpec()

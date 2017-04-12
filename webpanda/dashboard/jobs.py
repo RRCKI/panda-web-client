@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from base64 import b64decode
 from datetime import datetime
 
 from celery import chord
@@ -111,7 +112,13 @@ def job():
             _logger.error(Exception.message)
             return make_response(jsonify({'error': 'Container not found'}), 404)
 
-        jparams = form.params.data
+        if site.encode_commands:
+            # By default frontend encodes with base64 job script parts separated by ";"
+            # It requires script wrapper on cluster side
+            jparams = form.params.data
+        else:
+            # Set site.encode_commands as False if you want to send command string without base64 encoding
+            jparams = ';'.join([b64decode(command) for command in form.params.data.split(';')])
 
         ifiles = request.form.getlist('ifiles[]')
         iguids = request.form.getlist('iguids[]')

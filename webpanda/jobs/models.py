@@ -33,6 +33,7 @@ class Site(db.Model):
     plugin = db.Column(db.String(20))
     active = db.Column(db.Integer, default=1)
     datadir = db.Column(db.String(200))
+    encode_commands = db.Column(db.Boolean, default=True)
 
     def __repr__(self):
         return '<SE=%s CE=%s>' % (self.se, self.ce)
