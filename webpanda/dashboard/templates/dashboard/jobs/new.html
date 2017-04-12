@@ -17,6 +17,18 @@
 <h2>NEW JOB</h2>
 <form method="post" id="upload-form" action="" enctype="multipart/form-data">
     {{form.container()}}
+
+    <div class="form-group">
+    <div class="row" title="Choose computing site">
+    <div class="col-md-4">
+        <label for='distr'>SITE: </label>
+    </div>
+    <div class="col-md-8">
+        {{ form.site(class_='form-control') }}
+    </div>
+    </div>
+    </div>
+
     <div class="form-group">
     <div class="row" title="Main distributive to use">
     <div class="col-md-4">

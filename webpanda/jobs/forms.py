@@ -11,10 +11,9 @@ from wtforms.validators import Length, Required
 
 
 class NewJobForm(RedirectForm):
+    site = SelectField(u'Computing site', [validators.required()], coerce=int)
     distr = SelectField(u'Distributive', coerce=str)
-    params = TextAreaField(u'Parameters', [
-        validators.DataRequired(),
-        validators.Length(1, 1000)])
+    params = TextAreaField(u'Parameters', [validators.required(), validators.length(1, 1000)])
     container = HiddenField(default="")
     corecount = IntegerField('Cores', default=1)
     ftpdir = StringField(u'FTP DIR')
@@ -32,6 +31,6 @@ class JobKillForm(RedirectForm):
 
 
 class NewDistrForm(RedirectForm):
-    name = StringField('Name', validators=[Required(), Length(1, 64)])
-    version = StringField('Version', validators=[Required(), Length(1, 64)])
+    name = StringField('Name', [validators.required(), validators.length(1, 64)])
+    version = StringField('Version', [validators.required(), validators.length(1, 64)])
     release = IntegerField('Release')
