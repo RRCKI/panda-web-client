@@ -66,3 +66,4 @@ bootstrap/
 .idea/
 setup.sh.OLD
 setup.sh
+*.wsgi

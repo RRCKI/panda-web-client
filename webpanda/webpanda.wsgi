@@ -7,8 +7,6 @@ from webpanda import api, dashboard, pilot
 
 site.addsitedir('/srv/test2/panda-web-client/venv/lib/python2.7/site-packages')
 basedir = '/srv/test2/panda-web-client'
-os.environ['PANDA_URL'] = 'http://vcloud29.grid.kiae.ru:25085/server/panda'
-os.environ['PANRA_URL_SSL'] = 'https://vcloud29.grid.kiae.ru:25443/server/panda'
 
 application = DispatcherMiddleware(dashboard.create_app(), {
     '/api': api.create_app(),

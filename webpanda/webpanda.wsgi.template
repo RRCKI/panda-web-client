@@ -7,8 +7,6 @@ from webpanda import api, dashboard, pilot
 
 site.addsitedir('YOUR_LIBS')
 basedir = 'YOUR_BASEDIR'
-os.environ['PANDA_URL'] = 'YOUR_PANDA_SERVER_URL'
-os.environ['PANDA_URL_SSL'] = "YOUR_PANDA_SERVER_URL_SSL"
 
 application = DispatcherMiddleware(dashboard.create_app(), {
     '/api': api.create_app(),
