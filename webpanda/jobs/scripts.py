@@ -25,8 +25,10 @@ def submitJobs(jobList):
     _logger.debug('Submit jobs')
     _logger.debug(str(jobList))
     s,o = Client.submitJobs(jobList)
-    _logger.debug("---------------------")
+    _logger.debug(o)
     _logger.debug(s)
+    _logger.debug("---------------------")
+
 
     for x in o:
         _logger.debug("PandaID=%s" % x[0])
@@ -38,9 +40,10 @@ def killJobs(jobList):
     _logger.debug('Kill jobs')
     _logger.debug(str(jobList))
     s,o = Client.killJobs(jobList) # Code 3 eqs. aborted status
-    _logger.debug("---------------------")
-    _logger.debug(s)
     _logger.debug(o)
+    _logger.debug(s)
+    _logger.debug("---------------------")
+
     return o
 
 
@@ -200,6 +203,8 @@ def update_status():
         _logger.debug('getJobStatus: ' + str(ids))
         s, o = Client.getJobStatus(ids)
         _logger.debug(o)
+        _logger.debug(s)
+        _logger.debug("---------------------")
         for job in jobs:
             if job.pandaid in ids:
                 for obj in o:
