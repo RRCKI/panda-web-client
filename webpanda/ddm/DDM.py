@@ -34,6 +34,10 @@ class SEFactory:
                 from webpanda.ddm.HPCSEPlugin import HPCSEPlugin
                 se = HPCSEPlugin(params)
 
+            elif plugin in ['nodata']:
+                from webpanda.ddm.DummySEPlugin import DummySEPlugin
+                se = DummySEPlugin(params)
+
             else:
                 raise Exception('SE needs to be set. Unable to get SE plugin')
 
