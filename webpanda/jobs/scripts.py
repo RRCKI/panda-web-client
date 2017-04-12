@@ -199,6 +199,7 @@ def update_status():
     if len(ids) > 0:
         _logger.debug('getJobStatus: ' + str(ids))
         s, o = Client.getJobStatus(ids)
+        _logger.debug(o)
         for job in jobs:
             if job.pandaid in ids:
                 for obj in o:
