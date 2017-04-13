@@ -82,6 +82,8 @@ def send_job(jobid, siteid):
     else:
         pandajob.jobParameters = parameters
 
+
+    has_input = False
     for fcc in files_catalog:
         if fcc.type == 'input':
             f = fcc.file
@@ -95,6 +97,8 @@ def send_job(jobid, siteid):
             fileIT.status = 'ready'
             fileIT.GUID = guid
             pandajob.addFile(fileIT)
+
+            has_input = True
         if fcc.type == 'output':
             f = fcc.file
             fileOT = FileSpec()
@@ -109,6 +113,18 @@ def send_job(jobid, siteid):
 
             # Save replica meta
             fc.new_replica(f, site)
+
+    if not has_input:
+        # Add fake input
+        fileIT = FileSpec()
+        fileIT.lfn = "fake.input"
+        fileIT.dataset = pandajob.prodDBlock
+        fileIT.prodDBlock = pandajob.prodDBlock
+        fileIT.type = 'input'
+        fileIT.scope = fscope
+        fileIT.status = 'ready'
+        fileIT.GUID = "fake.guid"
+        pandajob.addFile(fileIT)
 
     # Prepare lof file
     fileOL = FileSpec()
