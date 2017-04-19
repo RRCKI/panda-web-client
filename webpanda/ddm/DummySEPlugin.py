@@ -14,3 +14,21 @@ class DummySEPlugin():
 
     def link(self, lfn, dir):
         return True
+
+    def mv(self, lfn, lfn2, rel=True):
+        return True
+
+    def rm(self, lfn, rel=True):
+        return True
+
+    def ls(self, path, rel=True):
+        return True
+
+    def fsize(self, path, rel=True):
+        return None
+
+    def md5sum(self, path, rel=True):
+        return None
+
+    def adler32(self, path, rel=True):
+        return None
