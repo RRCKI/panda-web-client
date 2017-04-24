@@ -48,7 +48,7 @@ $(document).ready(function() {
                 "mData": null,
                 "mRender": function( data, type, full) {
                     if ( data != undefined ) {
-                        return '<td><a href="http://144.206.233.187/lsst/job/'+data+'" class="monlink">'+data+'</a></td>';
+                        return '<td><a href="/lsst/job/'+data+'" class="monlink">'+data+'</a></td>';
                     }
                     return '<td></td>';
                 }
