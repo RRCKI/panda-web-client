@@ -67,3 +67,4 @@ bootstrap/
 setup.sh.OLD
 setup.sh
 *.wsgi
+*.conf
