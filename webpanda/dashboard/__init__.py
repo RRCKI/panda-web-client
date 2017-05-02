@@ -4,8 +4,8 @@
     ~~~~~~~~~~~~~
     webpanda dashboard application package
 """
+import traceback
 from datetime import datetime
-
 from functools import wraps
 
 from flask_admin import Admin
@@ -37,6 +37,7 @@ def create_app(settings_override=None, register_security_blueprint=False):
     app.errorhandler(WebpandaError)(on_webpanda_error)
     app.errorhandler(WebpandaFormError)(on_webpanda_form_error)
     app.errorhandler(404)(on_404)
+    app.errorhandler(500)(on_500)
 
     adm = Admin(app, name='WEBPANDA - Admin')
 
@@ -55,13 +56,6 @@ def create_app(settings_override=None, register_security_blueprint=False):
     adm.add_view(MyModelView(TaskSetMeta, db.session))
     adm.add_view(MyModelView(Pipeline, db.session))
     adm.add_view(MyModelView(Task, db.session))
-
-    @app.before_request
-    def before_request():
-        g.user = current_user
-        g.user.last_seen = datetime.utcnow()
-        g.user.save()
-
 
     return app
 
@@ -94,7 +88,7 @@ def route_s(bp, *args, **kwargs):
 
 
 def on_webpanda_error(e):
-    current_app.error_logger.error(e.msg)
+    current_app.logger.error(e.msg)
     return jsonify(dict(error=e.msg)), 400
 
 
@@ -104,3 +98,9 @@ def on_webpanda_form_error(e):
 
 def on_404(e):
     return jsonify(dict(error='Not found')), 404
+
+
+def on_500(e):
+    tb = traceback.format_exc()
+    current_app.logger.critical("Internal error: {msg}".format(msg=tb))
+    return jsonify(dict(error="Internal error"), 500)

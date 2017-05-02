@@ -76,7 +76,7 @@ def route_s(bp, *args, **kwargs):
 
 
 def on_webpanda_error(e):
-    current_app.error_logger.error(e.msg)
+    current_app.logger.error(e.msg)
     return jsonify(dict(error=e.msg)), 400
 
 

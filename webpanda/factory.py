@@ -3,6 +3,7 @@ import os
 
 from flask import Flask, g
 from celery import Celery
+from flask import request
 from flask_login import current_user
 from webpanda.auth.models import AnonymousUser
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -41,12 +42,13 @@ def create_app(package_name, package_path, settings_override=None,
 
     app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 
-    app.error_logger = NrckiLogger().getLogger("errors")
+    app.logger = NrckiLogger().getLogger(package_name)
 
     lm.init_app(app)
     lm.login_view = 'auth.login'
 
     lm.anonymous_user = AnonymousUser
+
     @lm.user_loader
     def load_user(id):
         if id == 0:
@@ -58,6 +60,12 @@ def create_app(package_name, package_path, settings_override=None,
         g.user = current_user
         g.user.last_seen = datetime.utcnow()
         g.user.save()
+
+        values = request.form.to_dict()
+        app.logger.info("incoming request: {method} {url}; Form: {form}; Data: {data}".format(method=request.method,
+                                                                                       url=request.full_path,
+                                                                                       form=str(values), data=str(
+                request.get_json(silent=True))))
 
     return app
 

@@ -8,7 +8,6 @@ from werkzeug.utils import redirect
 
 from webpanda.jobs.scripts import extractLog
 from webpanda.async import prepareInputFiles, async_kill_job, async_send_job
-from webpanda.common.NrckiLogger import NrckiLogger
 from webpanda.common.utils import find
 from webpanda.dashboard import route_s
 from webpanda.ddm.scripts import ddm_checkexternalifexists, ddm_getlocalabspath
@@ -22,7 +21,6 @@ from webpanda.services import sites_
 from webpanda.fc import client as fc
 
 bp = Blueprint('jobs', __name__, url_prefix="/jobs")
-_logger = NrckiLogger().getLogger("dashboard.jobs")
 
 
 @route_s(bp, "/", methods=['GET'])
