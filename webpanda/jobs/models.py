@@ -13,6 +13,7 @@ class Distributive(db.Model):
     __tablename__ = 'distr'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64))
+    command = db.Column(db.String(1024))
     version = db.Column(db.String(64))
     release = db.Column(db.Integer)
     jobs = db.relationship('Job',

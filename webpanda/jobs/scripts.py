@@ -60,7 +60,7 @@ def send_job(jobid, siteid):
 
     distributive = job.distr.name
     release = job.distr.release
-    parameters = job.params
+    parameters = job.distr.command.replace("$COMMAND$", job.params)
 
     pandajob = JobSpec()
     pandajob.jobDefinitionID = int(time.time()) % 10000
