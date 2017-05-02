@@ -88,7 +88,7 @@ def route_s(bp, *args, **kwargs):
 
 
 def on_webpanda_error(e):
-    current_app.logger.error(e.msg)
+    current_app.log.error(e.msg)
     return jsonify(dict(error=e.msg)), 400
 
 
@@ -102,5 +102,5 @@ def on_404(e):
 
 def on_500(e):
     tb = traceback.format_exc()
-    current_app.logger.critical("Internal error: {msg}".format(msg=tb))
+    current_app.log.critical("Internal error: {msg}".format(msg=tb))
     return jsonify(dict(error="Internal error"), 500)

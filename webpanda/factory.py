@@ -42,7 +42,7 @@ def create_app(package_name, package_path, settings_override=None,
 
     app.wsgi_app = HTTPMethodOverrideMiddleware(app.wsgi_app)
 
-    app.logger = NrckiLogger().getLogger(package_name)
+    app.log = NrckiLogger().getLogger(package_name)
 
     lm.init_app(app)
     lm.login_view = 'auth.login'
@@ -62,7 +62,7 @@ def create_app(package_name, package_path, settings_override=None,
         g.user.save()
 
         values = request.form.to_dict()
-        app.logger.info("incoming request: {method} {url}; Form: {form}; Data: {data}".format(method=request.method,
+        app.log.info("incoming request: {method} {url}; Form: {form}; Data: {data}".format(method=request.method,
                                                                                        url=request.full_path,
                                                                                        form=str(values), data=str(
                 request.get_json(silent=True))))
