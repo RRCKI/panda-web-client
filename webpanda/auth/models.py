@@ -24,8 +24,20 @@ class User(UserMixin, db.Model):
     grants = db.relationship('Grant',
         backref=db.backref('user', lazy='joined'), lazy='dynamic')
 
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
     def is_active(self):
         return self.active == 1
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self.id)
 
     @property
     def password(self):
