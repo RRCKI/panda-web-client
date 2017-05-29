@@ -10,7 +10,8 @@ from webpanda.services import users_
 class LoginForm(RedirectForm):
     username = StringField('Username', validators=[Required(), Length(1, 64)])
     password = PasswordField('Password', validators=[Required()])
-    remember_me = BooleanField('remember_me', default = False)
+    remember_me = BooleanField('remember_me', default=False)
+    ldap = BooleanField('ldap', default=True)
     submit = SubmitField('Login')
 
 

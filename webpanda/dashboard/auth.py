@@ -26,7 +26,7 @@ def login():
     form = LoginForm()
     if form.validate():
         # Check credentials
-        if current_app.config['USE_LDAP']:
+        if current_app.config['USE_LDAP'] and form.ldap.data:
             # Use LDAP service
             try:
                 User.verify_ldap(form.username.data, form.password.data)
