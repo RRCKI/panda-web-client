@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import ldap
+from flask import current_app
 from flask_login import login_user, logout_user
 from flask import Blueprint, render_template, request, url_for, flash, g
 from werkzeug.utils import redirect
@@ -23,12 +25,33 @@ def login():
         return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate():
-        user = users_.first(username=form.username.data)
-        if user is None or not user.verify_password(form.password.data):
-            flash('Invalid username or password.')
-            return redirect(url_for('auth.login'))
+        # Check credentials
+        if current_app.config['USE_LDAP']:
+            # Use LDAP service
+            try:
+                User.verify_ldap(form.username.data, form.password.data)
+            except ldap.INVALID_CREDENTIALS:
+                flash(
+                    'Invalid username or password. Please try again.',
+                    'danger')
+                return render_template('dashboard/auth/login.html', form=form)
+
+            user = users_.first(username=form.username.data)
+
+            if user is None:
+                user = User()
+                user.username = form.username.data
+                user.active = 1
+                users_.save(user)
+        else:
+            # Use local service
+            user = users_.first(username=form.username.data)
+            if user is None or not user.verify_password(form.password.data):
+                flash('Invalid username or password.')
+                return redirect(url_for('auth.login'))
+
         # log user in
-        login_user(user, remember = form.remember_me.data)
+        login_user(user, remember=form.remember_me.data)
         flash('You are now logged in!')
         return redirect(request.args.get("next") or url_for("main.index"))
     return render_template('dashboard/auth/login.html', form=form)

@@ -1,10 +1,19 @@
 from datetime import datetime
+
+import ldap
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+
 from webpanda.core import db
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
+
+
+def get_ldap_connection():
+    conn = ldap.initialize(current_app.config['LDAP_PROVIDER_URL'])
+    return conn
 
 
 class User(UserMixin, db.Model):
@@ -50,12 +59,33 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    @staticmethod
+    def verify_ldap(username, password):
+        conn = get_ldap_connection()
+
+        ldap_result_id = conn.search(current_app.config['LDAP_BASE_DN'], ldap.SCOPE_SUBTREE,
+                                     "uid= {user}".format(user=username), None)
+
+        result_type, result_data = conn.result(ldap_result_id, 0)
+
+        if type(result_data) == list and result_data != [] and len(result_data) != 0:
+            if result_type == ldap.RES_SEARCH_ENTRY:
+                dn = result_data[0][0]
+            else:
+                print "bad result type"
+                raise ldap.INVALID_CREDENTIALS
+        else:
+            print "bad return list"
+            raise ldap.INVALID_CREDENTIALS
+
+        conn.simple_bind_s(dn, password)
+
     def save(self):
         db.session.add(self)
         db.session.commit()
 
     def __repr__(self):
-        return '<User name=%s>' % (self.username)
+        return '<User name=%s>' % self.username
 
 
 class AnonymousUser():

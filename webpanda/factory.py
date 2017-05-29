@@ -31,7 +31,7 @@ def create_app(package_name, package_path, settings_override=None,
     app.config.from_object('webpanda.config')
     app.config.from_pyfile('settings.cfg', silent=True)
     app.config.from_object(settings_override)
-    if 'DATABASE_URL' in os.environ.keys():
+    if 'SQLALCHEMY_DATABASE_URI' in os.environ.keys():
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 
     db.init_app(app)
@@ -44,6 +44,10 @@ def create_app(package_name, package_path, settings_override=None,
 
     app.log = NrckiLogger().getLogger(package_name)
 
+    # Prepare auth
+    app.config['USE_LDAP'] = True
+    app.config['LDAP_PROVIDER_URL'] = os.environ.get("LDAP_PROVIDER_URL", None)
+    app.config['LDAP_BASE_DN'] = os.environ.get("LDAP_BASE_DN", None)
     lm.init_app(app)
     lm.login_view = 'auth.login'
 

@@ -1,6 +1,12 @@
+export PANDACOMMON=/srv/panda-common/pandacommon
+export PANDASERVER=/srv/panda-server/pandaserver
+export WEBPANDA=/srv/panda-web-client
 
 export X509_USER_PROXY=/tmp/x509up_u500
 export X509_CERT_DIR=/etc/grid-security/certificates
 export PYTHONPATH=$PYTHONPATH:$PANDACOMMON:$PANDASERVER:$WEBPANDA
 export PANDA_URL=http://`hostname --fqdn`:25085/server/panda
 export PANDA_URL_SSL=https://`hostname --fqdn`:25443/server/panda
+
+export LDAP_PROVIDER_URL=ldaps://myldap.com:636
+export LDAP_BASE_DN="o=company,c=ru"
