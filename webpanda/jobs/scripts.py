@@ -78,6 +78,7 @@ def send_job(jobid, siteid):
     pandajob.prodDBlock = "%s:%s" % (fscope, pandajob.jobName)
     pandajob.coreCount = job.corecount
     pandajob.metadata = json.dumps(metadata)
+    pandajob.workingGroup = job.owner.working_group
 
     if site.encode_commands:
         # It requires script wrapper on cluster side

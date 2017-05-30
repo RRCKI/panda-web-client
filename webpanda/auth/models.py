@@ -20,6 +20,7 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True)
+    working_group = db.Column(db.String(32))
     password_hash = db.Column(db.String(128))
     active = db.Column(db.Integer, default=1)
     last_seen = db.Column(db.DateTime)
