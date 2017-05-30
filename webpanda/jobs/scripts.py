@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 import time
 
@@ -61,6 +62,7 @@ def send_job(jobid, siteid):
     distributive = job.distr.name
     release = job.distr.release
     parameters = job.distr.command.replace("$COMMAND$", job.params)
+    metadata = dict(user=job.owner.username)
 
     pandajob = JobSpec()
     pandajob.jobDefinitionID = int(time.time()) % 10000
@@ -75,6 +77,7 @@ def send_job(jobid, siteid):
     pandajob.VO = 'atlas'
     pandajob.prodDBlock = "%s:%s" % (fscope, pandajob.jobName)
     pandajob.coreCount = job.corecount
+    pandajob.metadata = json.dumps(metadata)
 
     if site.encode_commands:
         # It requires script wrapper on cluster side
