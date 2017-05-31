@@ -8,6 +8,7 @@ from werkzeug.utils import redirect
 from webpanda.auth.forms import LoginForm
 from webpanda.auth.forms import RegisterForm
 from webpanda.auth.models import User
+from webpanda.auth.scripts import get_token_by_code, get_user
 from webpanda.dashboard import route, route_s
 from webpanda.services import users_
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -54,7 +55,16 @@ def login():
         login_user(user, remember=form.remember_me.data)
         flash('You are now logged in!')
         return redirect(request.args.get("next") or url_for("main.index"))
-    return render_template('dashboard/auth/login.html', form=form)
+
+    url = current_app.config["AUTH_AUTH_ENDPOINT"]
+    redirect_uri = current_app.config["AUTH_REDIRECT_URI"]
+    client_id = current_app.config["AUTH_CLIENT"]
+
+    return render_template('dashboard/auth/login.html',
+                           form=form,
+                           url=url,
+                           redirect_uri=redirect_uri,
+                           client_id=client_id)
 
 
 @route_s(bp, '/logout')
@@ -85,4 +95,28 @@ def register():
         users_.save(user)
         return redirect(url_for('auth.login'))
 
-    return render_template('dashboard/auth/register.html', form=form)
+    return render_template('dashboard/auth/register.html',
+                           form=form)
+
+
+@route(bp, '/redirect', methods=['GET'])
+def redirect_callback():
+    code = request.args.get('code', None, type=str)
+
+    if code:
+        token = get_token_by_code(code)
+        username = get_user(token)
+
+        user = users_.first(username=username)
+
+        if user is None:
+            user = User()
+            user.username = username
+            user.active = 1
+            users_.save(user)
+
+        # log user in
+        login_user(user, remember=False)
+        flash('You are now logged in!')
+
+    return redirect(url_for('main.index'))

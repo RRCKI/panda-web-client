@@ -5,6 +5,8 @@ from flask import Flask, g
 from celery import Celery
 from flask import request
 from flask_login import current_user
+
+from webpanda.config import config
 from webpanda.auth.models import AnonymousUser
 from webpanda.common.NrckiLogger import NrckiLogger
 
@@ -15,7 +17,7 @@ from webpanda.services import users_
 
 
 def create_app(package_name, package_path, settings_override=None,
-               register_security_blueprint=True):
+               register_security_blueprint=True, config_name="development"):
     """Returns a :class:`Flask` application instance configured with common
     functionality for the chatfirst platform.
     :param package_name: application package name
@@ -28,7 +30,7 @@ def create_app(package_name, package_path, settings_override=None,
     app = Flask(package_name, instance_relative_config=True)
 
     app.config.from_object('webpanda.settings')
-    app.config.from_object('webpanda.config')
+    app.config.from_object(config[config_name])
     app.config.from_pyfile('settings.cfg', silent=True)
     app.config.from_object(settings_override)
     if 'SQLALCHEMY_DATABASE_URI' in os.environ.keys():

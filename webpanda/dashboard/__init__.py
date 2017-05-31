@@ -23,11 +23,11 @@ from webpanda.jobs.models import Site, Distributive
 from webpanda.tasks import Pipeline, Task
 
 
-def create_app(settings_override=None, register_security_blueprint=False):
+def create_app(settings_override=None, register_security_blueprint=False, config_name="development"):
     """Returns the Webpanda API application instance"""
 
     app = factory.create_app(__name__, __path__, settings_override,
-                             register_security_blueprint=register_security_blueprint)
+                             register_security_blueprint=register_security_blueprint, config_name=config_name)
 
     # Set the default JSON encoder
     app.json_encoder = JSONEncoder

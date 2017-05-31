@@ -10,3 +10,10 @@ export PANDA_URL_SSL=https://`hostname --fqdn`:25443/server/panda
 
 export LDAP_PROVIDER_URL=ldaps://myldap.com:636
 export LDAP_BASE_DN="o=company,c=ru"
+
+export AUTH_AUTH_ENDPOINT=""
+export AUTH_TOKEN_ENDPOINT=""
+export AUTH_USERINFO_ENDPOINT=""
+export AUTH_REDIRECT_URI=""
+export AUTH_CLIENT=""
+export AUTH_SECRET=""

@@ -14,11 +14,11 @@ from webpanda.helpers import JSONEncoder
 from webpanda import factory
 
 
-def create_app(settings_override=None, register_security_blueprint=False):
+def create_app(settings_override=None, register_security_blueprint=False, config_name="development"):
     """Returns the Webpanda API application instance"""
 
     app = factory.create_app(__name__, __path__, settings_override,
-                             register_security_blueprint=register_security_blueprint)
+                             register_security_blueprint=register_security_blueprint, config_name=config_name)
 
     oauth.init_app(app)
     app.debug = True
