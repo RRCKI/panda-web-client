@@ -8,13 +8,19 @@ from werkzeug.utils import redirect
 from webpanda.auth.forms import LoginForm
 from webpanda.auth.forms import RegisterForm
 from webpanda.auth.models import User
-from webpanda.auth.scripts import get_token_by_code, get_user
+from webpanda.auth.scripts import get_token_by_code, get_user, get_auth_endpoint
 from webpanda.dashboard import route, route_s
 from webpanda.services import users_
 from webpanda.common.NrckiLogger import NrckiLogger
 
 bp = Blueprint('auth', __name__)
 _logger = NrckiLogger().getLogger("dashboard.auth")
+
+
+@route(bp, '/auth', methods=['GET'])
+def main_auth():
+    url = get_auth_endpoint() if current_app.config["AUTH_AUTH_ENDPOINT"] else url_for('auth.login')
+    return redirect(url)
 
 
 @route(bp, '/login', methods=['GET', 'POST'])
@@ -27,7 +33,7 @@ def login():
     form = LoginForm()
     if form.validate():
         # Check credentials
-        if current_app.config['USE_LDAP'] and form.ldap.data:
+        if current_app.config['LDAP_PROVIDER_URL'] and form.ldap.data:
             # Use LDAP service
             try:
                 User.verify_ldap(form.username.data, form.password.data)
@@ -56,15 +62,9 @@ def login():
         flash('You are now logged in!')
         return redirect(request.args.get("next") or url_for("main.index"))
 
-    url = current_app.config["AUTH_AUTH_ENDPOINT"]
-    redirect_uri = current_app.config["AUTH_REDIRECT_URI"]
-    client_id = current_app.config["AUTH_CLIENT"]
-
     return render_template('dashboard/auth/login.html',
                            form=form,
-                           url=url,
-                           redirect_uri=redirect_uri,
-                           client_id=client_id)
+                           url=get_auth_endpoint())
 
 
 @route_s(bp, '/logout')

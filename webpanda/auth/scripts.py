@@ -10,6 +10,22 @@ def encode_cred(client, secret):
     return b64encode("{client}:{secret}".format(client=client, secret=secret))
 
 
+def get_auth_endpoint():
+    """
+    Generates auth url from SSO
+    :return:
+    """
+    url = current_app.config["AUTH_AUTH_ENDPOINT"]
+    redirect_uri = current_app.config["AUTH_REDIRECT_URI"]
+    client_id = current_app.config["AUTH_CLIENT"]
+
+    return "{url}?scope=openid&response_type=code&client_id={client_id}&redirect_uri={redirect_uri}".format(
+        url=url,
+        client_id=client_id,
+        redirect_uri=redirect_uri
+    )
+
+
 def get_token_by_code(code):
     url = current_app.config["AUTH_TOKEN_ENDPOINT"]
     redirect_uri = current_app.config["AUTH_REDIRECT_URI"]

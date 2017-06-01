@@ -47,11 +47,8 @@ def create_app(package_name, package_path, settings_override=None,
     app.log = NrckiLogger().getLogger(package_name)
 
     # Prepare auth
-    app.config['USE_LDAP'] = True
-    app.config['LDAP_PROVIDER_URL'] = os.environ.get("LDAP_PROVIDER_URL", None)
-    app.config['LDAP_BASE_DN'] = os.environ.get("LDAP_BASE_DN", None)
     lm.init_app(app)
-    lm.login_view = 'auth.login'
+    lm.login_view = 'auth.main_auth'
 
     lm.anonymous_user = AnonymousUser
 
