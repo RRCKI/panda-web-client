@@ -55,7 +55,7 @@ def get_token_by_code(code):
     raise WebpandaError("Bad get_token response: " + str(data))
 
 
-def get_user(token):
+def sso_get_user(token):
     url = current_app.config["AUTH_USERINFO_ENDPOINT"]
     headers = dict()
     headers["Authorization"] = "Bearer {code}".format(code=token)
@@ -67,4 +67,17 @@ def get_user(token):
     if "error" not in data.keys():
         return data['sub'].split(":")[-1]
 
-    raise WebpandaError("Bad get_user response: " + str(data))
+    raise WebpandaError("Bad sso_get_user response: " + str(data))
+
+
+def sso_logout_user():
+    url = current_app.config["AUTH_LOGOUT_ENDPOINT"]
+
+    rv = requests.get(url, verify=False)
+
+    data = rv.json()
+
+    if "error" not in data.keys():
+        return True
+
+    raise WebpandaError("Bad sso_logout_user response: " + str(data))

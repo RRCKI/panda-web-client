@@ -12,6 +12,7 @@ export LDAP_PROVIDER_URL=ldaps://myldap.com:636
 export LDAP_BASE_DN="o=company,c=ru"
 
 export AUTH_AUTH_ENDPOINT=""
+export AUTH_LOGOUT_ENDPOINT=""
 export AUTH_TOKEN_ENDPOINT=""
 export AUTH_USERINFO_ENDPOINT=""
 export AUTH_REDIRECT_URI=""

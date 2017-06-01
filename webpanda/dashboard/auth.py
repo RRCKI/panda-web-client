@@ -8,7 +8,7 @@ from werkzeug.utils import redirect
 from webpanda.auth.forms import LoginForm
 from webpanda.auth.forms import RegisterForm
 from webpanda.auth.models import User
-from webpanda.auth.scripts import get_token_by_code, get_user, get_auth_endpoint
+from webpanda.auth.scripts import get_token_by_code, sso_get_user, get_auth_endpoint, sso_logout_user
 from webpanda.dashboard import route, route_s
 from webpanda.services import users_
 from webpanda.common.NrckiLogger import NrckiLogger
@@ -69,7 +69,11 @@ def login():
 
 @route_s(bp, '/logout')
 def logout():
+    # Logout user internally
     logout_user()
+
+    # Logout SSO user
+    sso_logout_user()
     return redirect(url_for('main.index'))
 
 
@@ -105,7 +109,7 @@ def redirect_callback():
 
     if code:
         token = get_token_by_code(code)
-        username = get_user(token)
+        username = sso_get_user(token)
 
         user = users_.first(username=username)
 
