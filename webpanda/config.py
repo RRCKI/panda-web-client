@@ -36,6 +36,7 @@ class Config(object):
     LDAP_BASE_DN = os.environ.get("LDAP_BASE_DN", None)
 
     AUTH_AUTH_ENDPOINT = os.environ.get("AUTH_AUTH_ENDPOINT")
+    AUTH_LOGOUT_ENDPOINT = os.environ.get("AUTH_LOGOUT_ENDPOINT")
     AUTH_TOKEN_ENDPOINT = os.environ.get("AUTH_TOKEN_ENDPOINT")
     AUTH_USERINFO_ENDPOINT = os.environ.get("AUTH_USERINFO_ENDPOINT")
     AUTH_REDIRECT_URI = os.environ.get("AUTH_REDIRECT_URI")
