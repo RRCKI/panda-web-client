@@ -61,9 +61,17 @@ def send_job(jobid, siteid):
 
     distributive = job.distr.name
     release = job.distr.release
-    parameters = job.distr.command.replace("$COMMAND$", job.params)
+
+    # Prepare runScript
+    parameters = job.distr.command
+    parameters = parameters.replace("$COMMAND$", job.params)
+    parameters = parameters.replace("$USERNAME$", job.owner.username)
+    parameters = parameters.replace("$WORKINGGROUP$", job.working_group)
+
+    # Prepare metadata
     metadata = dict(user=job.owner.username)
 
+    # Prepare PanDA Object
     pandajob = JobSpec()
     pandajob.jobDefinitionID = int(time.time()) % 10000
     pandajob.jobName = cont.guid
