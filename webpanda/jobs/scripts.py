@@ -66,7 +66,7 @@ def send_job(jobid, siteid):
     parameters = job.distr.command
     parameters = parameters.replace("$COMMAND$", job.params)
     parameters = parameters.replace("$USERNAME$", job.owner.username)
-    parameters = parameters.replace("$WORKINGGROUP$", job.working_group)
+    parameters = parameters.replace("$WORKINGGROUP$", job.owner.working_group)
 
     # Prepare metadata
     metadata = dict(user=job.owner.username)
